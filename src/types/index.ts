@@ -1,0 +1,318 @@
+// User types
+export interface User {
+  id: string
+  email: string
+  display_name?: string
+  avatar_url?: string
+  created_at: string
+}
+
+export interface UserProfile extends User {
+  role: 'user' | 'admin'
+  onboarding_completed: boolean
+  updated_at: string
+}
+
+// Auth types
+export interface AuthTokens {
+  access_token: string
+  refresh_token: string
+  expires_at: string
+}
+
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface SignupRequest extends LoginRequest {
+  display_name?: string
+}
+
+export interface AuthResponse extends AuthTokens {
+  user: User
+}
+
+// Plan types
+export type PlanName = 'free' | 'starter' | 'professional' | 'business'
+export type PlanStatus = 'active' | 'cancelled' | 'expired' | 'trial'
+
+export interface PlanLimits {
+  posts_per_month: number
+  media_storage_mb: number
+  connected_accounts: number
+  scheduled_posts: number
+}
+
+export interface PlanUsage {
+  posts_this_month: number
+  storage_used_mb: number
+  connected_accounts: number
+  scheduled_posts: number
+}
+
+export interface Plan {
+  plan: {
+    name: PlanName
+    status: PlanStatus
+    started_at: string
+    expires_at?: string
+  }
+  limits: PlanLimits
+  usage: PlanUsage
+}
+
+// Media types
+export type MediaType = 'image' | 'video'
+export type MediaStatus = 'pending' | 'processing' | 'completed' | 'failed'
+export type MimeType = 'image/jpeg' | 'image/png' | 'image/webp' | 'video/mp4' | 'video/quicktime' | 'video/webm'
+
+export type VariantPlatform =
+  | 'tiktok'
+  | 'instagram_reels'
+  | 'instagram_feed_square'
+  | 'instagram_feed_portrait'
+  | 'instagram_story'
+  | 'youtube_shorts'
+  | 'youtube_landscape'
+  | 'pinterest'
+  | 'pinterest_square'
+  | 'facebook_feed'
+  | 'facebook_story'
+  | 'facebook_reels'
+  | 'twitter'
+  | 'twitter_square'
+  | 'linkedin_square'
+  | 'linkedin_landscape'
+  | 'linkedin_portrait'
+  | 'bluesky'
+  | 'bluesky_square'
+  | 'threads'
+  | 'threads_portrait'
+  | 'threads_reels'
+
+export type AspectRatio = '9:16' | '1:1' | '4:5' | '16:9' | '2:3' | '1.91:1'
+
+export interface MediaVariant {
+  id: string
+  platform: VariantPlatform
+  aspect_ratio: AspectRatio
+  width: number
+  height: number
+  url: string
+}
+
+export interface Media {
+  id: string
+  name: string
+  type: MediaType
+  mime_type: MimeType
+  size_bytes: number
+  width: number
+  height: number
+  duration?: number
+  status: MediaStatus
+  thumbnail_url?: string
+  original_url?: string
+  variants?: MediaVariant[]
+  created_at: string
+}
+
+export interface MediaListItem {
+  id: string
+  name: string
+  type: MediaType
+  mime_type: MimeType
+  size_bytes: number
+  width: number
+  height: number
+  duration?: number
+  processing_status: MediaStatus
+  thumbnail_url?: string
+  created_at: string
+}
+
+export interface CreateUploadUrlRequest {
+  name: string
+  mime_type: MimeType
+  size_bytes: number
+}
+
+export interface CreateUploadUrlResponse {
+  media_id: string
+  upload_url: string
+  expires_at: string
+}
+
+// Social Account types
+export type SocialPlatform =
+  | 'tiktok'
+  | 'instagram'
+  | 'youtube'
+  | 'facebook'
+  | 'twitter'
+  | 'linkedin'
+  | 'pinterest'
+  | 'bluesky'
+  | 'threads'
+
+export type AccountStatus = 'active' | 'expired' | 'revoked' | 'error'
+
+export interface SocialAccount {
+  id: string
+  platform: SocialPlatform
+  platform_user_id: string
+  username: string
+  display_name?: string
+  avatar_url?: string
+  status: AccountStatus
+  token_expires_at?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface PlatformInfo {
+  id: SocialPlatform
+  name: string
+  color: string
+  features: string[]
+  supportsImage: boolean
+  supportsVideo: boolean
+  isConfigured?: boolean
+}
+
+// Post types
+export type PostStatus = 'draft' | 'scheduled' | 'processing' | 'posted' | 'partially_posted' | 'failed'
+
+export interface PlatformConfiguration {
+  caption?: string
+  title?: string
+  hashtags?: string[]
+  visibility?: string
+}
+
+export interface PlatformConfigurations {
+  [accountId: string]: PlatformConfiguration
+}
+
+export interface PostResult {
+  socialAccountId: string
+  platform: SocialPlatform
+  status: 'pending' | 'success' | 'failed'
+  platformPostId?: string
+  platformUrl?: string
+  error?: string
+  postedAt?: string
+}
+
+export interface Post {
+  id: string
+  caption?: string
+  status: PostStatus
+  is_draft: boolean
+  processing_enabled: boolean
+  scheduled_at?: string
+  published_at?: string
+  media: Media[]
+  social_accounts: SocialAccount[]
+  platform_configurations?: PlatformConfigurations
+  results?: PostResult[]
+  created_at: string
+  updated_at: string
+}
+
+export interface CreatePostRequest {
+  caption?: string
+  mediaIds: string[]
+  socialAccountIds: string[]
+  scheduledAt?: string
+  isDraft?: boolean
+  processingEnabled?: boolean
+  platformConfigurations?: PlatformConfigurations
+}
+
+export interface UpdatePostRequest {
+  caption?: string
+  mediaIds?: string[]
+  socialAccountIds?: string[]
+  scheduledAt?: string | null
+  isDraft?: boolean
+  processingEnabled?: boolean
+  platformConfigurations?: PlatformConfigurations
+}
+
+// Payment types
+export type BillingInterval = 'month' | 'year'
+
+export interface PricingPlan {
+  id: string
+  name: string
+  displayName: string
+  price: number
+  currency: string
+  interval: BillingInterval
+  features: string[]
+  limits: PlanLimits
+  stripePriceId: string
+}
+
+export interface Subscription {
+  id: string
+  status: 'active' | 'cancelled' | 'past_due' | 'incomplete'
+  planType: PlanName
+  billingInterval: BillingInterval
+  currentPeriodStart: string
+  currentPeriodEnd: string
+  cancelAtPeriodEnd: boolean
+  cancelledAt?: string
+}
+
+export interface PaymentHistoryItem {
+  id: string
+  amount: number
+  currency: string
+  status: 'succeeded' | 'failed' | 'pending'
+  description: string
+  created_at: string
+  invoiceUrl?: string
+}
+
+// API response types
+export interface PaginatedResponse<T> {
+  items: T[]
+  total: number
+  limit: number
+  offset: number
+}
+
+export interface ApiError {
+  error: string
+  code?: string
+  details?: Record<string, unknown>
+}
+
+// Platform specifications
+export interface PlatformSpecification {
+  platform: string
+  id: SocialPlatform
+  image?: {
+    maxSize: string
+    maxDimensions: string
+    aspectRatios: string[]
+    formats: string[]
+  }
+  video?: {
+    maxSize: string
+    maxDimensions: string
+    duration: string
+    aspectRatios: string[]
+    formats: string[]
+  }
+  content: {
+    maxCaption: number
+    maxTitle?: number
+    supportsLinks: boolean
+    supportsHashtags: boolean
+  }
+  notes: string[]
+}
