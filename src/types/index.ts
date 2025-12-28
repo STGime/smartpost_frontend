@@ -184,15 +184,103 @@ export interface PlatformInfo {
 // Post types
 export type PostStatus = 'draft' | 'scheduled' | 'processing' | 'posted' | 'partially_posted' | 'failed'
 
-export interface PlatformConfiguration {
+// Base platform configuration
+export interface BasePlatformConfiguration {
   caption?: string
-  title?: string
-  hashtags?: string[]
-  visibility?: string
+  media?: string[] // Media IDs to override default
 }
 
+// TikTok configuration
+export interface TikTokConfiguration extends BasePlatformConfiguration {
+  title?: string
+  videoCoverTimestampMs?: number
+  draft?: boolean
+  isAigc?: boolean
+  disableComment?: boolean
+  disableDuet?: boolean
+  disableStitch?: boolean
+  brandContentToggle?: boolean
+  brandOrganicToggle?: boolean
+}
+
+// Instagram configuration
+export interface InstagramConfiguration extends BasePlatformConfiguration {
+  video_cover_timestamp_ms?: number
+  placement?: 'feed' | 'reels' | 'story'
+}
+
+// YouTube configuration
+export interface YouTubeConfiguration extends BasePlatformConfiguration {
+  title?: string
+  description?: string
+  tags?: string[]
+  privacyStatus?: 'public' | 'unlisted' | 'private'
+  categoryId?: string
+  isShort?: boolean
+  madeForKids?: boolean
+  notifySubscribers?: boolean
+}
+
+// Pinterest configuration
+export interface PinterestConfiguration extends BasePlatformConfiguration {
+  board_ids?: string[]
+  link?: string
+  video_cover_timestamp_ms?: number
+  title?: string
+  alt_text?: string
+}
+
+// Facebook configuration
+export interface FacebookConfiguration extends BasePlatformConfiguration {
+  placement?: 'feed' | 'reels' | 'story'
+}
+
+// X (Twitter) configuration
+export interface XConfiguration extends BasePlatformConfiguration {
+  threadMode?: boolean
+  threadSeparator?: string
+  altText?: string[]
+  replySettings?: 'everyone' | 'following' | 'mentionedUsers'
+  quoteTweetId?: string
+}
+
+// LinkedIn configuration
+export interface LinkedInConfiguration extends BasePlatformConfiguration {
+  visibility?: 'PUBLIC' | 'CONNECTIONS'
+  postType?: 'post' | 'document' | 'article'
+  documentTitle?: string
+  articleTitle?: string
+  articleUrl?: string
+  shareCommentary?: string
+}
+
+// Bluesky configuration
+export interface BlueskyConfiguration extends BasePlatformConfiguration {
+  threadMode?: boolean
+  threadSeparator?: string
+  altText?: string[]
+  embedUrl?: string
+  languages?: string[]
+  labels?: ('nsfw' | 'nudity' | 'suggestive' | 'gore' | 'spoiler')[]
+}
+
+// Threads configuration
+export interface ThreadsConfiguration extends BasePlatformConfiguration {
+  location?: 'reels' | 'timeline'
+}
+
+// Combined platform configurations type
 export interface PlatformConfigurations {
-  [accountId: string]: PlatformConfiguration
+  tiktok?: TikTokConfiguration
+  instagram?: InstagramConfiguration
+  youtube?: YouTubeConfiguration
+  pinterest?: PinterestConfiguration
+  facebook?: FacebookConfiguration
+  twitter?: XConfiguration
+  x?: XConfiguration
+  linkedin?: LinkedInConfiguration
+  bluesky?: BlueskyConfiguration
+  threads?: ThreadsConfiguration
 }
 
 export interface PostResult {
