@@ -226,15 +226,7 @@ const closePreviewModal = () => {
         <p class="char-count">{{ caption.length }} characters</p>
       </div>
 
-      <!-- Platform Settings (THIRD) -->
-      <div v-if="selectedAccountsData.length > 0" class="form-section card">
-        <PlatformConfigSection
-          :selected-accounts="selectedAccountsData"
-          v-model="platformConfigurations"
-        />
-      </div>
-
-      <!-- Media selection (FOURTH) -->
+      <!-- Media selection (THIRD) -->
       <div class="form-section card">
         <div class="section-label">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -380,6 +372,14 @@ const closePreviewModal = () => {
             <span class="media-type-badge">{{ media.type }}</span>
           </div>
         </div>
+      </div>
+
+      <!-- Platform Settings (FOURTH) -->
+      <div v-if="selectedAccountsData.length > 0" class="form-section card">
+        <PlatformConfigSection
+          :selected-accounts="selectedAccountsData"
+          v-model="platformConfigurations"
+        />
       </div>
 
       <!-- Submit -->
