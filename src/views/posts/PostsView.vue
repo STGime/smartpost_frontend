@@ -48,8 +48,8 @@ onMounted(() => {
       >
         <div class="post-media">
           <img
-            v-if="post.media?.[0]?.thumbnail_url || post.media?.[0]?.original_url"
-            :src="post.media[0].thumbnail_url || post.media[0].original_url"
+            v-if="post.media?.[0]?.thumbnailUrl || post.media?.[0]?.originalUrl"
+            :src="post.media[0].thumbnailUrl || post.media[0].originalUrl"
             alt=""
           />
           <div v-else class="post-media-empty">
@@ -72,9 +72,9 @@ onMounted(() => {
         <div class="post-body">
           <p class="post-caption">{{ post.caption || 'No caption' }}</p>
           <div class="post-meta">
-            <span>{{ post.social_accounts?.length ?? 0 }} account(s)</span>
+            <span>{{ post.socialAccounts?.length ?? 0 }} account(s)</span>
             <span class="meta-dot"></span>
-            <span>{{ new Date(post.created_at).toLocaleDateString() }}</span>
+            <span>{{ new Date(post.createdAt).toLocaleDateString() }}</span>
           </div>
         </div>
       </RouterLink>

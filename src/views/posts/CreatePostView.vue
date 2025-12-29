@@ -389,7 +389,7 @@ const closePreviewModal = () => {
         </RouterLink>
         <button
           type="submit"
-          :disabled="selectedMediaIds.length === 0 || selectedAccountIds.length === 0 || postsStore.isLoading"
+          :disabled="selectedAccountIds.length === 0 || postsStore.isLoading"
           class="btn-primary"
         >
           <svg v-if="!postsStore.isLoading" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="btn-icon">

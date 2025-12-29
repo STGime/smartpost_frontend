@@ -115,8 +115,8 @@ onMounted(async () => {
             :to="`/app/posts/${post.id}`"
             class="post-item"
           >
-            <div v-if="post.media?.[0]?.thumbnail_url || post.media?.[0]?.original_url" class="post-thumb">
-              <img :src="post.media[0].thumbnail_url || post.media[0].original_url" alt="" />
+            <div v-if="post.media?.[0]?.thumbnailUrl || post.media?.[0]?.originalUrl" class="post-thumb">
+              <img :src="post.media[0].thumbnailUrl || post.media[0].originalUrl" alt="" />
             </div>
             <div v-else class="post-thumb post-thumb-empty">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,8 +126,8 @@ onMounted(async () => {
             <div class="post-content">
               <p class="post-caption">{{ post.caption || 'No caption' }}</p>
               <p class="post-meta">
-                {{ post.social_accounts?.length ?? 0 }} account(s) &middot;
-                {{ new Date(post.created_at).toLocaleDateString() }}
+                {{ post.socialAccounts?.length ?? 0 }} account(s) &middot;
+                {{ new Date(post.createdAt).toLocaleDateString() }}
               </p>
             </div>
             <span :class="['post-status', `status-${post.status}`]">

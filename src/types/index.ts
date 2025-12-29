@@ -297,16 +297,35 @@ export interface Post {
   id: string
   caption?: string
   status: PostStatus
-  is_draft: boolean
-  processing_enabled: boolean
-  scheduled_at?: string
-  published_at?: string
-  media: Media[]
-  social_accounts: SocialAccount[]
-  platform_configurations?: PlatformConfigurations
+  isDraft: boolean
+  processingEnabled: boolean
+  scheduledAt?: string
+  publishedAt?: string
+  media: PostMedia[]
+  socialAccounts: PostSocialAccount[]
+  platformConfigurations?: PlatformConfigurations
   results?: PostResult[]
-  created_at: string
-  updated_at: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PostMedia {
+  id: string
+  mediaId: string
+  position: number
+  name: string
+  type: MediaType
+  thumbnailUrl?: string
+  originalUrl?: string
+  variants?: MediaVariant[]
+}
+
+export interface PostSocialAccount {
+  id: string
+  platform: SocialPlatform
+  username: string
+  displayName?: string
+  avatarUrl?: string
 }
 
 export interface CreatePostRequest {
