@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useMediaStore } from '@/stores'
 import type { MediaListItem } from '@/types'
 
@@ -11,6 +11,41 @@ const isDeleting = ref(false)
 const showPreviewModal = ref(false)
 const mediaToPreview = ref<MediaListItem | null>(null)
 const isLoadingPreview = ref(false)
+
+// Filters
+const mediaTypeFilter = ref<'all' | 'image' | 'video'>('all')
+const mediaSizeFilter = ref<'all' | 'small' | 'medium' | 'large'>('all')
+const mediaSortOrder = ref<'newest' | 'oldest'>('newest')
+
+// Filtered and sorted media
+const filteredMedia = computed(() => {
+  let items = [...mediaStore.items]
+
+  // Filter by type
+  if (mediaTypeFilter.value !== 'all') {
+    items = items.filter(m => m.type === mediaTypeFilter.value)
+  }
+
+  // Filter by size
+  if (mediaSizeFilter.value !== 'all') {
+    items = items.filter(m => {
+      const sizeMB = m.size_bytes / (1024 * 1024)
+      switch (mediaSizeFilter.value) {
+        case 'small': return sizeMB < 1
+        case 'medium': return sizeMB >= 1 && sizeMB <= 10
+        case 'large': return sizeMB > 10
+        default: return true
+      }
+    })
+  }
+
+  // Sort by date
+  return items.sort((a, b) => {
+    const dateA = new Date(a.created_at).getTime()
+    const dateB = new Date(b.created_at).getTime()
+    return mediaSortOrder.value === 'newest' ? dateB - dateA : dateA - dateB
+  })
+})
 
 onMounted(() => {
   mediaStore.fetchMedia()
@@ -121,6 +156,76 @@ const closePreviewModal = () => {
       {{ mediaStore.error }}
     </div>
 
+    <!-- Filter toolbar -->
+    <div v-if="mediaStore.items.length > 0" class="filter-toolbar card">
+      <div class="filter-group">
+        <span class="filter-label">Type:</span>
+        <div class="filter-pills">
+          <button
+            type="button"
+            :class="['filter-pill', { active: mediaTypeFilter === 'all' }]"
+            @click="mediaTypeFilter = 'all'"
+          >All</button>
+          <button
+            type="button"
+            :class="['filter-pill', { active: mediaTypeFilter === 'image' }]"
+            @click="mediaTypeFilter = 'image'"
+          >Images</button>
+          <button
+            type="button"
+            :class="['filter-pill', { active: mediaTypeFilter === 'video' }]"
+            @click="mediaTypeFilter = 'video'"
+          >Videos</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <span class="filter-label">Size:</span>
+        <div class="filter-pills">
+          <button
+            type="button"
+            :class="['filter-pill', { active: mediaSizeFilter === 'all' }]"
+            @click="mediaSizeFilter = 'all'"
+          >All</button>
+          <button
+            type="button"
+            :class="['filter-pill', { active: mediaSizeFilter === 'small' }]"
+            @click="mediaSizeFilter = 'small'"
+          >&lt;1MB</button>
+          <button
+            type="button"
+            :class="['filter-pill', { active: mediaSizeFilter === 'medium' }]"
+            @click="mediaSizeFilter = 'medium'"
+          >1-10MB</button>
+          <button
+            type="button"
+            :class="['filter-pill', { active: mediaSizeFilter === 'large' }]"
+            @click="mediaSizeFilter = 'large'"
+          >&gt;10MB</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <span class="filter-label">Sort:</span>
+        <div class="filter-pills">
+          <button
+            type="button"
+            :class="['filter-pill', { active: mediaSortOrder === 'newest' }]"
+            @click="mediaSortOrder = 'newest'"
+          >Newest</button>
+          <button
+            type="button"
+            :class="['filter-pill', { active: mediaSortOrder === 'oldest' }]"
+            @click="mediaSortOrder = 'oldest'"
+          >Oldest</button>
+        </div>
+      </div>
+
+      <div class="filter-count">
+        {{ filteredMedia.length }} of {{ mediaStore.items.length }} items
+      </div>
+    </div>
+
     <div v-if="mediaStore.isLoading && !mediaStore.items.length" class="loading-state">
       <div class="spinner"></div>
     </div>
@@ -136,9 +241,22 @@ const closePreviewModal = () => {
       <button @click="fileInput?.click()" class="btn-primary">Upload your first media</button>
     </div>
 
+    <div v-else-if="filteredMedia.length === 0" class="empty-state card">
+      <div class="empty-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+      <p class="empty-title">No media matches your filters</p>
+      <p class="empty-sub">Try adjusting your filter criteria</p>
+      <button @click="mediaTypeFilter = 'all'; mediaSizeFilter = 'all'" class="btn-secondary">
+        Clear Filters
+      </button>
+    </div>
+
     <div v-else class="media-grid">
       <div
-        v-for="media in mediaStore.items"
+        v-for="media in filteredMedia"
         :key="media.id"
         class="media-item"
         @click="openPreviewModal(media)"
@@ -309,6 +427,77 @@ const closePreviewModal = () => {
   color: var(--muted);
   min-width: 40px;
   text-align: right;
+}
+
+/* Filter Toolbar */
+.filter-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-label {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.filter-pills {
+  display: flex;
+  gap: 4px;
+}
+
+.filter-pill {
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-pill:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+}
+
+.filter-pill.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: #a5b4fc;
+}
+
+.filter-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+@media (max-width: 600px) {
+  .filter-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .filter-group {
+    flex-wrap: wrap;
+  }
+
+  .filter-count {
+    margin-left: 0;
+  }
 }
 
 /* Loading State */
