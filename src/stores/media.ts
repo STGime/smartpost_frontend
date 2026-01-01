@@ -12,7 +12,58 @@ export const useMediaStore = defineStore('media', () => {
   const uploadProgress = ref(0)
   const error = ref<string | null>(null)
 
+  // Polling for processing status updates
+  let pollingInterval: ReturnType<typeof setInterval> | null = null
+  const processingMediaIds = ref<Set<string>>(new Set())
+
   const hasMore = computed(() => items.value.length < total.value)
+
+  // Define polling functions first (using function declarations for hoisting)
+  function stopPolling() {
+    if (pollingInterval) {
+      clearInterval(pollingInterval)
+      pollingInterval = null
+    }
+    processingMediaIds.value.clear()
+  }
+
+  function startPollingForProcessing(mediaId: string) {
+    processingMediaIds.value.add(mediaId)
+
+    // Start polling if not already running
+    if (!pollingInterval) {
+      pollingInterval = setInterval(async () => {
+        if (processingMediaIds.value.size === 0) {
+          stopPolling()
+          return
+        }
+
+        try {
+          // Fetch updated media list
+          const response = await mediaService.listMedia({ limit: 50 })
+
+          // Update items with new data - replace entire array for reactivity
+          items.value = items.value.map((existingItem) => {
+            const updatedItem = response.items.find((m) => m.id === existingItem.id)
+            if (updatedItem) {
+              // Remove from processing set if completed or failed
+              if (
+                updatedItem.processing_status === 'completed' ||
+                updatedItem.processing_status === 'failed'
+              ) {
+                processingMediaIds.value.delete(updatedItem.id)
+              }
+              // Return updated item (triggers Vue reactivity)
+              return { ...existingItem, ...updatedItem }
+            }
+            return existingItem
+          })
+        } catch {
+          // Silently ignore polling errors
+        }
+      }, 3000) // Poll every 3 seconds
+    }
+  }
 
   const fetchMedia = async (params?: {
     limit?: number
@@ -30,6 +81,13 @@ export const useMediaStore = defineStore('media', () => {
         items.value = [...items.value, ...response.items]
       }
       total.value = response.total
+
+      // Start polling for any media that's still processing
+      for (const item of response.items) {
+        if (item.processing_status === 'processing') {
+          startPollingForProcessing(item.id)
+        }
+      }
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } }
       error.value = e.response?.data?.error || 'Failed to fetch media'
@@ -92,6 +150,11 @@ export const useMediaStore = defineStore('media', () => {
       items.value = [listItem, ...items.value]
       total.value++
 
+      // Start polling for processing status updates
+      if (result.media.status === 'processing') {
+        startPollingForProcessing(result.media.id)
+      }
+
       return result.media
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } }
@@ -143,5 +206,7 @@ export const useMediaStore = defineStore('media', () => {
     uploadMedia,
     deleteMedia,
     updateMediaStatus,
+    startPollingForProcessing,
+    stopPolling,
   }
 })

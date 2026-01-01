@@ -279,6 +279,7 @@ const closePreviewModal = () => {
         </div>
         <div v-if="media.processing_status === 'processing'" class="media-processing">
           <div class="spinner spinner-sm"></div>
+          <span class="processing-text">Creating variants...</span>
         </div>
       </div>
     </div>
@@ -635,8 +636,16 @@ const closePreviewModal = () => {
   inset: 0;
   background: rgba(15, 23, 42, 0.9);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
+}
+
+.processing-text {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: center;
 }
 
 .spinner-sm {
