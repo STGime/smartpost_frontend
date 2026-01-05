@@ -231,6 +231,26 @@ const formatDate = (date: string) => {
         <p class="caption-text">{{ post.caption || 'No caption' }}</p>
       </div>
 
+      <!-- Hashtags Card -->
+      <div v-if="post.hashtags && post.hashtags.length > 0" class="card detail-card">
+        <div class="section-label">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+          </svg>
+          Hashtags
+          <span class="count-badge">{{ post.hashtags.length }}</span>
+        </div>
+        <div class="hashtags-list">
+          <span
+            v-for="tag in post.hashtags"
+            :key="tag"
+            class="hashtag-chip"
+          >
+            #{{ tag }}
+          </span>
+        </div>
+      </div>
+
       <!-- Media Card -->
       <div class="card detail-card">
         <div class="section-label">
@@ -289,8 +309,42 @@ const formatDate = (date: string) => {
         </div>
       </div>
 
+      <!-- Publishing Progress (shown when processing) -->
+      <div v-if="post.status === 'processing'" class="card detail-card publishing-card">
+        <div class="publishing-header">
+          <div class="publishing-spinner"></div>
+          <div class="publishing-text">
+            <h3>Publishing in Progress</h3>
+            <p>Your post is being published to {{ post.socialAccounts?.length || 0 }} platform{{ (post.socialAccounts?.length || 0) !== 1 ? 's' : '' }}...</p>
+          </div>
+        </div>
+
+        <!-- Show per-platform status if available -->
+        <div v-if="post.results && post.results.length > 0" class="publishing-progress-list">
+          <div
+            v-for="result in post.results"
+            :key="result.socialAccountId"
+            :class="['publishing-progress-item', `progress-${result.status}`]"
+          >
+            <PlatformIcon :platform="result.platform" size="sm" />
+            <span class="progress-platform">{{ result.platform }}</span>
+            <span :class="['progress-status', `status-${result.status}`]">
+              <span v-if="result.status === 'pending'" class="status-dot pending"></span>
+              <span v-else-if="result.status === 'processing'" class="status-dot processing"></span>
+              <svg v-else-if="result.status === 'success'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <svg v-else-if="result.status === 'failed'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              {{ result.status }}
+            </span>
+          </div>
+        </div>
+      </div>
+
       <!-- Publishing Results -->
-      <div v-if="post.results && post.results.length > 0" class="card detail-card">
+      <div v-if="post.results && post.results.length > 0 && post.status !== 'processing'" class="card detail-card">
         <div class="section-label">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -511,6 +565,12 @@ const formatDate = (date: string) => {
   border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
+.badge-partially_posted {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
 .badge-failed {
   background: rgba(239, 68, 68, 0.15);
   color: #fca5a5;
@@ -536,6 +596,23 @@ const formatDate = (date: string) => {
   line-height: 1.6;
   color: var(--text);
   white-space: pre-wrap;
+}
+
+/* Hashtags */
+.hashtags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hashtag-chip {
+  display: inline-flex;
+  padding: 6px 12px;
+  background: var(--accent-soft);
+  border: 1px solid rgba(79, 70, 229, 0.3);
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  color: #c7d2fe;
 }
 
 /* Media Grid */
@@ -961,6 +1038,140 @@ const formatDate = (date: string) => {
   .btn-cancel-schedule {
     width: 100%;
     justify-content: center;
+  }
+}
+
+/* Publishing Progress */
+.publishing-card {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, var(--bg-card) 100%);
+}
+
+.publishing-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.publishing-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(245, 158, 11, 0.2);
+  border-top-color: #fcd34d;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.publishing-text h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fcd34d;
+  margin-bottom: 4px;
+}
+
+.publishing-text p {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.publishing-progress-list {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.publishing-progress-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.publishing-progress-item.progress-success {
+  border-color: rgba(34, 197, 94, 0.3);
+  background: rgba(34, 197, 94, 0.05);
+}
+
+.publishing-progress-item.progress-failed {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.publishing-progress-item.progress-processing {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.progress-platform {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.progress-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.progress-status svg {
+  width: 14px;
+  height: 14px;
+}
+
+.progress-status.status-success {
+  color: #86efac;
+}
+
+.progress-status.status-failed {
+  color: #fca5a5;
+}
+
+.progress-status.status-pending {
+  color: var(--muted);
+}
+
+.progress-status.status-processing {
+  color: #fcd34d;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-dot.pending {
+  background: var(--muted);
+}
+
+.status-dot.processing {
+  background: #fcd34d;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
   }
 }
 </style>

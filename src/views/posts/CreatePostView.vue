@@ -1,17 +1,23 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { usePostsStore, useMediaStore, useSocialAccountsStore } from '@/stores'
+import { usePostsStore, useMediaStore, useSocialAccountsStore, useTagsStore } from '@/stores'
 import PlatformIcon from '@/components/PlatformIcon.vue'
 import PlatformConfigSection from '@/components/platform/PlatformConfigSection.vue'
-import type { MediaListItem, PlatformConfigurations } from '@/types'
+import HashtagInput from '@/components/HashtagInput.vue'
+import HashtagLimitWarnings from '@/components/HashtagLimitWarnings.vue'
+import { checkPlatformMediaCompatibility } from '@/config/platformLimits'
+import type { MediaListItem, PlatformConfigurations, SocialPlatform } from '@/types'
 
 const router = useRouter()
 const postsStore = usePostsStore()
 const mediaStore = useMediaStore()
 const socialAccountsStore = useSocialAccountsStore()
+const tagsStore = useTagsStore()
 
 const caption = ref('')
+const hashtags = ref<string[]>([])
+const saveHashtagsToLibrary = ref(true)
 const selectedMediaIds = ref<string[]>([])
 const selectedAccountIds = ref<string[]>([])
 const platformConfigurations = ref<PlatformConfigurations>({})
@@ -29,6 +35,35 @@ const showPreviewModal = ref(false)
 const mediaToPreview = ref<MediaListItem | null>(null)
 const isLoadingPreview = ref(false)
 
+// Count selected media by type
+const selectedMediaCounts = computed(() => {
+  const selectedMedia = mediaStore.items.filter(m => selectedMediaIds.value.includes(m.id))
+  return {
+    images: selectedMedia.filter(m => m.type === 'image').length,
+    videos: selectedMedia.filter(m => m.type === 'video').length,
+    total: selectedMedia.length,
+  }
+})
+
+// Check compatibility for each account based on selected media
+const accountCompatibility = computed(() => {
+  const compatibility: Record<string, { compatible: boolean; reason: string | null }> = {}
+
+  for (const account of socialAccountsStore.accounts) {
+    const result = checkPlatformMediaCompatibility(
+      account.platform as SocialPlatform,
+      selectedMediaCounts.value.images,
+      selectedMediaCounts.value.videos
+    )
+    compatibility[account.id] = {
+      compatible: result.isCompatible,
+      reason: result.reason,
+    }
+  }
+
+  return compatibility
+})
+
 // Use all accounts, not just active ones (the store might filter incorrectly)
 const availableAccounts = computed(() => {
   // First try activeAccounts, if empty fall back to all accounts
@@ -43,9 +78,40 @@ const selectedAccountsData = computed(() => {
   )
 })
 
+// Get unique platforms from selected accounts
+const selectedPlatforms = computed(() => {
+  const platforms = selectedAccountsData.value.map(a => a.platform as SocialPlatform)
+  return [...new Set(platforms)]
+})
+
+// Check if caption has extractable hashtags
+const captionHashtags = computed(() => {
+  const matches = caption.value.match(/#\w+/g) || []
+  return matches.map(h => h.slice(1).toLowerCase())
+})
+
+const hasExtractableHashtags = computed(() => {
+  return captionHashtags.value.some(tag => !hashtags.value.includes(tag))
+})
+
+// Extract hashtags from caption (removes them from caption, adds to hashtags)
+const extractHashtagsFromCaption = () => {
+  const newTags = captionHashtags.value.filter(tag => !hashtags.value.includes(tag))
+  if (newTags.length > 0) {
+    // Add to hashtags array
+    hashtags.value = [...hashtags.value, ...newTags]
+    // Remove hashtags from caption
+    caption.value = caption.value
+      .replace(/#\w+/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+  }
+}
+
 // Filtered and sorted media
 const filteredMedia = computed(() => {
-  let items = [...mediaStore.items]
+  // Exclude items that are still processing (they can't be used in posts yet)
+  let items = mediaStore.items.filter(m => m.processing_status !== 'processing')
 
   // Filter by type
   if (mediaTypeFilter.value !== 'all') {
@@ -74,14 +140,39 @@ const filteredMedia = computed(() => {
 })
 
 onMounted(() => {
-  mediaStore.fetchMedia({ status: 'completed' })
+  // Fetch all media items without status filter (matches MediaView behavior)
+  mediaStore.fetchMedia({ limit: 100 })
   socialAccountsStore.fetchAccounts()
 })
 
+// Watch for media changes and auto-deselect incompatible accounts
+watch(selectedMediaIds, () => {
+  // Filter out accounts that are no longer compatible
+  const stillCompatible = selectedAccountIds.value.filter(accountId => {
+    const compat = accountCompatibility.value[accountId]
+    return compat?.compatible !== false
+  })
+
+  // Only update if something changed
+  if (stillCompatible.length !== selectedAccountIds.value.length) {
+    selectedAccountIds.value = stillCompatible
+  }
+}, { deep: true })
+
 const handleSubmit = async () => {
   try {
+    // Save hashtags to library if enabled
+    if (saveHashtagsToLibrary.value && hashtags.value.length > 0) {
+      try {
+        await tagsStore.saveTags(hashtags.value)
+      } catch {
+        // Silently fail - don't block post creation
+      }
+    }
+
     const post = await postsStore.createPost({
       caption: caption.value,
+      hashtags: hashtags.value,
       mediaIds: selectedMediaIds.value,
       socialAccountIds: selectedAccountIds.value,
       isDraft: true,
@@ -105,6 +196,13 @@ const toggleMedia = (id: string) => {
 }
 
 const toggleAccount = (id: string) => {
+  // Check if account is compatible with current media selection
+  const compat = accountCompatibility.value[id]
+  if (compat && !compat.compatible) {
+    // Don't allow selecting incompatible accounts
+    return
+  }
+
   const index = selectedAccountIds.value.indexOf(id)
   if (index === -1) {
     selectedAccountIds.value.push(id)
@@ -127,7 +225,7 @@ const handleFileSelect = async (event: Event) => {
   }
 
   // Refresh media list to show newly uploaded items
-  await mediaStore.fetchMedia({ status: 'completed' })
+  await mediaStore.fetchMedia({ limit: 100 })
 
   if (fileInput.value) {
     fileInput.value.value = ''
@@ -178,6 +276,16 @@ const closePreviewModal = () => {
           Select Accounts
           <span v-if="selectedAccountIds.length > 0" class="selection-count">{{ selectedAccountIds.length }} selected</span>
         </div>
+        <!-- Media compatibility notice -->
+        <div v-if="selectedMediaCounts.total > 0" class="media-notice">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>
+            Selected: {{ selectedMediaCounts.images }} image{{ selectedMediaCounts.images !== 1 ? 's' : '' }}{{ selectedMediaCounts.videos > 0 ? `, ${selectedMediaCounts.videos} video${selectedMediaCounts.videos !== 1 ? 's' : ''}` : '' }}.
+            Some platforms may be unavailable based on media limits.
+          </span>
+        </div>
 
         <div v-if="socialAccountsStore.isLoading" class="loading-state-sm">
           <div class="spinner"></div>
@@ -193,14 +301,27 @@ const closePreviewModal = () => {
             v-for="account in availableAccounts"
             :key="account.id"
             @click="toggleAccount(account.id)"
-            :class="['account-item', { selected: selectedAccountIds.includes(account.id) }]"
+            :class="[
+              'account-item',
+              {
+                selected: selectedAccountIds.includes(account.id),
+                disabled: accountCompatibility[account.id]?.compatible === false
+              }
+            ]"
+            :title="accountCompatibility[account.id]?.reason || ''"
           >
             <PlatformIcon :platform="account.platform" size="md" />
             <div class="account-info">
               <p class="account-username">{{ account.username }}</p>
               <p class="account-platform">{{ account.platform }}</p>
             </div>
-            <div class="check-indicator">
+            <div v-if="accountCompatibility[account.id]?.compatible === false" class="incompatible-indicator" :title="accountCompatibility[account.id]?.reason || ''">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span class="incompatible-tooltip">{{ accountCompatibility[account.id]?.reason }}</span>
+            </div>
+            <div v-else class="check-indicator">
               <svg v-if="selectedAccountIds.includes(account.id)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
@@ -221,9 +342,39 @@ const closePreviewModal = () => {
           v-model="caption"
           rows="4"
           class="form-input form-textarea"
-          placeholder="What do you want to say?"
+          placeholder="What do you want to say? Include #hashtags to extract them."
         ></textarea>
-        <p class="char-count">{{ caption.length }} characters</p>
+        <div class="caption-footer">
+          <p class="char-count">{{ caption.length }} characters</p>
+          <button
+            type="button"
+            class="btn-extract"
+            :disabled="!hasExtractableHashtags"
+            @click="extractHashtagsFromCaption"
+            title="Extract #hashtags from caption and move to Hashtags section"
+          >
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+            </svg>
+            Extract Hashtags
+          </button>
+        </div>
+      </div>
+
+      <!-- Hashtags -->
+      <div class="form-section card">
+        <div class="section-label">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+          </svg>
+          Hashtags
+          <span v-if="hashtags.length > 0" class="selection-count">{{ hashtags.length }} tags</span>
+        </div>
+        <HashtagInput v-model="hashtags" v-model:save-to-library="saveHashtagsToLibrary" />
+        <HashtagLimitWarnings
+          :hashtags="hashtags"
+          :platforms="selectedPlatforms"
+        />
       </div>
 
       <!-- Media selection (THIRD) -->
@@ -262,6 +413,9 @@ const closePreviewModal = () => {
 
         <!-- Filter toolbar -->
         <div v-if="mediaStore.items.length > 0" class="filter-toolbar">
+          <div class="filter-count">
+            {{ filteredMedia.length }} of {{ mediaStore.items.length }} items
+          </div>
           <div class="filter-group">
             <span class="filter-label">Type:</span>
             <div class="filter-pills">
@@ -340,13 +494,14 @@ const closePreviewModal = () => {
           <button type="button" @click="mediaTypeFilter = 'all'; mediaSizeFilter = 'all'" class="link-accent">Clear filters</button>
         </div>
 
-        <div v-else class="media-grid">
-          <div
-            v-for="media in filteredMedia"
-            :key="media.id"
-            @click="toggleMedia(media.id)"
-            :class="['media-item', { selected: selectedMediaIds.includes(media.id) }]"
-          >
+        <div v-else class="media-grid-container">
+          <div class="media-grid">
+            <div
+              v-for="media in filteredMedia"
+              :key="media.id"
+              @click="toggleMedia(media.id)"
+              :class="['media-item', { selected: selectedMediaIds.includes(media.id) }]"
+            >
             <img :src="media.thumbnail_url || '/placeholder.png'" alt="" />
             <div class="media-overlay">
               <div class="check-icon">
@@ -370,6 +525,7 @@ const closePreviewModal = () => {
               </svg>
             </button>
             <span class="media-type-badge">{{ media.type }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -507,16 +663,73 @@ const closePreviewModal = () => {
   font-weight: 500;
 }
 
+/* Media compatibility notice */
+.media-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  border-radius: var(--radius-md);
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  font-size: 12px;
+  color: #93c5fd;
+}
+
+.media-notice svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
 .form-textarea {
   resize: vertical;
   min-height: 100px;
 }
 
+.caption-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  gap: 12px;
+}
+
 .char-count {
-  margin-top: 8px;
   font-size: 11px;
   color: var(--muted);
-  text-align: right;
+}
+
+.btn-extract {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  border: 1px solid rgba(79, 70, 229, 0.3);
+  color: #c7d2fe;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-extract:hover:not(:disabled) {
+  background: rgba(79, 70, 229, 0.25);
+  border-color: rgba(79, 70, 229, 0.5);
+}
+
+.btn-extract:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-extract svg {
+  width: 14px;
+  height: 14px;
 }
 
 /* Loading/Empty States */
@@ -544,6 +757,31 @@ const closePreviewModal = () => {
 }
 
 /* Media Grid */
+.media-grid-container {
+  max-height: 400px;
+  overflow-y: auto;
+  border-radius: var(--radius-md);
+  padding: 2px;
+}
+
+.media-grid-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.media-grid-container::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 4px;
+}
+
+.media-grid-container::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 4px;
+}
+
+.media-grid-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
 .media-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -703,6 +941,71 @@ const closePreviewModal = () => {
   color: white;
 }
 
+/* Disabled/Incompatible Account */
+.account-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.account-item.disabled:hover {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.incompatible-indicator {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: rgba(239, 68, 68, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fca5a5;
+}
+
+.incompatible-indicator svg {
+  width: 14px;
+  height: 14px;
+}
+
+.incompatible-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: all 0.15s;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.incompatible-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 8px;
+  border: 6px solid transparent;
+  border-top-color: rgba(15, 23, 42, 0.95);
+}
+
+.account-item.disabled:hover .incompatible-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
 /* Form Actions */
 .form-actions {
   display: flex;
@@ -822,6 +1125,12 @@ const closePreviewModal = () => {
   background: var(--accent-soft);
   border-color: var(--accent);
   color: #a5b4fc;
+}
+
+.filter-count {
+  font-size: 12px;
+  color: var(--muted);
+  margin-right: auto;
 }
 
 /* Empty inline button style */

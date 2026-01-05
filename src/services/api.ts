@@ -14,7 +14,6 @@ const api: AxiosInstance = axios.create({
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('access_token')
-    console.log('API Request:', config.url, 'Token:', token ? 'present' : 'missing')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
