@@ -1,0 +1,365 @@
+<script setup lang="ts">
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { usePostsStore } from '@/stores'
+import type { Post } from '@/types'
+import CalendarGrid from '@/components/calendar/CalendarGrid.vue'
+import CalendarDayModal from '@/components/calendar/CalendarDayModal.vue'
+
+const router = useRouter()
+const postsStore = usePostsStore()
+
+// Current view month/year
+const currentYear = ref(new Date().getFullYear())
+const currentMonth = ref(new Date().getMonth())
+
+// Modal state
+const showDayModal = ref(false)
+const selectedDate = ref<Date | null>(null)
+
+// Month names for display
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+]
+
+const currentMonthName = computed(() => MONTH_NAMES[currentMonth.value])
+
+// Fetch posts when component mounts or month changes
+const fetchMonthPosts = async () => {
+  await postsStore.fetchPosts({ limit: 100 })
+}
+
+onMounted(fetchMonthPosts)
+watch([currentYear, currentMonth], fetchMonthPosts)
+
+// Format date to YYYY-MM-DD using local time (not UTC)
+const formatLocalDateKey = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+// Group posts by date (YYYY-MM-DD key in local time)
+const postsByDate = computed(() => {
+  const grouped: Record<string, Post[]> = {}
+
+  postsStore.posts.forEach((post) => {
+    const dateStr = post.scheduledAt || post.publishedAt || post.createdAt
+    if (!dateStr) return
+
+    const date = new Date(dateStr)
+    const key = formatLocalDateKey(date)
+
+    if (!grouped[key]) {
+      grouped[key] = []
+    }
+    grouped[key].push(post)
+  })
+
+  // Sort posts within each day by time
+  Object.keys(grouped).forEach((key) => {
+    const posts = grouped[key]
+    if (posts) {
+      posts.sort((a, b) => {
+        const dateA = new Date(a.scheduledAt || a.publishedAt || a.createdAt)
+        const dateB = new Date(b.scheduledAt || b.publishedAt || b.createdAt)
+        return dateA.getTime() - dateB.getTime()
+      })
+    }
+  })
+
+  return grouped
+})
+
+// Navigation
+const goToPreviousMonth = () => {
+  if (currentMonth.value === 0) {
+    currentMonth.value = 11
+    currentYear.value--
+  } else {
+    currentMonth.value--
+  }
+}
+
+const goToNextMonth = () => {
+  if (currentMonth.value === 11) {
+    currentMonth.value = 0
+    currentYear.value++
+  } else {
+    currentMonth.value++
+  }
+}
+
+const goToToday = () => {
+  const today = new Date()
+  currentYear.value = today.getFullYear()
+  currentMonth.value = today.getMonth()
+}
+
+// Event handlers
+const handlePostClick = (post: Post) => {
+  router.push(`/app/posts/${post.id}?from=calendar`)
+}
+
+const handleShowAll = (date: Date) => {
+  selectedDate.value = date
+  showDayModal.value = true
+}
+
+const handleViewPost = (post: Post) => {
+  showDayModal.value = false
+  router.push(`/app/posts/${post.id}?from=calendar`)
+}
+
+const handleCancelPost = async (post: Post) => {
+  if (confirm('Are you sure you want to cancel this scheduled post?')) {
+    await postsStore.cancelScheduledPost(post.id)
+  }
+}
+
+const closeDayModal = () => {
+  showDayModal.value = false
+  selectedDate.value = null
+}
+
+// Get posts for selected date in modal
+const selectedDatePosts = computed(() => {
+  if (!selectedDate.value) return []
+  const key = formatLocalDateKey(selectedDate.value)
+  return postsByDate.value[key] || []
+})
+</script>
+
+<template>
+  <div class="calendar-page">
+    <div class="page-header">
+      <div>
+        <h1>Calendar</h1>
+        <p>View and manage your scheduled posts</p>
+      </div>
+    </div>
+
+    <!-- Calendar Navigation -->
+    <div class="calendar-nav">
+      <button class="nav-btn" @click="goToPreviousMonth">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      <h2 class="month-title">{{ currentMonthName }} {{ currentYear }}</h2>
+
+      <button class="nav-btn" @click="goToNextMonth">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
+      <button class="today-btn" @click="goToToday">Today</button>
+    </div>
+
+    <!-- Status Legend -->
+    <div class="status-legend">
+      <span class="legend-item">
+        <span class="legend-dot scheduled"></span>
+        Scheduled
+      </span>
+      <span class="legend-item">
+        <span class="legend-dot posted"></span>
+        Posted
+      </span>
+      <span class="legend-item">
+        <span class="legend-dot failed"></span>
+        Failed
+      </span>
+      <span class="legend-item">
+        <span class="legend-dot draft"></span>
+        Draft
+      </span>
+    </div>
+
+    <!-- Loading State -->
+    <div v-if="postsStore.isLoading" class="loading-state">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div v-else class="calendar-container">
+      <CalendarGrid
+        :year="currentYear"
+        :month="currentMonth"
+        :posts-by-date="postsByDate"
+        @post-click="handlePostClick"
+        @show-all="handleShowAll"
+      />
+    </div>
+
+    <!-- Day Modal -->
+    <CalendarDayModal
+      :show="showDayModal"
+      :date="selectedDate"
+      :posts="selectedDatePosts"
+      @close="closeDayModal"
+      @view-post="handleViewPost"
+      @cancel-post="handleCancelPost"
+    />
+  </div>
+</template>
+
+<style scoped>
+.calendar-page {
+  max-width: 1200px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.page-header p {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* Calendar Navigation */
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.nav-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.nav-btn:hover {
+  background: rgba(15, 23, 42, 0.9);
+  color: var(--text);
+  border-color: var(--border-hover);
+}
+
+.nav-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.month-title {
+  font-size: 18px;
+  font-weight: 600;
+  min-width: 180px;
+  text-align: center;
+}
+
+.today-btn {
+  margin-left: auto;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  background: var(--accent-soft);
+  border: 1px solid rgba(79, 70, 229, 0.3);
+  color: #c7d2fe;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.today-btn:hover {
+  background: rgba(79, 70, 229, 0.25);
+}
+
+/* Status Legend */
+.status-legend {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.legend-dot.scheduled {
+  background: #3b82f6;
+}
+
+.legend-dot.posted {
+  background: var(--success);
+}
+
+.legend-dot.failed {
+  background: var(--error);
+}
+
+.legend-dot.draft {
+  background: #94a3b8;
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 64px;
+}
+
+/* Calendar Container */
+.calendar-container {
+  background: rgba(15, 23, 42, 0.3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .calendar-nav {
+    flex-wrap: wrap;
+  }
+
+  .month-title {
+    order: -1;
+    width: 100%;
+    margin-bottom: 8px;
+    text-align: left;
+  }
+
+  .today-btn {
+    margin-left: 0;
+  }
+
+  .status-legend {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+</style>

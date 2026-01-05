@@ -1,12 +1,36 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { usePostsStore } from '@/stores'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
 const postsStore = usePostsStore()
+
+const showDeleteModal = ref(false)
+const postToDelete = ref<string | null>(null)
 
 onMounted(() => {
   postsStore.fetchPosts()
 })
+
+const openDeleteModal = (e: Event, postId: string) => {
+  e.preventDefault()
+  e.stopPropagation()
+  postToDelete.value = postId
+  showDeleteModal.value = true
+}
+
+const confirmDelete = async () => {
+  if (postToDelete.value) {
+    await postsStore.deletePost(postToDelete.value)
+  }
+  showDeleteModal.value = false
+  postToDelete.value = null
+}
+
+const cancelDelete = () => {
+  showDeleteModal.value = false
+  postToDelete.value = null
+}
 </script>
 
 <template>
@@ -68,6 +92,15 @@ onMounted(() => {
             +{{ post.media.length - 1 }}
           </span>
           <span :class="['post-badge', `badge-${post.status}`]">{{ post.status }}</span>
+          <button
+            class="delete-btn"
+            @click="openDeleteModal($event, post.id)"
+            title="Delete post"
+          >
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
         </div>
         <div class="post-body">
           <p class="post-caption">{{ post.caption || 'No caption' }}</p>
@@ -79,6 +112,17 @@ onMounted(() => {
         </div>
       </RouterLink>
     </div>
+
+    <ConfirmModal
+      :show="showDeleteModal"
+      title="Delete Post"
+      message="Are you sure you want to delete this post? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </div>
 </template>
 
@@ -276,6 +320,37 @@ onMounted(() => {
   background: rgba(239, 68, 68, 0.2);
   color: #fca5a5;
   border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.delete-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: rgba(239, 68, 68, 0.9);
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.post-card:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  background: rgba(220, 38, 38, 1);
+}
+
+.delete-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 .post-body {

@@ -1,14 +1,22 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePostsStore } from '@/stores'
 import PlatformIcon from '@/components/PlatformIcon.vue'
+import DateTimePicker from '@/components/DateTimePicker.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
 const route = useRoute()
 const router = useRouter()
 const postsStore = usePostsStore()
 
 const postId = route.params.id as string
+const scheduledAt = ref<string | null>(null)
+const isRescheduling = ref(false)
+
+// Modal state
+const showDeleteModal = ref(false)
+const showCancelModal = ref(false)
 
 onMounted(() => {
   postsStore.fetchPostById(postId)
@@ -16,15 +24,56 @@ onMounted(() => {
 
 const post = computed(() => postsStore.currentPost)
 
-const handleDelete = async () => {
-  if (confirm('Are you sure you want to delete this post?')) {
-    await postsStore.deletePost(postId)
-    router.push('/app/posts')
-  }
+// Determine back path based on where user came from
+const backPath = computed(() => {
+  return route.query.from === 'calendar' ? '/app/calendar' : '/app/posts'
+})
+
+const backLabel = computed(() => {
+  return route.query.from === 'calendar' ? 'Back to Calendar' : 'Back to Posts'
+})
+
+const openDeleteModal = () => {
+  showDeleteModal.value = true
+}
+
+const confirmDelete = async () => {
+  await postsStore.deletePost(postId)
+  showDeleteModal.value = false
+  router.push(backPath.value)
 }
 
 const handlePublish = async () => {
   await postsStore.publishPost(postId)
+}
+
+const handleSchedule = async () => {
+  if (!scheduledAt.value) return
+  await postsStore.schedulePost(postId, scheduledAt.value)
+  scheduledAt.value = null
+  isRescheduling.value = false
+}
+
+const openCancelModal = () => {
+  showCancelModal.value = true
+}
+
+const confirmCancelSchedule = async () => {
+  await postsStore.cancelScheduledPost(postId)
+  showCancelModal.value = false
+}
+
+const startRescheduling = () => {
+  // Pre-fill with current scheduled time
+  if (post.value?.scheduledAt) {
+    scheduledAt.value = post.value.scheduledAt
+  }
+  isRescheduling.value = true
+}
+
+const cancelRescheduling = () => {
+  scheduledAt.value = null
+  isRescheduling.value = false
 }
 
 const formatDate = (date: string) => {
@@ -39,11 +88,11 @@ const formatDate = (date: string) => {
         <h1>Post Details</h1>
         <p>View and manage your post</p>
       </div>
-      <RouterLink to="/app/posts" class="btn-secondary">
+      <RouterLink :to="backPath" class="btn-secondary">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="btn-icon">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
         </svg>
-        Back to Posts
+        {{ backLabel }}
       </RouterLink>
     </div>
 
@@ -64,6 +113,110 @@ const formatDate = (date: string) => {
             </svg>
             Created {{ formatDate(post.createdAt) }}
           </span>
+        </div>
+      </div>
+
+      <!-- Scheduling Card -->
+      <div class="card detail-card">
+        <div class="section-label">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="1.5" />
+            <line x1="16" y1="2" x2="16" y2="6" stroke-width="1.5" />
+            <line x1="8" y1="2" x2="8" y2="6" stroke-width="1.5" />
+            <line x1="3" y1="10" x2="21" y2="10" stroke-width="1.5" />
+          </svg>
+          Schedule
+        </div>
+
+        <!-- Show scheduled time for scheduled posts -->
+        <div v-if="post.status === 'scheduled' && post.scheduledAt" class="scheduled-section">
+          <!-- Current schedule display -->
+          <div v-if="!isRescheduling" class="scheduled-info">
+            <div class="scheduled-time">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Scheduled for {{ formatDate(post.scheduledAt) }}</span>
+            </div>
+            <div class="scheduled-actions">
+              <button
+                @click="startRescheduling"
+                :disabled="postsStore.isLoading"
+                class="btn-secondary btn-reschedule"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="btn-icon">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Change
+              </button>
+              <button
+                @click="openCancelModal"
+                :disabled="postsStore.isLoading"
+                class="btn-ghost btn-cancel-schedule"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="btn-icon">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Cancel
+              </button>
+            </div>
+          </div>
+
+          <!-- Reschedule form -->
+          <div v-else class="schedule-form">
+            <p class="reschedule-label">Change scheduled time:</p>
+            <div class="schedule-picker-row">
+              <DateTimePicker
+                v-model="scheduledAt"
+                placeholder="Select new date and time"
+                :disabled="postsStore.isLoading"
+              />
+              <button
+                @click="handleSchedule"
+                :disabled="!scheduledAt || postsStore.isLoading"
+                class="btn-primary btn-schedule"
+              >
+                {{ postsStore.isLoading ? 'Saving...' : 'Save' }}
+              </button>
+              <button
+                @click="cancelRescheduling"
+                :disabled="postsStore.isLoading"
+                class="btn-ghost"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Show date picker for drafts -->
+        <div v-else-if="post.status === 'draft'" class="schedule-form">
+          <div class="schedule-picker-row">
+            <DateTimePicker
+              v-model="scheduledAt"
+              placeholder="Select date and time"
+              :disabled="postsStore.isLoading"
+            />
+            <button
+              @click="handleSchedule"
+              :disabled="!scheduledAt || postsStore.isLoading"
+              class="btn-primary btn-schedule"
+            >
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="btn-icon">
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" />
+                <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" />
+                <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" />
+                <line x1="3" y1="10" x2="21" y2="10" stroke-width="2" />
+              </svg>
+              {{ postsStore.isLoading ? 'Scheduling...' : 'Schedule Post' }}
+            </button>
+          </div>
+          <p class="schedule-hint">Select a date and time to schedule this post for automatic publishing.</p>
+        </div>
+
+        <!-- Not schedulable message for other statuses -->
+        <div v-else class="not-schedulable">
+          <p>This post cannot be scheduled.</p>
         </div>
       </div>
 
@@ -159,22 +312,22 @@ const formatDate = (date: string) => {
                 {{ result.status }}
               </span>
             </div>
-            <div v-if="result.status === 'success' && result.platformPostUrl" class="result-link">
-              <a :href="result.platformPostUrl" target="_blank" rel="noopener noreferrer">
+            <div v-if="result.status === 'success' && result.platformUrl" class="result-link">
+              <a :href="result.platformUrl" target="_blank" rel="noopener noreferrer">
                 View on {{ result.platform }}
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                 </svg>
               </a>
             </div>
-            <div v-if="result.status === 'failed' && result.errorMessage" class="result-error">
+            <div v-if="result.status === 'failed' && result.error" class="result-error">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>{{ result.errorMessage }}</span>
+              <span>{{ result.error }}</span>
             </div>
-            <div v-if="result.publishedAt" class="result-time">
-              Published {{ formatDate(result.publishedAt) }}
+            <div v-if="result.postedAt" class="result-time">
+              Published {{ formatDate(result.postedAt) }}
             </div>
           </div>
         </div>
@@ -194,8 +347,7 @@ const formatDate = (date: string) => {
           {{ postsStore.isLoading ? 'Publishing...' : 'Publish Now' }}
         </button>
         <button
-          v-if="['draft', 'failed'].includes(post.status)"
-          @click="handleDelete"
+          @click="openDeleteModal"
           class="btn-danger"
         >
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="btn-icon">
@@ -217,6 +369,30 @@ const formatDate = (date: string) => {
       <p class="empty-sub">This post may have been deleted</p>
       <RouterLink to="/app/posts" class="btn-primary">Back to Posts</RouterLink>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <ConfirmModal
+      :show="showDeleteModal"
+      title="Delete Post"
+      message="Are you sure you want to delete this post? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmDelete"
+      @cancel="showDeleteModal = false"
+    />
+
+    <!-- Cancel Schedule Confirmation Modal -->
+    <ConfirmModal
+      :show="showCancelModal"
+      title="Cancel Scheduled Post"
+      message="Are you sure you want to cancel this scheduled post? The post will return to draft status."
+      confirm-text="Cancel Post"
+      cancel-text="Keep Scheduled"
+      variant="warning"
+      @confirm="confirmCancelSchedule"
+      @cancel="showCancelModal = false"
+    />
   </div>
 </template>
 
@@ -645,6 +821,100 @@ const formatDate = (date: string) => {
   margin-bottom: 20px;
 }
 
+/* Scheduling */
+.scheduled-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.scheduled-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.scheduled-time svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.btn-cancel-schedule {
+  color: var(--muted);
+}
+
+.btn-cancel-schedule:hover {
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.scheduled-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scheduled-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-reschedule {
+  padding: 8px 12px;
+}
+
+.reschedule-label {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.schedule-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.schedule-picker-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.schedule-picker-row > :first-child {
+  flex: 1;
+  min-width: 200px;
+}
+
+.btn-schedule {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.schedule-hint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.not-schedulable {
+  padding: 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border);
+}
+
 @media (max-width: 600px) {
   .page-header {
     flex-direction: column;
@@ -666,6 +936,29 @@ const formatDate = (date: string) => {
   }
 
   .btn-danger {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .scheduled-info {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .schedule-picker-row {
+    flex-direction: column;
+  }
+
+  .schedule-picker-row > :first-child {
+    min-width: 100%;
+  }
+
+  .btn-schedule {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-cancel-schedule {
     width: 100%;
     justify-content: center;
   }

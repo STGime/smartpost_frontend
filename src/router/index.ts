@@ -60,6 +60,11 @@ const routes: RouteRecordRaw[] = [
         props: true,
       },
       {
+        path: 'calendar',
+        name: 'calendar',
+        component: () => import('@/views/calendar/CalendarView.vue'),
+      },
+      {
         path: 'media',
         name: 'media',
         component: () => import('@/views/media/MediaView.vue'),
