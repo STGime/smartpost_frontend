@@ -13,7 +13,7 @@ const mediaToPreview = ref<MediaListItem | null>(null)
 const isLoadingPreview = ref(false)
 
 // Filters
-const mediaTypeFilter = ref<'all' | 'image' | 'video'>('all')
+const mediaTypeFilter = ref<'all' | 'image' | 'video' | 'document'>('all')
 const mediaSizeFilter = ref<'all' | 'small' | 'medium' | 'large'>('all')
 const mediaSortOrder = ref<'newest' | 'oldest'>('newest')
 
@@ -176,6 +176,11 @@ const closePreviewModal = () => {
             :class="['filter-pill', { active: mediaTypeFilter === 'video' }]"
             @click="mediaTypeFilter = 'video'"
           >Videos</button>
+          <button
+            type="button"
+            :class="['filter-pill', { active: mediaTypeFilter === 'document' }]"
+            @click="mediaTypeFilter = 'document'"
+          >PDFs</button>
         </div>
       </div>
 
@@ -268,10 +273,13 @@ const closePreviewModal = () => {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-        <div class="media-type">
+        <div class="media-type" :class="{ 'media-type-pdf': media.type === 'document' }">
           <svg v-if="media.type === 'video'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <svg v-else-if="media.type === 'document'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
           <svg v-else fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -353,6 +361,25 @@ const closePreviewModal = () => {
           <!-- Video loading placeholder -->
           <div v-else-if="mediaToPreview?.type === 'video'" class="preview-video-placeholder">
             <div class="spinner"></div>
+          </div>
+          <!-- Document/PDF preview -->
+          <iframe
+            v-else-if="mediaToPreview?.type === 'document' && mediaStore.currentMedia?.original_url"
+            :src="mediaStore.currentMedia.original_url"
+            class="preview-document"
+          ></iframe>
+          <!-- Document info fallback -->
+          <div v-else-if="mediaToPreview?.type === 'document'" class="preview-document-info">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p>PDF Document</p>
+            <a
+              v-if="mediaStore.currentMedia?.original_url"
+              :href="mediaStore.currentMedia.original_url"
+              target="_blank"
+              class="pdf-link"
+            >Open in new tab</a>
           </div>
         </div>
         <div class="preview-info">
@@ -631,6 +658,10 @@ const closePreviewModal = () => {
   height: 14px;
 }
 
+.media-type-pdf {
+  background: rgba(239, 68, 68, 0.8);
+}
+
 .media-processing {
   position: absolute;
   inset: 0;
@@ -837,6 +868,47 @@ const closePreviewModal = () => {
   max-height: 80vh;
   border-radius: var(--radius-md);
   background: black;
+}
+
+.preview-document {
+  width: 100%;
+  max-width: 800px;
+  height: 80vh;
+  border: none;
+  border-radius: var(--radius-md);
+  background: white;
+}
+
+.preview-document-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.preview-document-info svg {
+  width: 64px;
+  height: 64px;
+  color: var(--muted);
+}
+
+.preview-document-info p {
+  font-size: 16px;
+  color: var(--text);
+}
+
+.pdf-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.pdf-link:hover {
+  text-decoration: underline;
 }
 
 .preview-info {

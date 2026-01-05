@@ -192,6 +192,38 @@ export const useMediaStore = defineStore('media', () => {
     }
   }
 
+  const generateCarouselPDF = async (mediaIds: string[], title?: string) => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const result = await mediaService.generateCarouselPDF(mediaIds, title)
+
+      // Add generated PDF to items list
+      const pdfItem: MediaListItem = {
+        id: result.media_id,
+        name: title || 'LinkedIn Carousel',
+        type: 'document',
+        mime_type: 'application/pdf',
+        size_bytes: 0,
+        width: 1080,
+        height: 1080,
+        processing_status: 'completed',
+        thumbnail_url: result.thumbnail_url,
+        created_at: new Date().toISOString(),
+      }
+      items.value = [pdfItem, ...items.value]
+      total.value++
+
+      return result
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } }
+      error.value = e.response?.data?.error || 'Failed to generate carousel PDF'
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     items,
     currentMedia,
@@ -206,6 +238,7 @@ export const useMediaStore = defineStore('media', () => {
     uploadMedia,
     deleteMedia,
     updateMediaStatus,
+    generateCarouselPDF,
     startPollingForProcessing,
     stopPolling,
   }

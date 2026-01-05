@@ -1,14 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { LinkedInConfiguration } from '@/types'
+import { computed, ref } from 'vue'
+import CarouselOrderPanel from '@/components/CarouselOrderPanel.vue'
+import { useMediaStore } from '@/stores'
+import type { LinkedInConfiguration, MediaListItem } from '@/types'
 
 const props = defineProps<{
   modelValue: LinkedInConfiguration
+  selectedMedia?: MediaListItem[]
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: LinkedInConfiguration]
 }>()
+
+const mediaStore = useMediaStore()
+const isGeneratingPDF = ref(false)
+const carouselOrder = ref<string[]>([])
+const generatedPDF = ref<{ name: string; pageCount: number } | null>(null)
 
 const config = computed({
   get: () => props.modelValue,
@@ -20,6 +28,46 @@ const updateField = <K extends keyof LinkedInConfiguration>(
   value: LinkedInConfiguration[K]
 ) => {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
+}
+
+// Get only image items for carousel
+const imageItems = computed(() => {
+  if (!props.selectedMedia) return []
+  return props.selectedMedia.filter(m => m.type === 'image')
+})
+
+// Handle order update from carousel panel
+const handleOrderUpdate = (orderedIds: string[]) => {
+  carouselOrder.value = orderedIds
+}
+
+// Generate carousel PDF
+const handleGenerateCarousel = async () => {
+  const mediaIds = carouselOrder.value.length > 0
+    ? carouselOrder.value
+    : imageItems.value.map(m => m.id)
+
+  if (mediaIds.length < 2) return
+
+  isGeneratingPDF.value = true
+  generatedPDF.value = null
+  try {
+    const result = await mediaStore.generateCarouselPDF(
+      mediaIds,
+      config.value.documentTitle || 'LinkedIn Carousel'
+    )
+    generatedPDF.value = {
+      name: config.value.documentTitle || 'LinkedIn Carousel',
+      pageCount: result.page_count
+    }
+    // Store the PDF ID in LinkedIn config - this will be used for LinkedIn posting
+    // instead of the selected images
+    updateField('carouselMediaId', result.media_id)
+  } catch {
+    // Error handled in store
+  } finally {
+    isGeneratingPDF.value = false
+  }
 }
 </script>
 
@@ -99,6 +147,26 @@ const updateField = <K extends keyof LinkedInConfiguration>(
           maxlength="150"
         />
         <span class="field-hint">Displayed above the carousel (max 150 chars)</span>
+      </div>
+
+      <!-- Carousel Order Panel (for document type with images) -->
+      <CarouselOrderPanel
+        v-if="config.postType === 'document' && imageItems.length > 0"
+        :media-items="imageItems"
+        :is-generating="isGeneratingPDF"
+        @update:order="handleOrderUpdate"
+        @generate="handleGenerateCarousel"
+      />
+
+      <!-- PDF Generated Success -->
+      <div v-if="generatedPDF && config.postType === 'document'" class="pdf-success">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div class="pdf-success-text">
+          <strong>Carousel PDF created!</strong>
+          <span>"{{ generatedPDF.name }}" ({{ generatedPDF.pageCount }} pages) added to media library</span>
+        </div>
       </div>
 
       <!-- Article URL (for article share) -->
@@ -306,5 +374,41 @@ const updateField = <K extends keyof LinkedInConfiguration>(
   background: var(--accent-soft);
   border-color: var(--accent);
   color: #a5b4fc;
+}
+
+/* PDF Success Message */
+.pdf-success {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: var(--radius-md);
+  margin-top: 8px;
+}
+
+.pdf-success svg {
+  width: 20px;
+  height: 20px;
+  color: #22c55e;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.pdf-success-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pdf-success-text strong {
+  color: #22c55e;
+  font-size: 13px;
+}
+
+.pdf-success-text span {
+  color: var(--muted);
+  font-size: 12px;
 }
 </style>

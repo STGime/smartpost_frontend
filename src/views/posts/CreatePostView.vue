@@ -23,7 +23,7 @@ const selectedAccountIds = ref<string[]>([])
 const platformConfigurations = ref<PlatformConfigurations>({})
 
 // Media filters
-const mediaTypeFilter = ref<'all' | 'image' | 'video'>('all')
+const mediaTypeFilter = ref<'all' | 'image' | 'video' | 'document'>('all')
 const mediaSizeFilter = ref<'all' | 'small' | 'medium' | 'large'>('all')
 const mediaSortOrder = ref<'newest' | 'oldest'>('newest')
 
@@ -82,6 +82,11 @@ const selectedAccountsData = computed(() => {
 const selectedPlatforms = computed(() => {
   const platforms = selectedAccountsData.value.map(a => a.platform as SocialPlatform)
   return [...new Set(platforms)]
+})
+
+// Get full media objects for selected media (for carousel ordering)
+const selectedMediaItems = computed(() => {
+  return mediaStore.items.filter(item => selectedMediaIds.value.includes(item.id))
 })
 
 // Check if caption has extractable hashtags
@@ -257,6 +262,7 @@ const closePreviewModal = () => {
   mediaToPreview.value = null
   mediaStore.currentMedia = null
 }
+
 </script>
 
 <template>
@@ -434,6 +440,11 @@ const closePreviewModal = () => {
                 :class="['filter-pill', { active: mediaTypeFilter === 'video' }]"
                 @click="mediaTypeFilter = 'video'"
               >Videos</button>
+              <button
+                type="button"
+                :class="['filter-pill', { active: mediaTypeFilter === 'document' }]"
+                @click="mediaTypeFilter = 'document'"
+              >PDFs</button>
             </div>
           </div>
 
@@ -519,12 +530,15 @@ const closePreviewModal = () => {
               <svg v-if="media.type === 'image'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
               </svg>
+              <svg v-else-if="media.type === 'document'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
               <svg v-else fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </button>
-            <span class="media-type-badge">{{ media.type }}</span>
+            <span class="media-type-badge" :class="{ 'badge-pdf': media.type === 'document' }">{{ media.type === 'document' ? 'PDF' : media.type }}</span>
             </div>
           </div>
         </div>
@@ -534,6 +548,7 @@ const closePreviewModal = () => {
       <div v-if="selectedAccountsData.length > 0" class="form-section card">
         <PlatformConfigSection
           :selected-accounts="selectedAccountsData"
+          :selected-media="selectedMediaItems"
           v-model="platformConfigurations"
         />
       </div>
@@ -592,6 +607,25 @@ const closePreviewModal = () => {
           <!-- Video loading placeholder -->
           <div v-else-if="mediaToPreview?.type === 'video'" class="preview-video-placeholder">
             <div class="spinner"></div>
+          </div>
+          <!-- Document/PDF preview -->
+          <iframe
+            v-else-if="mediaToPreview?.type === 'document' && mediaStore.currentMedia?.original_url"
+            :src="mediaStore.currentMedia.original_url"
+            class="preview-document"
+          ></iframe>
+          <!-- Document info fallback -->
+          <div v-else-if="mediaToPreview?.type === 'document'" class="preview-document-info">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p>PDF Document</p>
+            <a
+              v-if="mediaStore.currentMedia?.original_url"
+              :href="mediaStore.currentMedia.original_url"
+              target="_blank"
+              class="pdf-link"
+            >Open in new tab</a>
           </div>
         </div>
         <div class="preview-info">
@@ -862,6 +896,10 @@ const closePreviewModal = () => {
   font-size: 10px;
   text-transform: uppercase;
   color: white;
+}
+
+.media-type-badge.badge-pdf {
+  background: rgba(239, 68, 68, 0.8);
 }
 
 /* Accounts Grid */
@@ -1256,6 +1294,47 @@ const closePreviewModal = () => {
   max-height: 80vh;
   border-radius: var(--radius-md);
   background: black;
+}
+
+.preview-document {
+  width: 100%;
+  max-width: 800px;
+  height: 80vh;
+  border: none;
+  border-radius: var(--radius-md);
+  background: white;
+}
+
+.preview-document-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.preview-document-info svg {
+  width: 64px;
+  height: 64px;
+  color: var(--muted);
+}
+
+.preview-document-info p {
+  font-size: 16px;
+  color: var(--text);
+}
+
+.pdf-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.pdf-link:hover {
+  text-decoration: underline;
 }
 
 .preview-info {

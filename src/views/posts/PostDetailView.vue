@@ -273,7 +273,12 @@ const formatDate = (date: string) => {
                 <path d="M8 5v14l11-7z" />
               </svg>
             </span>
-            <span class="media-type-badge">{{ media.type }}</span>
+            <span v-else-if="media.type === 'document'" class="document-indicator">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </span>
+            <span class="media-type-badge" :class="{ 'badge-pdf': media.type === 'document' }">{{ media.type === 'document' ? 'PDF' : media.type }}</span>
           </div>
         </div>
         <div v-else class="empty-media">
@@ -658,6 +663,27 @@ const formatDate = (date: string) => {
   margin-left: 2px;
 }
 
+.document-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: rgba(239, 68, 68, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.document-indicator svg {
+  width: 20px;
+  height: 20px;
+}
+
 .media-type-badge {
   position: absolute;
   bottom: 6px;
@@ -668,6 +694,10 @@ const formatDate = (date: string) => {
   font-size: 10px;
   text-transform: uppercase;
   color: white;
+}
+
+.media-type-badge.badge-pdf {
+  background: rgba(239, 68, 68, 0.8);
 }
 
 .empty-media {

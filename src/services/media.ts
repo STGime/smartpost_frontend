@@ -50,4 +50,17 @@ export const mediaService = {
       },
     })
   },
+
+  async generateCarouselPDF(mediaIds: string[], title?: string): Promise<{
+    media_id: string
+    thumbnail_url: string
+    original_url: string
+    page_count: number
+  }> {
+    const response = await api.post('/media/generate-carousel-pdf', {
+      media_ids: mediaIds,
+      title,
+    })
+    return response.data
+  },
 }

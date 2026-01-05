@@ -63,9 +63,9 @@ export interface Plan {
 }
 
 // Media types
-export type MediaType = 'image' | 'video'
+export type MediaType = 'image' | 'video' | 'document'
 export type MediaStatus = 'pending' | 'processing' | 'completed' | 'failed'
-export type MimeType = 'image/jpeg' | 'image/png' | 'image/webp' | 'video/mp4' | 'video/quicktime' | 'video/webm'
+export type MimeType = 'image/jpeg' | 'image/png' | 'image/webp' | 'video/mp4' | 'video/quicktime' | 'video/webm' | 'application/pdf'
 
 export type VariantPlatform =
   | 'tiktok'
@@ -264,6 +264,7 @@ export interface LinkedInConfiguration extends BasePlatformConfiguration {
   visibility?: 'PUBLIC' | 'CONNECTIONS'
   postType?: 'post' | 'document' | 'article'
   documentTitle?: string
+  carouselMediaId?: string  // Generated PDF media ID for carousel posts
   articleTitle?: string
   articleUrl?: string
   shareCommentary?: string

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import type { SocialAccount, PlatformConfigurations, SocialPlatform } from '@/types'
+import type { SocialAccount, PlatformConfigurations, SocialPlatform, MediaListItem } from '@/types'
 import TikTokConfigPanel from './TikTokConfigPanel.vue'
 import InstagramConfigPanel from './InstagramConfigPanel.vue'
 import YouTubeConfigPanel from './YouTubeConfigPanel.vue'
@@ -14,6 +14,7 @@ import ThreadsConfigPanel from './ThreadsConfigPanel.vue'
 const props = defineProps<{
   selectedAccounts: SocialAccount[]
   modelValue: PlatformConfigurations
+  selectedMedia?: MediaListItem[]
 }>()
 
 const emit = defineEmits<{
@@ -177,6 +178,7 @@ const getPlatformName = (platform: SocialPlatform) => {
           <LinkedInConfigPanel
             v-if="platform === 'linkedin'"
             :model-value="modelValue.linkedin || {}"
+            :selected-media="selectedMedia"
             @update:model-value="updatePlatformConfig('linkedin', $event)"
           />
 
