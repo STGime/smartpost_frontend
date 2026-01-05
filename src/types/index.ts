@@ -144,6 +144,20 @@ export interface CreateUploadUrlResponse {
   expires_at: string
 }
 
+// Tag types
+export interface Tag {
+  id: string
+  tag: string
+  usage_count: number
+  last_used_at: string | null
+  created_at: string
+}
+
+export interface TagsResponse {
+  items: Tag[]
+  total: number
+}
+
 // Social Account types
 export type SocialPlatform =
   | 'tiktok'
@@ -151,6 +165,7 @@ export type SocialPlatform =
   | 'youtube'
   | 'facebook'
   | 'twitter'
+  | 'x'
   | 'linkedin'
   | 'pinterest'
   | 'bluesky'
@@ -286,16 +301,21 @@ export interface PlatformConfigurations {
 export interface PostResult {
   socialAccountId: string
   platform: SocialPlatform
-  status: 'pending' | 'success' | 'failed'
-  platformPostId?: string
+  status: 'pending' | 'processing' | 'success' | 'failed'
+  platformPostId?: string | null
+  platformPostUrl?: string | null
   platformUrl?: string
+  errorCode?: string | null
+  errorMessage?: string | null
   error?: string
+  publishedAt?: string | null
   postedAt?: string
 }
 
 export interface Post {
   id: string
   caption?: string
+  hashtags?: string[]
   status: PostStatus
   isDraft: boolean
   processingEnabled: boolean
@@ -330,6 +350,7 @@ export interface PostSocialAccount {
 
 export interface CreatePostRequest {
   caption?: string
+  hashtags?: string[]
   mediaIds: string[]
   socialAccountIds: string[]
   scheduledAt?: string
@@ -340,6 +361,7 @@ export interface CreatePostRequest {
 
 export interface UpdatePostRequest {
   caption?: string
+  hashtags?: string[]
   mediaIds?: string[]
   socialAccountIds?: string[]
   scheduledAt?: string | null

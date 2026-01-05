@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { authService } from '@/services'
+import { authService, postSSEService } from '@/services'
 import type { User, LoginRequest, SignupRequest } from '@/types'
 import router from '@/router'
+import { usePostsStore } from './posts'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
@@ -21,6 +22,25 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('refresh_token')
   }
 
+  const connectSSE = () => {
+    const token = localStorage.getItem('access_token')
+    if (token) {
+      console.log('[Auth] Connecting SSE')
+      postSSEService.connect(token)
+      // Subscribe posts store to SSE events
+      const postsStore = usePostsStore()
+      postsStore.subscribeToSSE()
+    }
+  }
+
+  const disconnectSSE = () => {
+    console.log('[Auth] Disconnecting SSE')
+    // Unsubscribe posts store from SSE events
+    const postsStore = usePostsStore()
+    postsStore.unsubscribeFromSSE()
+    postSSEService.disconnect()
+  }
+
   const signup = async (data: SignupRequest) => {
     isLoading.value = true
     error.value = null
@@ -28,6 +48,7 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authService.signup(data)
       user.value = response.user
       setTokens(response.access_token, response.refresh_token)
+      connectSSE()
       router.push({ name: 'dashboard' })
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } }
@@ -45,6 +66,7 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authService.login(data)
       user.value = response.user
       setTokens(response.access_token, response.refresh_token)
+      connectSSE()
       const redirect = router.currentRoute.value.query.redirect as string
       router.push(redirect || { name: 'dashboard' })
     } catch (err: unknown) {
@@ -62,6 +84,7 @@ export const useAuthStore = defineStore('auth', () => {
     } catch {
       // Ignore logout errors
     } finally {
+      disconnectSSE()
       user.value = null
       clearTokens()
       router.push({ name: 'login' })
@@ -76,6 +99,8 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     try {
       user.value = await authService.getCurrentUser()
+      // Connect SSE on successful user fetch (page reload with valid token)
+      connectSSE()
     } catch {
       clearTokens()
       user.value = null

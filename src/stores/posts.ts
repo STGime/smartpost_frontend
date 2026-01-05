@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { postsService } from '@/services'
+import { postsService, postSSEService, type PostStatusUpdateEvent, type PostResultUpdateEvent } from '@/services'
 import type { Post, PostStatus, CreatePostRequest, UpdatePostRequest } from '@/types'
 
 export const usePostsStore = defineStore('posts', () => {
@@ -9,6 +9,7 @@ export const usePostsStore = defineStore('posts', () => {
   const total = ref(0)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  const sseSubscribed = ref(false)
 
   const hasMore = computed(() => posts.value.length < total.value)
 
@@ -184,6 +185,73 @@ export const usePostsStore = defineStore('posts', () => {
     }
   }
 
+  // SSE Event Handlers
+  const handlePostStatusUpdate = (data: PostStatusUpdateEvent) => {
+    // Update post in posts list
+    const postIndex = posts.value.findIndex((p) => p.id === data.postId)
+    if (postIndex !== -1) {
+      const post = posts.value[postIndex]
+      if (post) {
+        post.status = data.status
+        post.publishedAt = data.publishedAt ?? undefined
+        post.isDraft = data.isDraft
+        // Trigger reactivity by replacing the array
+        posts.value = [...posts.value]
+      }
+    }
+
+    // Update current post if it's the same
+    if (currentPost.value?.id === data.postId) {
+      currentPost.value.status = data.status
+      currentPost.value.publishedAt = data.publishedAt ?? undefined
+      currentPost.value.isDraft = data.isDraft
+      // Trigger reactivity
+      currentPost.value = { ...currentPost.value }
+    }
+  }
+
+  const handlePostResultUpdate = (data: PostResultUpdateEvent) => {
+    // Update result in current post
+    if (currentPost.value?.id === data.postId && currentPost.value.results) {
+      const resultIndex = currentPost.value.results.findIndex(
+        (r) => String(r.socialAccountId) === String(data.socialAccountId)
+      )
+      if (resultIndex !== -1) {
+        const result = currentPost.value.results[resultIndex]
+        if (result) {
+          result.status = data.status
+          result.platformPostId = data.platformPostId
+          result.platformPostUrl = data.platformPostUrl
+          result.errorCode = data.errorCode
+          result.errorMessage = data.errorMessage
+          result.publishedAt = data.publishedAt
+          // Trigger reactivity by replacing the whole object
+          currentPost.value = { ...currentPost.value }
+        }
+      }
+    }
+  }
+
+  // Subscribe to SSE events
+  const subscribeToSSE = () => {
+    if (sseSubscribed.value) return
+
+    console.log('[Posts Store] Subscribing to SSE events')
+    postSSEService.on<PostStatusUpdateEvent>('post-status-update', handlePostStatusUpdate)
+    postSSEService.on<PostResultUpdateEvent>('post-result-update', handlePostResultUpdate)
+    sseSubscribed.value = true
+  }
+
+  // Unsubscribe from SSE events
+  const unsubscribeFromSSE = () => {
+    if (!sseSubscribed.value) return
+
+    console.log('[Posts Store] Unsubscribing from SSE events')
+    postSSEService.off<PostStatusUpdateEvent>('post-status-update', handlePostStatusUpdate)
+    postSSEService.off<PostResultUpdateEvent>('post-result-update', handlePostResultUpdate)
+    sseSubscribed.value = false
+  }
+
   return {
     posts,
     currentPost,
@@ -202,5 +270,7 @@ export const usePostsStore = defineStore('posts', () => {
     schedulePost,
     publishPost,
     cancelScheduledPost,
+    subscribeToSSE,
+    unsubscribeFromSSE,
   }
 })
