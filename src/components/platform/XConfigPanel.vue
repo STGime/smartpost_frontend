@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { XConfiguration } from '@/types'
+import type { XConfiguration, MediaListItem, SocialAccount } from '@/types'
+import XPostPreview from './previews/XPostPreview.vue'
 
 const props = defineProps<{
   modelValue: XConfiguration
   captionLength?: number
+  selectedMedia?: MediaListItem[]
+  caption?: string
+  hashtags?: string[]
+  account?: SocialAccount
 }>()
 
 const emit = defineEmits<{
@@ -212,6 +217,18 @@ const charLimit = 280
           {{ (config.caption || '').length }}/{{ charLimit }} characters
           <span v-if="(config.caption || '').length > charLimit"> (Premium: 25,000)</span>
         </span>
+      </div>
+
+      <!-- Preview Section -->
+      <div class="preview-section">
+        <div class="preview-label">Preview</div>
+        <XPostPreview
+          :caption="caption || ''"
+          :hashtags="hashtags || []"
+          :media-items="selectedMedia || []"
+          :config="modelValue"
+          :account="account"
+        />
       </div>
     </div>
   </div>
@@ -483,5 +500,20 @@ const charLimit = 280
 
 .alt-text-row .form-input {
   flex: 1;
+}
+
+/* Preview Section */
+.preview-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.preview-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin-bottom: 12px;
 }
 </style>

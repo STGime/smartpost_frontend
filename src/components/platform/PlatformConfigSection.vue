@@ -15,7 +15,13 @@ const props = defineProps<{
   selectedAccounts: SocialAccount[]
   modelValue: PlatformConfigurations
   selectedMedia?: MediaListItem[]
+  caption: string
+  hashtags: string[]
 }>()
+
+// Helper to get account for a specific platform
+const getAccountForPlatform = (platform: SocialPlatform) =>
+  props.selectedAccounts.find(a => a.platform === platform)
 
 const emit = defineEmits<{
   'update:modelValue': [value: PlatformConfigurations]
@@ -143,6 +149,10 @@ const getPlatformName = (platform: SocialPlatform) => {
           <TikTokConfigPanel
             v-if="platform === 'tiktok'"
             :model-value="modelValue.tiktok || {}"
+            :selected-media="selectedMedia"
+            :caption="caption"
+            :hashtags="hashtags"
+            :account="getAccountForPlatform('tiktok')"
             @update:model-value="updatePlatformConfig('tiktok', $event)"
           />
 
@@ -150,6 +160,10 @@ const getPlatformName = (platform: SocialPlatform) => {
           <InstagramConfigPanel
             v-if="platform === 'instagram'"
             :model-value="modelValue.instagram || {}"
+            :selected-media="selectedMedia"
+            :caption="caption"
+            :hashtags="hashtags"
+            :account="getAccountForPlatform('instagram')"
             @update:model-value="updatePlatformConfig('instagram', $event)"
           />
 
@@ -157,6 +171,10 @@ const getPlatformName = (platform: SocialPlatform) => {
           <YouTubeConfigPanel
             v-if="platform === 'youtube'"
             :model-value="modelValue.youtube || {}"
+            :selected-media="selectedMedia"
+            :caption="caption"
+            :hashtags="hashtags"
+            :account="getAccountForPlatform('youtube')"
             @update:model-value="updatePlatformConfig('youtube', $event)"
           />
 
@@ -164,6 +182,10 @@ const getPlatformName = (platform: SocialPlatform) => {
           <FacebookConfigPanel
             v-if="platform === 'facebook'"
             :model-value="modelValue.facebook || {}"
+            :selected-media="selectedMedia"
+            :caption="caption"
+            :hashtags="hashtags"
+            :account="getAccountForPlatform('facebook')"
             @update:model-value="updatePlatformConfig('facebook', $event)"
           />
 
@@ -171,6 +193,10 @@ const getPlatformName = (platform: SocialPlatform) => {
           <XConfigPanel
             v-if="platform === 'twitter' || platform === 'x'"
             :model-value="modelValue.twitter || modelValue.x || {}"
+            :selected-media="selectedMedia"
+            :caption="caption"
+            :hashtags="hashtags"
+            :account="getAccountForPlatform('twitter') || getAccountForPlatform('x')"
             @update:model-value="updatePlatformConfig('twitter', $event)"
           />
 
@@ -179,6 +205,9 @@ const getPlatformName = (platform: SocialPlatform) => {
             v-if="platform === 'linkedin'"
             :model-value="modelValue.linkedin || {}"
             :selected-media="selectedMedia"
+            :caption="caption"
+            :hashtags="hashtags"
+            :account="getAccountForPlatform('linkedin')"
             @update:model-value="updatePlatformConfig('linkedin', $event)"
           />
 
@@ -186,6 +215,10 @@ const getPlatformName = (platform: SocialPlatform) => {
           <PinterestConfigPanel
             v-if="platform === 'pinterest'"
             :model-value="modelValue.pinterest || {}"
+            :selected-media="selectedMedia"
+            :caption="caption"
+            :hashtags="hashtags"
+            :account="getAccountForPlatform('pinterest')"
             @update:model-value="updatePlatformConfig('pinterest', $event)"
           />
 
@@ -193,6 +226,10 @@ const getPlatformName = (platform: SocialPlatform) => {
           <BlueskyConfigPanel
             v-if="platform === 'bluesky'"
             :model-value="modelValue.bluesky || {}"
+            :selected-media="selectedMedia"
+            :caption="caption"
+            :hashtags="hashtags"
+            :account="getAccountForPlatform('bluesky')"
             @update:model-value="updatePlatformConfig('bluesky', $event)"
           />
 
@@ -200,6 +237,10 @@ const getPlatformName = (platform: SocialPlatform) => {
           <ThreadsConfigPanel
             v-if="platform === 'threads'"
             :model-value="modelValue.threads || {}"
+            :selected-media="selectedMedia"
+            :caption="caption"
+            :hashtags="hashtags"
+            :account="getAccountForPlatform('threads')"
             @update:model-value="updatePlatformConfig('threads', $event)"
           />
         </div>

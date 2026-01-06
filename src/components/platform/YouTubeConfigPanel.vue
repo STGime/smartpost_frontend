@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import type { YouTubeConfiguration } from '@/types'
+import type { YouTubeConfiguration, MediaListItem, SocialAccount } from '@/types'
+import YouTubePostPreview from './previews/YouTubePostPreview.vue'
 
 const props = defineProps<{
   modelValue: YouTubeConfiguration
+  selectedMedia?: MediaListItem[]
+  caption?: string
+  hashtags?: string[]
+  account?: SocialAccount
 }>()
 
 const emit = defineEmits<{
@@ -281,6 +286,18 @@ const categories = [
           </label>
         </div>
       </div>
+
+      <!-- Preview -->
+      <div class="preview-section">
+        <div class="preview-label">Preview</div>
+        <YouTubePostPreview
+          :caption="caption || ''"
+          :hashtags="hashtags || []"
+          :media-items="selectedMedia || []"
+          :config="modelValue"
+          :account="account"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -556,5 +573,19 @@ const categories = [
 .checkbox-hint {
   font-size: 11px;
   color: var(--muted);
+}
+
+/* Preview */
+.preview-section {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.preview-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 12px;
 }
 </style>

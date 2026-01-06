@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { TikTokConfiguration } from '@/types'
+import type { TikTokConfiguration, MediaListItem, SocialAccount } from '@/types'
+import TikTokPostPreview from './previews/TikTokPostPreview.vue'
 
 const props = defineProps<{
   modelValue: TikTokConfiguration
+  selectedMedia?: MediaListItem[]
+  caption?: string
+  hashtags?: string[]
+  account?: SocialAccount
 }>()
 
 const emit = defineEmits<{
@@ -195,6 +200,18 @@ const updateField = <K extends keyof TikTokConfiguration>(
         ></textarea>
         <span class="field-hint">{{ (config.caption || '').length }}/2200 characters</span>
       </div>
+
+      <!-- Preview -->
+      <div class="preview-section">
+        <div class="preview-label">Preview</div>
+        <TikTokPostPreview
+          :caption="caption || ''"
+          :hashtags="hashtags || []"
+          :media-items="selectedMedia || []"
+          :config="modelValue"
+          :account="account"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -373,5 +390,19 @@ const updateField = <K extends keyof TikTokConfiguration>(
 .checkbox-hint {
   font-size: 11px;
   color: var(--muted);
+}
+
+/* Preview */
+.preview-section {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.preview-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 12px;
 }
 </style>

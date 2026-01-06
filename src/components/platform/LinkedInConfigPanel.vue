@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import CarouselOrderPanel from '@/components/CarouselOrderPanel.vue'
+import LinkedInPostPreview from './previews/LinkedInPostPreview.vue'
 import { useMediaStore } from '@/stores'
-import type { LinkedInConfiguration, MediaListItem } from '@/types'
+import type { LinkedInConfiguration, MediaListItem, SocialAccount } from '@/types'
 
 const props = defineProps<{
   modelValue: LinkedInConfiguration
   selectedMedia?: MediaListItem[]
+  caption?: string
+  hashtags?: string[]
+  account?: SocialAccount
 }>()
 
 const emit = defineEmits<{
@@ -225,6 +229,18 @@ const handleGenerateCarousel = async () => {
         ></textarea>
         <span class="field-hint">{{ (config.caption || '').length }}/3000 characters</span>
       </div>
+
+      <!-- Preview Section -->
+      <div class="preview-section">
+        <div class="preview-label">Preview</div>
+        <LinkedInPostPreview
+          :caption="caption || ''"
+          :hashtags="hashtags || []"
+          :media-items="selectedMedia || []"
+          :config="modelValue"
+          :account="account"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -410,5 +426,20 @@ const handleGenerateCarousel = async () => {
 .pdf-success-text span {
   color: var(--muted);
   font-size: 12px;
+}
+
+/* Preview Section */
+.preview-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.preview-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin-bottom: 12px;
 }
 </style>

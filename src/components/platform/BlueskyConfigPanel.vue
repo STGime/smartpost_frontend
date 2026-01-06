@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { BlueskyConfiguration } from '@/types'
+import type { BlueskyConfiguration, MediaListItem, SocialAccount } from '@/types'
+import BlueskyPostPreview from './previews/BlueskyPostPreview.vue'
 
 const props = defineProps<{
   modelValue: BlueskyConfiguration
+  selectedMedia?: MediaListItem[]
+  caption?: string
+  hashtags?: string[]
+  account?: SocialAccount
 }>()
 
 const emit = defineEmits<{
@@ -31,7 +36,9 @@ const threadParts = computed(() => {
   return text.split(separator).filter(part => part.trim())
 })
 
-const toggleLabel = (label: BlueskyConfiguration['labels'][number]) => {
+type ContentLabel = 'nsfw' | 'nudity' | 'suggestive' | 'gore' | 'spoiler'
+
+const toggleLabel = (label: ContentLabel) => {
   const currentLabels = config.value.labels || []
   const index = currentLabels.indexOf(label)
   if (index === -1) {
@@ -242,6 +249,18 @@ const toggleLanguage = (code: string) => {
         <span :class="['field-hint', { warning: (config.caption || '').length > charLimit }]">
           {{ (config.caption || '').length }}/{{ charLimit }} characters
         </span>
+      </div>
+
+      <!-- Preview -->
+      <div class="preview-section">
+        <div class="preview-label">Preview</div>
+        <BlueskyPostPreview
+          :caption="caption || ''"
+          :hashtags="hashtags || []"
+          :media-items="selectedMedia || []"
+          :config="modelValue"
+          :account="account"
+        />
       </div>
     </div>
   </div>
@@ -557,5 +576,19 @@ const toggleLanguage = (code: string) => {
 
 .alt-text-row .form-input {
   flex: 1;
+}
+
+/* Preview */
+.preview-section {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.preview-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 12px;
 }
 </style>

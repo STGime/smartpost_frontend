@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { InstagramConfiguration } from '@/types'
+import type { InstagramConfiguration, MediaListItem, SocialAccount } from '@/types'
+import InstagramPostPreview from './previews/InstagramPostPreview.vue'
 
 const props = defineProps<{
   modelValue: InstagramConfiguration
+  selectedMedia?: MediaListItem[]
+  caption?: string
+  hashtags?: string[]
+  account?: SocialAccount
 }>()
 
 const emit = defineEmits<{
@@ -108,6 +113,18 @@ const updateField = <K extends keyof InstagramConfiguration>(
           maxlength="2200"
         ></textarea>
         <span class="field-hint">{{ (config.caption || '').length }}/2200 characters</span>
+      </div>
+
+      <!-- Preview Section -->
+      <div class="preview-section">
+        <div class="preview-label">Preview</div>
+        <InstagramPostPreview
+          :caption="caption || ''"
+          :hashtags="hashtags || []"
+          :media-items="selectedMedia || []"
+          :config="modelValue"
+          :account="account"
+        />
       </div>
     </div>
   </div>
@@ -221,5 +238,20 @@ const updateField = <K extends keyof InstagramConfiguration>(
   background: rgba(228, 64, 95, 0.15);
   border-color: #E4405F;
   color: #E4405F;
+}
+
+/* Preview Section */
+.preview-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.preview-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin-bottom: 12px;
 }
 </style>

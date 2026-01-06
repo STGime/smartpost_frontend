@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { PinterestConfiguration } from '@/types'
+import type { PinterestConfiguration, MediaListItem, SocialAccount } from '@/types'
+import PinterestPostPreview from './previews/PinterestPostPreview.vue'
 
 const props = defineProps<{
   modelValue: PinterestConfiguration
+  selectedMedia?: MediaListItem[]
+  caption?: string
+  hashtags?: string[]
+  account?: SocialAccount
 }>()
 
 const emit = defineEmits<{
@@ -109,6 +114,18 @@ const updateField = <K extends keyof PinterestConfiguration>(
         </svg>
         <span>Board selection will be available after connecting your Pinterest account with board access.</span>
       </div>
+
+      <!-- Preview -->
+      <div class="preview-section">
+        <div class="preview-label">Preview</div>
+        <PinterestPostPreview
+          :caption="caption || ''"
+          :hashtags="hashtags || []"
+          :media-items="selectedMedia || []"
+          :config="modelValue"
+          :account="account"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -200,5 +217,19 @@ const updateField = <K extends keyof PinterestConfiguration>(
   flex-shrink: 0;
   color: #BD081C;
   margin-top: 1px;
+}
+
+/* Preview */
+.preview-section {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.preview-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 12px;
 }
 </style>

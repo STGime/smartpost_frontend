@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { FacebookConfiguration } from '@/types'
+import type { FacebookConfiguration, MediaListItem, SocialAccount } from '@/types'
+import FacebookPostPreview from './previews/FacebookPostPreview.vue'
 
 const props = defineProps<{
   modelValue: FacebookConfiguration
+  selectedMedia?: MediaListItem[]
+  caption?: string
+  hashtags?: string[]
+  account?: SocialAccount
 }>()
 
 const emit = defineEmits<{
@@ -108,6 +113,18 @@ const updateField = <K extends keyof FacebookConfiguration>(
           maxlength="63206"
         ></textarea>
         <span class="field-hint">{{ (config.caption || '').length }} characters</span>
+      </div>
+
+      <!-- Preview -->
+      <div class="preview-section">
+        <div class="preview-label">Preview</div>
+        <FacebookPostPreview
+          :caption="caption || ''"
+          :hashtags="hashtags || []"
+          :media-items="selectedMedia || []"
+          :config="modelValue"
+          :account="account"
+        />
       </div>
     </div>
   </div>
@@ -221,5 +238,19 @@ const updateField = <K extends keyof FacebookConfiguration>(
   background: rgba(24, 119, 242, 0.15);
   border-color: #1877F2;
   color: #1877F2;
+}
+
+/* Preview */
+.preview-section {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.preview-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 12px;
 }
 </style>

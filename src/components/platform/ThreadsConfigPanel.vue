@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ThreadsConfiguration } from '@/types'
+import type { ThreadsConfiguration, MediaListItem, SocialAccount } from '@/types'
+import ThreadsPostPreview from './previews/ThreadsPostPreview.vue'
 
 const props = defineProps<{
   modelValue: ThreadsConfiguration
+  selectedMedia?: MediaListItem[]
+  caption?: string
+  hashtags?: string[]
+  account?: SocialAccount
 }>()
 
 const emit = defineEmits<{
@@ -92,6 +97,18 @@ const updateField = <K extends keyof ThreadsConfiguration>(
           maxlength="500"
         ></textarea>
         <span class="field-hint">{{ (config.caption || '').length }}/500 characters</span>
+      </div>
+
+      <!-- Preview -->
+      <div class="preview-section">
+        <div class="preview-label">Preview</div>
+        <ThreadsPostPreview
+          :caption="caption || ''"
+          :hashtags="hashtags || []"
+          :media-items="selectedMedia || []"
+          :config="modelValue"
+          :account="account"
+        />
       </div>
     </div>
   </div>
@@ -205,5 +222,19 @@ const updateField = <K extends keyof ThreadsConfiguration>(
   background: var(--accent-soft);
   border-color: var(--accent);
   color: #a5b4fc;
+}
+
+/* Preview */
+.preview-section {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.preview-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 12px;
 }
 </style>

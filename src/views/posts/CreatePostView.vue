@@ -549,6 +549,8 @@ const closePreviewModal = () => {
         <PlatformConfigSection
           :selected-accounts="selectedAccountsData"
           :selected-media="selectedMediaItems"
+          :caption="caption"
+          :hashtags="hashtags"
           v-model="platformConfigurations"
         />
       </div>

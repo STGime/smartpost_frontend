@@ -59,7 +59,9 @@ const onDrop = (e: DragEvent, dropIndex: number) => {
   // Reorder local items
   const newItems = [...localItems.value]
   const [removed] = newItems.splice(draggedIndex.value, 1)
-  newItems.splice(dropIndex, 0, removed)
+  if (removed) {
+    newItems.splice(dropIndex, 0, removed)
+  }
 
   // Update local state
   localItems.value = newItems
