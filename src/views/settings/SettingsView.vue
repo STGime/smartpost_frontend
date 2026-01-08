@@ -1,12 +1,31 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
-import { useUserStore } from '@/stores'
+import { ref, onMounted, watch, computed } from 'vue'
+import { useUserStore, useAuthStore } from '@/stores'
 
 const userStore = useUserStore()
+const authStore = useAuthStore()
 
 const displayName = ref('')
 const isSaving = ref(false)
 const saveSuccess = ref(false)
+
+// Password change state
+const currentPassword = ref('')
+const newPassword = ref('')
+const confirmPassword = ref('')
+const isChangingPassword = ref(false)
+const passwordSuccess = ref(false)
+const passwordError = ref<string | null>(null)
+
+const passwordsMatch = computed(() => newPassword.value === confirmPassword.value)
+const isPasswordValid = computed(() => newPassword.value.length >= 8)
+const canSubmitPassword = computed(() =>
+  currentPassword.value &&
+  newPassword.value &&
+  confirmPassword.value &&
+  passwordsMatch.value &&
+  isPasswordValid.value
+)
 
 onMounted(() => {
   userStore.fetchProfile()
@@ -29,6 +48,27 @@ const handleSave = async () => {
     // Error handled in store
   } finally {
     isSaving.value = false
+  }
+}
+
+const handlePasswordChange = async () => {
+  if (!canSubmitPassword.value) return
+
+  isChangingPassword.value = true
+  passwordSuccess.value = false
+  passwordError.value = null
+
+  try {
+    await authStore.changePassword(currentPassword.value, newPassword.value)
+    passwordSuccess.value = true
+    currentPassword.value = ''
+    newPassword.value = ''
+    confirmPassword.value = ''
+    setTimeout(() => passwordSuccess.value = false, 3000)
+  } catch {
+    passwordError.value = authStore.error || 'Failed to change password'
+  } finally {
+    isChangingPassword.value = false
   }
 }
 </script>
@@ -87,6 +127,81 @@ const handleSave = async () => {
             class="btn-primary"
           >
             {{ isSaving ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Security Section -->
+    <div class="settings-section card">
+      <div class="section-header">
+        <div class="section-icon section-icon-security">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <div>
+          <h2>Security</h2>
+          <p>Manage your password</p>
+        </div>
+      </div>
+
+      <form @submit.prevent="handlePasswordChange" class="settings-form">
+        <div v-if="passwordSuccess" class="alert-success">
+          Password changed successfully
+        </div>
+        <div v-if="passwordError" class="alert-error">
+          {{ passwordError }}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Current Password</label>
+          <input
+            v-model="currentPassword"
+            type="password"
+            class="form-input"
+            placeholder="Enter your current password"
+            autocomplete="current-password"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <input
+            v-model="newPassword"
+            type="password"
+            class="form-input"
+            :class="{ 'form-input-error': newPassword && !isPasswordValid }"
+            placeholder="Enter new password"
+            autocomplete="new-password"
+          />
+          <p v-if="newPassword && !isPasswordValid" class="form-error">
+            Password must be at least 8 characters
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Confirm New Password</label>
+          <input
+            v-model="confirmPassword"
+            type="password"
+            class="form-input"
+            :class="{ 'form-input-error': confirmPassword && !passwordsMatch }"
+            placeholder="Confirm new password"
+            autocomplete="new-password"
+          />
+          <p v-if="confirmPassword && !passwordsMatch" class="form-error">
+            Passwords do not match
+          </p>
+        </div>
+
+        <div class="form-actions">
+          <button
+            type="submit"
+            :disabled="!canSubmitPassword || isChangingPassword"
+            class="btn-primary"
+          >
+            {{ isChangingPassword ? 'Changing...' : 'Change Password' }}
           </button>
         </div>
       </form>
@@ -183,6 +298,11 @@ const handleSave = async () => {
   height: 20px;
 }
 
+.section-icon-security {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
 .section-icon-plan {
   background: var(--success-soft);
   color: #86efac;
@@ -221,6 +341,15 @@ const handleSave = async () => {
 .form-hint {
   font-size: 11px;
   color: var(--muted);
+}
+
+.form-input-error {
+  border-color: var(--error);
+}
+
+.form-error {
+  font-size: 11px;
+  color: var(--error);
 }
 
 .form-actions {

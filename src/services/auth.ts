@@ -31,6 +31,14 @@ export const authService = {
     return response.data
   },
 
+  async changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
+    const response = await api.patch('/auth/password', {
+      current_password: currentPassword,
+      new_password: newPassword,
+    })
+    return response.data
+  },
+
   async getCurrentUser(): Promise<User> {
     const response = await api.get<User>('/auth/me')
     return response.data

@@ -11,6 +11,30 @@ const isLoading = ref(true)
 const error = ref<string | null>(null)
 
 onMounted(async () => {
+  // Check if this is a server-side OAuth completion (success redirect)
+  const success = route.query.success as string
+  const platform = route.query.platform as string
+  const errorParam = route.query.error as string
+
+  if (success === 'true' && platform) {
+    // OAuth was completed server-side, just refresh accounts and redirect
+    try {
+      await socialAccountsStore.fetchAccounts()
+      router.push({ name: 'accounts' })
+    } catch {
+      error.value = 'Failed to refresh accounts'
+      isLoading.value = false
+    }
+    return
+  }
+
+  if (errorParam) {
+    error.value = route.query.error_description as string || errorParam
+    isLoading.value = false
+    return
+  }
+
+  // Handle client-side OAuth completion (code + state)
   const code = route.query.code as string
   const state = route.query.state as string
 

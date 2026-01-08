@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { authService, postSSEService } from '@/services'
+import { authService, postSSEService, setSessionExpiredHandler } from '@/services'
 import type { User, LoginRequest, SignupRequest } from '@/types'
 import router from '@/router'
 import { usePostsStore } from './posts'
@@ -9,6 +9,8 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  const showReauthModal = ref(false)
+  const isReauthenticating = ref(false)
 
   const isAuthenticated = computed(() => !!user.value)
 
@@ -21,6 +23,21 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
   }
+
+  const requireReauth = () => {
+    clearTokens()
+    user.value = null
+    isReauthenticating.value = true
+    showReauthModal.value = true
+  }
+
+  const closeReauthModal = () => {
+    showReauthModal.value = false
+    isReauthenticating.value = false
+  }
+
+  // Register session expired handler
+  setSessionExpiredHandler(requireReauth)
 
   const connectSSE = () => {
     const token = localStorage.getItem('access_token')
@@ -59,7 +76,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const login = async (data: LoginRequest) => {
+  const login = async (data: LoginRequest, stayOnPage = false) => {
     isLoading.value = true
     error.value = null
     try {
@@ -67,8 +84,14 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = response.user
       setTokens(response.access_token, response.refresh_token)
       connectSSE()
-      const redirect = router.currentRoute.value.query.redirect as string
-      router.push(redirect || { name: 'dashboard' })
+
+      // If reauthenticating or stayOnPage flag is set, stay on current page
+      if (isReauthenticating.value || stayOnPage) {
+        closeReauthModal()
+      } else {
+        const redirect = router.currentRoute.value.query.redirect as string
+        router.push(redirect || { name: 'dashboard' })
+      }
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } }
       error.value = e.response?.data?.error || 'Login failed'
@@ -87,7 +110,7 @@ export const useAuthStore = defineStore('auth', () => {
       disconnectSSE()
       user.value = null
       clearTokens()
-      router.push({ name: 'login' })
+      router.push({ name: 'home' })
     }
   }
 
@@ -138,16 +161,34 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    isLoading.value = true
+    error.value = null
+    try {
+      await authService.changePassword(currentPassword, newPassword)
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } }
+      error.value = e.response?.data?.error || 'Failed to change password'
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     user,
     isLoading,
     error,
     isAuthenticated,
+    showReauthModal,
     signup,
     login,
     logout,
     fetchCurrentUser,
     forgotPassword,
     resetPassword,
+    changePassword,
+    requireReauth,
+    closeReauthModal,
   }
 })
