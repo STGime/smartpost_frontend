@@ -11,7 +11,7 @@ const props = defineProps<{
 }>()
 
 const title = computed(() => props.config.title || props.caption?.slice(0, 100) || 'Pin title')
-const displayName = computed(() => props.account?.display_name || props.account?.username || 'Your Name')
+const displayName = computed(() => props.account?.displayName || props.account?.username || 'Your Name')
 const avatarInitial = computed(() => displayName.value[0]?.toUpperCase() || '?')
 
 const previewMedia = computed(() => props.mediaItems[0] || null)
@@ -42,7 +42,7 @@ const previewMedia = computed(() => props.mediaItems[0] || null)
       <h3 class="pin-title">{{ title }}</h3>
       <div class="pin-author">
         <div class="pin-avatar">
-          <img v-if="account?.avatar_url" :src="account.avatar_url" :alt="displayName" />
+          <img v-if="account?.profileImageUrl" :src="account.profileImageUrl" :alt="displayName" />
           <span v-else>{{ avatarInitial }}</span>
         </div>
         <span class="pin-name">{{ displayName }}</span>

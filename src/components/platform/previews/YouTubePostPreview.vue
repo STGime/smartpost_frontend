@@ -19,7 +19,7 @@ const truncatedDescription = computed(() => {
   return full.length > limit ? full.slice(0, limit) + '...' : full
 })
 
-const displayName = computed(() => props.account?.display_name || props.account?.username || 'Channel Name')
+const displayName = computed(() => props.account?.displayName || props.account?.username || 'Channel Name')
 const avatarInitial = computed(() => displayName.value[0]?.toUpperCase() || '?')
 
 const previewMedia = computed(() => props.mediaItems[0] || null)
@@ -51,7 +51,7 @@ const isShort = computed(() => props.config.isShort)
     <!-- Info -->
     <div class="yt-info">
       <div class="yt-avatar">
-        <img v-if="account?.avatar_url" :src="account.avatar_url" :alt="displayName" />
+        <img v-if="account?.profileImageUrl" :src="account.profileImageUrl" :alt="displayName" />
         <span v-else>{{ avatarInitial }}</span>
       </div>
       <div class="yt-details">

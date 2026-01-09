@@ -8,6 +8,21 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/HomeView.vue'),
   },
   {
+    path: '/terms',
+    name: 'terms',
+    component: () => import('@/views/legal/TermsView.vue'),
+  },
+  {
+    path: '/privacy',
+    name: 'privacy',
+    component: () => import('@/views/legal/PrivacyView.vue'),
+  },
+  {
+    path: '/impressum',
+    name: 'impressum',
+    component: () => import('@/views/legal/ImpressumView.vue'),
+  },
+  {
     path: '/login',
     name: 'login',
     component: () => import('@/views/auth/LoginView.vue'),
@@ -88,6 +103,11 @@ const routes: RouteRecordRaw[] = [
         path: 'billing',
         name: 'billing',
         component: () => import('@/views/billing/BillingView.vue'),
+      },
+      {
+        path: 'analytics',
+        name: 'analytics',
+        component: () => import('@/views/analytics/AnalyticsView.vue'),
       },
     ],
   },

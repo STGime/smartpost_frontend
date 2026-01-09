@@ -10,7 +10,7 @@ export const useSocialAccountsStore = defineStore('socialAccounts', () => {
   const error = ref<string | null>(null)
 
   const activeAccounts = computed(() =>
-    accounts.value.filter((account) => account.status === 'active')
+    accounts.value.filter((account) => account.isActive)
   )
 
   const accountsByPlatform = computed(() => {

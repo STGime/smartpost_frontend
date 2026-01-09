@@ -6,6 +6,7 @@ import type { Post, PostStatus, CreatePostRequest, UpdatePostRequest } from '@/t
 export const usePostsStore = defineStore('posts', () => {
   const posts = ref<Post[]>([])
   const currentPost = ref<Post | null>(null)
+  const templatePost = ref<Post | null>(null)
   const total = ref(0)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
@@ -252,9 +253,19 @@ export const usePostsStore = defineStore('posts', () => {
     sseSubscribed.value = false
   }
 
+  // Template functions for "Use as Template" feature
+  const setTemplate = (post: Post) => {
+    templatePost.value = post
+  }
+
+  const clearTemplate = () => {
+    templatePost.value = null
+  }
+
   return {
     posts,
     currentPost,
+    templatePost,
     total,
     isLoading,
     error,
@@ -272,5 +283,7 @@ export const usePostsStore = defineStore('posts', () => {
     cancelScheduledPost,
     subscribeToSSE,
     unsubscribeFromSSE,
+    setTemplate,
+    clearTemplate,
   }
 })

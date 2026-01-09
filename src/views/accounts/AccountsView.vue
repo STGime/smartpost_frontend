@@ -2,12 +2,22 @@
 import { onMounted } from 'vue'
 import { useSocialAccountsStore } from '@/stores'
 import PlatformIcon from '@/components/PlatformIcon.vue'
+import type { SocialAccount } from '@/types'
 
 const socialAccountsStore = useSocialAccountsStore()
 
 onMounted(() => {
   socialAccountsStore.fetchAccounts()
 })
+
+const getAccountStatus = (account: SocialAccount): string => {
+  if (!account.isActive) {
+    if (account.connectionError?.includes('revoked')) return 'revoked'
+    if (account.connectionError?.includes('expired')) return 'expired'
+    return 'error'
+  }
+  return 'active'
+}
 
 const handleDelete = async (accountId: string) => {
   if (confirm('Are you sure you want to disconnect this account?')) {
@@ -55,14 +65,14 @@ const handleDelete = async (accountId: string) => {
         <div class="account-info">
           <PlatformIcon :platform="account.platform" size="lg" />
           <div class="account-details">
-            <p class="account-name">{{ account.display_name || account.username }}</p>
+            <p class="account-name">{{ account.displayName || account.username }}</p>
             <p class="account-username">@{{ account.username }}</p>
             <p class="account-platform">{{ account.platform }}</p>
           </div>
         </div>
         <div class="account-actions">
-          <span :class="['status-badge', `status-${account.status}`]">
-            {{ account.status }}
+          <span :class="['status-badge', `status-${getAccountStatus(account)}`]">
+            {{ getAccountStatus(account) }}
           </span>
           <button @click="handleDelete(account.id)" class="disconnect-btn">
             Disconnect

@@ -33,6 +33,22 @@ class PostSSEService {
   private maxReconnectAttempts = 5
   private reconnectDelay = 1000
   private isManuallyDisconnected = false
+  private tokenProvider: (() => Promise<string | null>) | null = null
+  private onAuthError: (() => void) | null = null
+
+  /**
+   * Set the token provider function that returns a fresh token
+   */
+  setTokenProvider(provider: () => Promise<string | null>): void {
+    this.tokenProvider = provider
+  }
+
+  /**
+   * Set the callback for authentication errors (e.g., redirect to login)
+   */
+  setAuthErrorHandler(handler: () => void): void {
+    this.onAuthError = handler
+  }
 
   /**
    * Connect to the SSE endpoint
@@ -54,7 +70,7 @@ class PostSSEService {
       this.reconnectAttempts = 0
     }
 
-    this.eventSource.onerror = () => {
+    this.eventSource.onerror = async () => {
       if (this.eventSource?.readyState === EventSource.CLOSED) {
         this.eventSource = null
 
@@ -62,7 +78,25 @@ class PostSSEService {
           this.reconnectAttempts++
           const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1)
           console.log(`[SSE] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`)
-          setTimeout(() => this.connect(token), delay)
+
+          setTimeout(async () => {
+            // Try to get a fresh token before reconnecting
+            if (this.tokenProvider) {
+              const freshToken = await this.tokenProvider()
+              if (freshToken) {
+                this.connect(freshToken)
+              } else {
+                console.log('[SSE] No valid token available, stopping reconnection')
+                this.handleAuthError()
+              }
+            } else {
+              // Fallback: reconnect with original token
+              this.connect(token)
+            }
+          }, delay)
+        } else if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+          console.log('[SSE] Max reconnection attempts reached')
+          this.handleAuthError()
         }
       }
     }
@@ -133,6 +167,16 @@ class PostSSEService {
     const eventListeners = this.listeners.get(event)
     if (eventListeners) {
       eventListeners.forEach((callback) => callback(data))
+    }
+  }
+
+  /**
+   * Handle authentication errors by calling the registered handler
+   */
+  private handleAuthError(): void {
+    console.log('[SSE] Authentication error, triggering auth error handler')
+    if (this.onAuthError) {
+      this.onAuthError()
     }
   }
 }

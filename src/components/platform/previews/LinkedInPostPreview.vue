@@ -29,7 +29,7 @@ const truncatedCaption = computed(() => {
 const needsTruncation = computed(() => captionWithHashtags.value.length > 250)
 
 // Account display
-const displayName = computed(() => props.account?.display_name || props.account?.username || 'Your Name')
+const displayName = computed(() => props.account?.displayName || props.account?.username || 'Your Name')
 const avatarInitial = computed(() => displayName.value[0]?.toUpperCase() || '?')
 
 // Post type display
@@ -50,7 +50,7 @@ const mediaCount = computed(() => props.mediaItems.length)
     <!-- Header -->
     <div class="li-header">
       <div class="li-avatar">
-        <img v-if="account?.avatar_url" :src="account.avatar_url" :alt="displayName" />
+        <img v-if="account?.profileImageUrl" :src="account.profileImageUrl" :alt="displayName" />
         <span v-else>{{ avatarInitial }}</span>
       </div>
       <div class="li-user-info">

@@ -21,7 +21,7 @@ const charLimit = 300
 const isOverLimit = computed(() => captionWithHashtags.value.length > charLimit)
 
 const username = computed(() => props.account?.username || 'handle')
-const displayName = computed(() => props.account?.display_name || props.account?.username || 'Your Name')
+const displayName = computed(() => props.account?.displayName || props.account?.username || 'Your Name')
 const avatarInitial = computed(() => displayName.value[0]?.toUpperCase() || '?')
 
 const mediaCount = computed(() => Math.min(props.mediaItems.length, 4))
@@ -40,7 +40,7 @@ const mediaGridClass = computed(() => {
     <div class="bsky-post">
       <!-- Avatar -->
       <div class="bsky-avatar">
-        <img v-if="account?.avatar_url" :src="account.avatar_url" :alt="displayName" />
+        <img v-if="account?.profileImageUrl" :src="account.profileImageUrl" :alt="displayName" />
         <span v-else>{{ avatarInitial }}</span>
       </div>
 

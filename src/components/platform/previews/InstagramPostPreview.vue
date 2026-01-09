@@ -49,7 +49,7 @@ const placementClass = computed(() => {
     <!-- Header -->
     <div class="ig-header">
       <div class="ig-avatar">
-        <img v-if="account?.avatar_url" :src="account.avatar_url" :alt="username" />
+        <img v-if="account?.profileImageUrl" :src="account.profileImageUrl" :alt="username" />
         <span v-else>{{ avatarInitial }}</span>
       </div>
       <span class="ig-username">{{ username }}</span>

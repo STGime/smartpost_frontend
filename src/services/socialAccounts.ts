@@ -40,10 +40,10 @@ export const socialAccountsService = {
     return response.data
   },
 
-  async connectBluesky(identifier: string, password: string): Promise<{ account: SocialAccount }> {
+  async connectBluesky(identifier: string, appPassword: string): Promise<{ account: SocialAccount }> {
     const response = await api.post('/social-accounts/bluesky/connect', {
       identifier,
-      password,
+      appPassword,
     })
     return response.data
   },

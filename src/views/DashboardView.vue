@@ -7,18 +7,8 @@ const mediaStore = useMediaStore()
 const socialAccountsStore = useSocialAccountsStore()
 const userStore = useUserStore()
 
-// Connected accounts - use all accounts, not just "active" status
-const connectedAccountsCount = computed(() => {
-  // First try activeAccounts, if empty use all accounts
-  const active = socialAccountsStore.activeAccounts.length
-  return active > 0 ? active : socialAccountsStore.accounts.length
-})
-
-// Total posts count from the store
-const totalPostsCount = computed(() => postsStore.total)
-
-// Scheduled posts from fetched data
-const scheduledPostsCount = computed(() => postsStore.scheduledPosts.length)
+// Connected accounts - use actual count from social accounts store
+const connectedAccountsCount = computed(() => socialAccountsStore.accounts.length)
 
 onMounted(async () => {
   // Fetch all data in parallel
@@ -61,7 +51,7 @@ onMounted(async () => {
         </div>
         <div class="stat-content">
           <p class="stat-label">Connected accounts</p>
-          <p class="stat-value">{{ userStore.plan?.usage?.connected_accounts ?? connectedAccountsCount }}</p>
+          <p class="stat-value">{{ connectedAccountsCount }}</p>
           <p class="stat-sub">of {{ userStore.plan?.limits?.connected_accounts ?? 0 }}</p>
         </div>
       </div>

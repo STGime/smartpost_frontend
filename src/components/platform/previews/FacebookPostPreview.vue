@@ -25,7 +25,7 @@ const truncatedCaption = computed(() => {
 
 const needsTruncation = computed(() => captionWithHashtags.value.length > 250)
 
-const displayName = computed(() => props.account?.display_name || props.account?.username || 'Your Name')
+const displayName = computed(() => props.account?.displayName || props.account?.username || 'Your Name')
 const avatarInitial = computed(() => displayName.value[0]?.toUpperCase() || '?')
 
 const previewMedia = computed(() => props.mediaItems[0] || null)
@@ -37,7 +37,7 @@ const mediaCount = computed(() => props.mediaItems.length)
     <!-- Header -->
     <div class="fb-header">
       <div class="fb-avatar">
-        <img v-if="account?.avatar_url" :src="account.avatar_url" :alt="displayName" />
+        <img v-if="account?.profileImageUrl" :src="account.profileImageUrl" :alt="displayName" />
         <span v-else>{{ avatarInitial }}</span>
       </div>
       <div class="fb-user-info">

@@ -171,19 +171,17 @@ export type SocialPlatform =
   | 'bluesky'
   | 'threads'
 
-export type AccountStatus = 'active' | 'expired' | 'revoked' | 'error'
-
 export interface SocialAccount {
   id: string
   platform: SocialPlatform
-  platform_user_id: string
   username: string
-  display_name?: string
-  avatar_url?: string
-  status: AccountStatus
-  token_expires_at?: string
-  created_at: string
-  updated_at: string
+  displayName?: string
+  profileImageUrl?: string
+  isActive: boolean
+  connectionError?: string | null
+  tokenExpiresAt?: string
+  connectedAt: string
+  lastUsedAt?: string
 }
 
 export interface PlatformInfo {
@@ -419,6 +417,98 @@ export interface ApiError {
   error: string
   code?: string
   details?: Record<string, unknown>
+}
+
+// Analytics types
+export interface PlatformAnalytics {
+  platform: string
+  postsCount: number
+  likes: number
+  comments: number
+  shares: number
+  views: number
+  impressions: number
+  reach: number
+  engagementRate: number
+}
+
+export interface AnalyticsOverview {
+  totalPosts: number
+  totalLikes: number
+  totalComments: number
+  totalShares: number
+  totalViews: number
+  totalImpressions: number
+  totalReach: number
+  engagementRate: number
+  byPlatform: PlatformAnalytics[]
+}
+
+export interface PostAnalyticsSummary {
+  postId: string
+  postResultId: string
+  caption: string | null
+  platform: string
+  platformPostUrl: string | null
+  publishedAt: string
+  thumbnailUrl: string | null
+  likes: number
+  comments: number
+  shares: number
+  views: number
+  impressions: number
+  reach: number
+  totalEngagement: number
+  lastUpdated: string
+}
+
+export interface PostAnalyticsDetail extends PostAnalyticsSummary {
+  timeSeriesData: {
+    date: string
+    likes: number
+    comments: number
+    shares: number
+    views: number
+    impressions: number
+  }[]
+  platformMetrics: Record<string, unknown>
+}
+
+export interface AnalyticsTrendData {
+  date: string
+  value: number
+}
+
+export interface TrendsResponse {
+  data: AnalyticsTrendData[]
+  metric: string
+  period: string
+}
+
+export interface PostAnalyticsListResponse {
+  items: PostAnalyticsSummary[]
+  total: number
+  limit: number
+  offset: number
+}
+
+export type AnalyticsMetric = 'likes' | 'comments' | 'shares' | 'views' | 'impressions' | 'engagement'
+export type AnalyticsPeriod = '7d' | '30d' | '90d' | '12m'
+export type AnalyticsGroupBy = 'day' | 'week' | 'month'
+
+export interface AccountNeedingUpgrade {
+  id: string
+  platform: string
+  username: string | null
+  displayName: string | null
+  profileImageUrl: string | null
+  missingScopes: string[]
+  description: string
+}
+
+export interface ScopeStatusResponse {
+  needsUpgrade: boolean
+  accounts: AccountNeedingUpgrade[]
 }
 
 // Platform specifications

@@ -144,10 +144,60 @@ const filteredMedia = computed(() => {
   })
 })
 
-onMounted(() => {
+// Template loading state
+const loadedFromTemplate = ref(false)
+const templateMediaMissing = ref<string[]>([])
+
+onMounted(async () => {
   // Fetch all media items without status filter (matches MediaView behavior)
-  mediaStore.fetchMedia({ limit: 100 })
-  socialAccountsStore.fetchAccounts()
+  await mediaStore.fetchMedia({ limit: 100 })
+  await socialAccountsStore.fetchAccounts()
+
+  // Check if there's a template to load
+  if (postsStore.templatePost) {
+    const template = postsStore.templatePost
+    loadedFromTemplate.value = true
+
+    // Copy caption and hashtags
+    caption.value = template.caption || ''
+    hashtags.value = template.hashtags || []
+
+    // Copy platform configurations if they exist
+    if (template.platformConfigurations) {
+      platformConfigurations.value = { ...template.platformConfigurations }
+    }
+
+    // Copy social accounts - only those that still exist and are active
+    const validAccountIds: string[] = []
+    if (template.socialAccounts) {
+      for (const account of template.socialAccounts) {
+        const exists = availableAccounts.value.find(a => a.id === account.id)
+        if (exists) {
+          validAccountIds.push(account.id)
+        }
+      }
+    }
+    selectedAccountIds.value = validAccountIds
+
+    // Copy media - check if media still exists
+    const validMediaIds: string[] = []
+    const missingMedia: string[] = []
+    if (template.media) {
+      for (const media of template.media) {
+        const exists = mediaStore.items.find(m => m.id === media.id)
+        if (exists) {
+          validMediaIds.push(media.id)
+        } else {
+          missingMedia.push(media.name || media.id)
+        }
+      }
+    }
+    selectedMediaIds.value = validMediaIds
+    templateMediaMissing.value = missingMedia
+
+    // Clear the template after loading
+    postsStore.clearTemplate()
+  }
 })
 
 // Watch for media changes and auto-deselect incompatible accounts
@@ -270,6 +320,27 @@ const closePreviewModal = () => {
     <div class="page-header">
       <h1>Create Post</h1>
       <p>Compose and schedule your social media content</p>
+    </div>
+
+    <!-- Template loaded notice -->
+    <div v-if="loadedFromTemplate" class="template-notice card">
+      <div class="template-notice-content">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        </svg>
+        <div class="template-notice-text">
+          <span class="template-notice-title">Loaded from template</span>
+          <span v-if="templateMediaMissing.length === 0" class="template-notice-sub">Content copied from previous post. Make any changes and save as draft.</span>
+          <span v-else class="template-notice-sub template-notice-warning">
+            {{ templateMediaMissing.length }} media file{{ templateMediaMissing.length !== 1 ? 's were' : ' was' }} not found: {{ templateMediaMissing.join(', ') }}
+          </span>
+        </div>
+      </div>
+      <button type="button" class="template-notice-dismiss" @click="loadedFromTemplate = false" title="Dismiss">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
 
     <form @submit.prevent="handleSubmit" class="create-form">
@@ -660,6 +731,74 @@ const closePreviewModal = () => {
 .page-header p {
   font-size: 14px;
   color: var(--muted);
+}
+
+/* Template notice */
+.template-notice {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.template-notice-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.template-notice-content > svg {
+  width: 20px;
+  height: 20px;
+  color: #818cf8;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.template-notice-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.template-notice-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.template-notice-sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.template-notice-warning {
+  color: #fbbf24;
+}
+
+.template-notice-dismiss {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--muted);
+  border-radius: var(--radius-sm);
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.template-notice-dismiss:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+}
+
+.template-notice-dismiss svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* Form */

@@ -25,7 +25,7 @@ const isOverLimit = computed(() => captionWithHashtags.value.length > charLimit)
 
 // Account display
 const username = computed(() => props.account?.username || 'username')
-const displayName = computed(() => props.account?.display_name || props.account?.username || 'Your Name')
+const displayName = computed(() => props.account?.displayName || props.account?.username || 'Your Name')
 const avatarInitial = computed(() => displayName.value[0]?.toUpperCase() || '?')
 
 // Media grid class based on count
@@ -45,7 +45,7 @@ const mediaGridClass = computed(() => {
     <div class="x-tweet">
       <!-- Avatar -->
       <div class="x-avatar">
-        <img v-if="account?.avatar_url" :src="account.avatar_url" :alt="displayName" />
+        <img v-if="account?.profileImageUrl" :src="account.profileImageUrl" :alt="displayName" />
         <span v-else>{{ avatarInitial }}</span>
       </div>
 

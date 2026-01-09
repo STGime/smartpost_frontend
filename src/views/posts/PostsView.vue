@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { usePostsStore } from '@/stores'
 import ConfirmModal from '@/components/ConfirmModal.vue'
+import PlatformIcon from '@/components/PlatformIcon.vue'
 
 const postsStore = usePostsStore()
 
@@ -105,9 +106,20 @@ const cancelDelete = () => {
         <div class="post-body">
           <p class="post-caption">{{ post.caption || 'No caption' }}</p>
           <div class="post-meta">
-            <span>{{ post.socialAccounts?.length ?? 0 }} account(s)</span>
+            <div class="post-platforms" v-if="post.socialAccounts?.length">
+              <PlatformIcon
+                v-for="account in post.socialAccounts.slice(0, 4)"
+                :key="account.id"
+                :platform="account.platform"
+                size="xs"
+              />
+              <span v-if="post.socialAccounts.length > 4" class="more-platforms">
+                +{{ post.socialAccounts.length - 4 }}
+              </span>
+            </div>
+            <span v-else class="no-accounts">No accounts</span>
             <span class="meta-dot"></span>
-            <span>{{ new Date(post.createdAt).toLocaleDateString() }}</span>
+            <span>{{ new Date(post.scheduledAt || post.publishedAt || post.createdAt).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' }) }}</span>
           </div>
         </div>
       </RouterLink>
@@ -378,5 +390,22 @@ const cancelDelete = () => {
   height: 3px;
   border-radius: 50%;
   background: var(--muted);
+}
+
+.post-platforms {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.more-platforms {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-left: 2px;
+}
+
+.no-accounts {
+  color: var(--muted);
 }
 </style>

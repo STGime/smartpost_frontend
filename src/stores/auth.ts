@@ -39,10 +39,39 @@ export const useAuthStore = defineStore('auth', () => {
   // Register session expired handler
   setSessionExpiredHandler(requireReauth)
 
+  const getValidToken = async (): Promise<string | null> => {
+    const accessToken = localStorage.getItem('access_token')
+    const refreshToken = localStorage.getItem('refresh_token')
+
+    if (!accessToken || !refreshToken) {
+      return null
+    }
+
+    // Try to refresh the token to get a fresh one
+    try {
+      const response = await authService.refreshToken(refreshToken)
+      setTokens(response.access_token, response.refresh_token)
+      return response.access_token
+    } catch {
+      // Refresh failed, token is invalid
+      return null
+    }
+  }
+
   const connectSSE = () => {
     const token = localStorage.getItem('access_token')
     if (token) {
       console.log('[Auth] Connecting SSE')
+
+      // Set up token provider for SSE reconnections
+      postSSEService.setTokenProvider(getValidToken)
+
+      // Set up auth error handler to trigger reauth modal
+      postSSEService.setAuthErrorHandler(() => {
+        console.log('[Auth] SSE auth error, requiring reauth')
+        requireReauth()
+      })
+
       postSSEService.connect(token)
       // Subscribe posts store to SSE events
       const postsStore = usePostsStore()

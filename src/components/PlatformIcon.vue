@@ -1,7 +1,7 @@
 <script setup lang="ts">
 defineProps<{
   platform: string
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
 }>()
 </script>
 
@@ -71,6 +71,11 @@ defineProps<{
 .platform-icon svg {
   width: 50%;
   height: 50%;
+}
+
+.platform-icon-xs {
+  width: 18px;
+  height: 18px;
 }
 
 .platform-icon-sm {

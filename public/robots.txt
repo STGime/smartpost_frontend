@@ -1,0 +1,19 @@
+# Robots.txt for Posta
+# https://getposta.app
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://getposta.app/sitemap.xml
+
+# Disallow API endpoints
+Disallow: /v1/
+Disallow: /api/
+
+# Allow static assets
+Allow: /*.css
+Allow: /*.js
+Allow: /*.svg
+Allow: /*.png
+Allow: /*.jpg
