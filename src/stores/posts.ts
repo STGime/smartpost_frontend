@@ -36,10 +36,10 @@ export const usePostsStore = defineStore('posts', () => {
     error.value = null
     try {
       const response = await postsService.listPosts(params)
-      if (params?.offset === 0 || !params?.offset) {
-        posts.value = response.items
-      } else {
+      if (params?.offset && params.offset > 0) {
         posts.value = [...posts.value, ...response.items]
+      } else {
+        posts.value = response.items
       }
       total.value = response.total
     } catch (err: unknown) {

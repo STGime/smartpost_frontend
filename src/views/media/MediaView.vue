@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useMediaStore } from '@/stores'
 import type { MediaListItem } from '@/types'
 
@@ -11,15 +11,14 @@ const isDeleting = ref(false)
 const showPreviewModal = ref(false)
 const mediaToPreview = ref<MediaListItem | null>(null)
 const isLoadingPreview = ref(false)
+const isLoadingMore = ref(false)
 
 // Filters
 const mediaTypeFilter = ref<'all' | 'image' | 'video' | 'document'>('all')
 const mediaSizeFilter = ref<'all' | 'small' | 'medium' | 'large'>('all')
 const mediaSortOrder = ref<'newest' | 'oldest'>('newest')
 
-// Pagination
-const currentPage = ref(1)
-const pageSize = 24
+const pageSize = 48
 
 // Filtered and sorted media
 const filteredMedia = computed(() => {
@@ -51,28 +50,20 @@ const filteredMedia = computed(() => {
   })
 })
 
-// Paginated filtered media
-const totalPages = computed(() => Math.ceil(filteredMedia.value.length / pageSize))
-
-const paginatedMedia = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  const end = start + pageSize
-  return filteredMedia.value.slice(start, end)
-})
-
-const goToPage = (page: number) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
+const loadMore = async () => {
+  isLoadingMore.value = true
+  try {
+    await mediaStore.fetchMedia({
+      limit: pageSize,
+      offset: mediaStore.items.length
+    })
+  } finally {
+    isLoadingMore.value = false
   }
 }
 
-// Reset to page 1 when filters change
-watch([mediaTypeFilter, mediaSizeFilter, mediaSortOrder], () => {
-  currentPage.value = 1
-})
-
 onMounted(() => {
-  mediaStore.fetchMedia({ limit: 500 })
+  mediaStore.fetchMedia({ limit: pageSize })
 })
 
 const handleFileSelect = async (event: Event) => {
@@ -285,7 +276,7 @@ const closePreviewModal = () => {
 
     <div v-else class="media-grid">
       <div
-        v-for="media in paginatedMedia"
+        v-for="media in filteredMedia"
         :key="media.id"
         class="media-item"
         @click="openPreviewModal(media)"
@@ -316,32 +307,19 @@ const closePreviewModal = () => {
       </div>
     </div>
 
-    <!-- Pagination -->
-    <div v-if="filteredMedia.length > 0 && totalPages > 1" class="pagination">
+    <!-- Load More -->
+    <div v-if="mediaStore.hasMore" class="load-more">
       <button
-        class="pagination-btn"
-        :disabled="currentPage === 1"
-        @click="goToPage(currentPage - 1)"
+        class="load-more-btn"
+        :disabled="isLoadingMore"
+        @click="loadMore"
       >
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-        Previous
+        <div v-if="isLoadingMore" class="spinner spinner-sm"></div>
+        <span v-else>Load More</span>
       </button>
-      <div class="pagination-info">
-        Page {{ currentPage }} of {{ totalPages }}
-        <span class="pagination-total">({{ filteredMedia.length }} items)</span>
-      </div>
-      <button
-        class="pagination-btn"
-        :disabled="currentPage === totalPages"
-        @click="goToPage(currentPage + 1)"
-      >
-        Next
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
+      <span class="load-more-info">
+        Showing {{ mediaStore.items.length }} of {{ mediaStore.total }} items
+      </span>
     </div>
 
     <!-- Delete Confirmation Modal -->
@@ -996,53 +974,44 @@ const closePreviewModal = () => {
   border-radius: var(--radius-md);
 }
 
-/* Pagination */
-.pagination {
+/* Load More */
+.load-more {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
+  gap: 12px;
   margin-top: 24px;
   padding: 16px;
 }
 
-.pagination-btn {
+.load-more-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+  justify-content: center;
+  min-width: 120px;
+  padding: 10px 24px;
   border-radius: var(--radius-md);
   background: var(--bg-card);
   border: 1px solid var(--border);
   color: var(--text);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
 }
 
-.pagination-btn:hover:not(:disabled) {
+.load-more-btn:hover:not(:disabled) {
   border-color: var(--border-hover);
   background: rgba(148, 163, 184, 0.08);
 }
 
-.pagination-btn:disabled {
-  opacity: 0.4;
+.load-more-btn:disabled {
+  opacity: 0.7;
   cursor: not-allowed;
 }
 
-.pagination-btn svg {
-  width: 16px;
-  height: 16px;
-}
-
-.pagination-info {
-  font-size: 13px;
-  color: var(--text);
-}
-
-.pagination-total {
+.load-more-info {
+  font-size: 12px;
   color: var(--muted);
-  margin-left: 4px;
 }
 </style>
