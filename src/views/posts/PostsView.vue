@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { usePostsStore } from '@/stores'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import PlatformIcon from '@/components/PlatformIcon.vue'
@@ -9,8 +9,28 @@ const postsStore = usePostsStore()
 const showDeleteModal = ref(false)
 const postToDelete = ref<string | null>(null)
 
+// Pagination
+const currentPage = ref(1)
+const pageSize = 12
+
+const totalPages = computed(() => Math.ceil(postsStore.total / pageSize))
+
+const loadPage = async (page: number) => {
+  currentPage.value = page
+  await postsStore.fetchPosts({
+    limit: pageSize,
+    offset: (page - 1) * pageSize
+  })
+}
+
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    loadPage(page)
+  }
+}
+
 onMounted(() => {
-  postsStore.fetchPosts()
+  loadPage(1)
 })
 
 const openDeleteModal = (e: Event, postId: string) => {
@@ -123,6 +143,34 @@ const cancelDelete = () => {
           </div>
         </div>
       </RouterLink>
+    </div>
+
+    <!-- Pagination -->
+    <div v-if="postsStore.posts.length > 0 && totalPages > 1" class="pagination">
+      <button
+        class="pagination-btn"
+        :disabled="currentPage === 1"
+        @click="goToPage(currentPage - 1)"
+      >
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        Previous
+      </button>
+      <div class="pagination-info">
+        Page {{ currentPage }} of {{ totalPages }}
+        <span class="pagination-total">({{ postsStore.total }} posts)</span>
+      </div>
+      <button
+        class="pagination-btn"
+        :disabled="currentPage === totalPages"
+        @click="goToPage(currentPage + 1)"
+      >
+        Next
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
     </div>
 
     <ConfirmModal
@@ -407,5 +455,55 @@ const cancelDelete = () => {
 
 .no-accounts {
   color: var(--muted);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 16px;
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: var(--border-hover);
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.pagination-total {
+  color: var(--muted);
+  margin-left: 4px;
 }
 </style>

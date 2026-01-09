@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useMediaStore } from '@/stores'
 import type { MediaListItem } from '@/types'
 
@@ -16,6 +16,10 @@ const isLoadingPreview = ref(false)
 const mediaTypeFilter = ref<'all' | 'image' | 'video' | 'document'>('all')
 const mediaSizeFilter = ref<'all' | 'small' | 'medium' | 'large'>('all')
 const mediaSortOrder = ref<'newest' | 'oldest'>('newest')
+
+// Pagination
+const currentPage = ref(1)
+const pageSize = 24
 
 // Filtered and sorted media
 const filteredMedia = computed(() => {
@@ -47,8 +51,28 @@ const filteredMedia = computed(() => {
   })
 })
 
+// Paginated filtered media
+const totalPages = computed(() => Math.ceil(filteredMedia.value.length / pageSize))
+
+const paginatedMedia = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  const end = start + pageSize
+  return filteredMedia.value.slice(start, end)
+})
+
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
+}
+
+// Reset to page 1 when filters change
+watch([mediaTypeFilter, mediaSizeFilter, mediaSortOrder], () => {
+  currentPage.value = 1
+})
+
 onMounted(() => {
-  mediaStore.fetchMedia()
+  mediaStore.fetchMedia({ limit: 500 })
 })
 
 const handleFileSelect = async (event: Event) => {
@@ -261,7 +285,7 @@ const closePreviewModal = () => {
 
     <div v-else class="media-grid">
       <div
-        v-for="media in filteredMedia"
+        v-for="media in paginatedMedia"
         :key="media.id"
         class="media-item"
         @click="openPreviewModal(media)"
@@ -290,6 +314,34 @@ const closePreviewModal = () => {
           <span class="processing-text">Creating variants...</span>
         </div>
       </div>
+    </div>
+
+    <!-- Pagination -->
+    <div v-if="filteredMedia.length > 0 && totalPages > 1" class="pagination">
+      <button
+        class="pagination-btn"
+        :disabled="currentPage === 1"
+        @click="goToPage(currentPage - 1)"
+      >
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        Previous
+      </button>
+      <div class="pagination-info">
+        Page {{ currentPage }} of {{ totalPages }}
+        <span class="pagination-total">({{ filteredMedia.length }} items)</span>
+      </div>
+      <button
+        class="pagination-btn"
+        :disabled="currentPage === totalPages"
+        @click="goToPage(currentPage + 1)"
+      >
+        Next
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
     </div>
 
     <!-- Delete Confirmation Modal -->
@@ -942,5 +994,55 @@ const closePreviewModal = () => {
   min-height: 200px;
   background: rgba(0, 0, 0, 0.5);
   border-radius: var(--radius-md);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 16px;
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: var(--border-hover);
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.pagination-total {
+  color: var(--muted);
+  margin-left: 4px;
 }
 </style>
