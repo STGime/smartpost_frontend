@@ -1,10 +1,20 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore, useUserStore } from '@/stores'
 import LoginModal from '@/components/LoginModal.vue'
 
+const route = useRoute()
 const authStore = useAuthStore()
 const userStore = useUserStore()
+
+// Check if nav item is active (exact match for /app, prefix match for others)
+const isNavActive = computed(() => (itemPath: string) => {
+  if (itemPath === '/app') {
+    return route.path === '/app'
+  }
+  return route.path.startsWith(itemPath)
+})
 const isSidebarOpen = ref(false)
 const currentYear = new Date().getFullYear()
 
@@ -53,8 +63,7 @@ onMounted(() => {
             v-for="item in navigation"
             :key="item.name"
             :to="item.to"
-            class="nav-item"
-            active-class="nav-item-active"
+            :class="['nav-item', { 'nav-item-active': isNavActive(item.to) }]"
             @click="isSidebarOpen = false"
           >
             <span class="nav-icon">
