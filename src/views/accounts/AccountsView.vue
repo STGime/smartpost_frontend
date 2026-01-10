@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useSocialAccountsStore } from '@/stores'
 import PlatformIcon from '@/components/PlatformIcon.vue'
 import type { SocialAccount } from '@/types'
@@ -8,6 +8,17 @@ const socialAccountsStore = useSocialAccountsStore()
 
 onMounted(() => {
   socialAccountsStore.fetchAccounts()
+})
+
+// Sort accounts by platform to group same platforms together
+const sortedAccounts = computed(() => {
+  return [...socialAccountsStore.accounts].sort((a, b) => {
+    // First sort by platform name
+    const platformCompare = a.platform.localeCompare(b.platform)
+    if (platformCompare !== 0) return platformCompare
+    // Then by username within same platform
+    return (a.username || '').localeCompare(b.username || '')
+  })
 })
 
 const getAccountStatus = (account: SocialAccount): string => {
@@ -58,7 +69,7 @@ const handleDelete = async (accountId: string) => {
 
     <div v-else class="accounts-list">
       <div
-        v-for="account in socialAccountsStore.accounts"
+        v-for="account in sortedAccounts"
         :key="account.id"
         class="account-card card"
       >

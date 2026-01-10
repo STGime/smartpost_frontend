@@ -65,10 +65,18 @@ const accountCompatibility = computed(() => {
 })
 
 // Use all accounts, not just active ones (the store might filter incorrectly)
+// Sort by platform to group same platforms together
 const availableAccounts = computed(() => {
   // First try activeAccounts, if empty fall back to all accounts
   const active = socialAccountsStore.activeAccounts
-  return active.length > 0 ? active : socialAccountsStore.accounts
+  const accounts = active.length > 0 ? active : socialAccountsStore.accounts
+
+  // Sort by platform name, then by username within same platform
+  return [...accounts].sort((a, b) => {
+    const platformCompare = a.platform.localeCompare(b.platform)
+    if (platformCompare !== 0) return platformCompare
+    return (a.username || '').localeCompare(b.username || '')
+  })
 })
 
 // Get full account objects for selected accounts
