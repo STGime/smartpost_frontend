@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useSocialAccountsStore } from '@/stores'
-import type { SocialPlatform } from '@/types'
+import type { SocialPlatform, PlatformInfo } from '@/types'
 import PlatformIcon from '@/components/PlatformIcon.vue'
 
 const socialAccountsStore = useSocialAccountsStore()
@@ -10,8 +10,32 @@ const blueskyIdentifier = ref('')
 const blueskyPassword = ref('')
 const isConnectingBluesky = ref(false)
 
+// Modal state for platforms requiring logout
+const showLogoutModal = ref(false)
+const pendingPlatform = ref<PlatformInfo | null>(null)
+
+// Platforms that require manual logout to connect a different account
+// These platforms don't support forcing account selection via OAuth parameters
+const platformLogoutUrls: Record<string, string> = {
+  tiktok: 'https://www.tiktok.com/logout',
+  x: 'https://twitter.com/logout',
+  linkedin: 'https://www.linkedin.com/m/logout',
+}
+
+const requiresLogoutPlatforms: SocialPlatform[] = ['tiktok', 'x', 'linkedin']
+
+const requiresLogout = (platform: SocialPlatform): boolean => {
+  return requiresLogoutPlatforms.includes(platform)
+}
+
+// Check if user already has accounts connected for this platform
+const hasExistingAccount = (platform: SocialPlatform): boolean => {
+  return socialAccountsStore.accounts.some(acc => acc.platform === platform)
+}
+
 onMounted(() => {
   socialAccountsStore.fetchPlatforms()
+  socialAccountsStore.fetchAccounts()
 })
 
 const handleConnect = async (platform: SocialPlatform) => {
@@ -19,6 +43,20 @@ const handleConnect = async (platform: SocialPlatform) => {
     return // Use the Bluesky form instead
   }
 
+  // If platform requires logout and user has existing account, show modal
+  if (requiresLogout(platform) && hasExistingAccount(platform)) {
+    const platformInfo = socialAccountsStore.platforms.find(p => p.id === platform)
+    if (platformInfo) {
+      pendingPlatform.value = platformInfo
+      showLogoutModal.value = true
+      return
+    }
+  }
+
+  await proceedWithOAuth(platform)
+}
+
+const proceedWithOAuth = async (platform: SocialPlatform) => {
   try {
     const { authorizationUrl } = await socialAccountsStore.initiateOAuth(
       platform,
@@ -28,6 +66,27 @@ const handleConnect = async (platform: SocialPlatform) => {
   } catch {
     // Error handled in store
   }
+}
+
+const openPlatformLogout = () => {
+  if (pendingPlatform.value) {
+    const logoutUrl = platformLogoutUrls[pendingPlatform.value.id]
+    if (logoutUrl) {
+      window.open(logoutUrl, '_blank')
+    }
+  }
+}
+
+const continueConnect = async () => {
+  if (pendingPlatform.value) {
+    showLogoutModal.value = false
+    await proceedWithOAuth(pendingPlatform.value.id)
+  }
+}
+
+const closeModal = () => {
+  showLogoutModal.value = false
+  pendingPlatform.value = null
 }
 
 const handleConnectBluesky = async () => {
@@ -125,6 +184,59 @@ const handleConnectBluesky = async () => {
         </div>
       </div>
     </div>
+
+    <!-- Logout Modal for platforms requiring account switch -->
+    <Teleport to="body">
+      <div v-if="showLogoutModal" class="modal-overlay" @click.self="closeModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="modal-icon">
+              <PlatformIcon v-if="pendingPlatform" :platform="pendingPlatform.id" size="lg" />
+            </div>
+            <h2>Connect Another {{ pendingPlatform?.name }} Account</h2>
+          </div>
+
+          <div class="modal-body">
+            <p class="modal-description">
+              To connect a different {{ pendingPlatform?.name }} account, you need to log out of
+              {{ pendingPlatform?.name }} in your browser first.
+            </p>
+
+            <div class="modal-steps">
+              <div class="step">
+                <span class="step-number">1</span>
+                <span class="step-text">Click the button below to open {{ pendingPlatform?.name }} and log out</span>
+              </div>
+              <div class="step">
+                <span class="step-number">2</span>
+                <span class="step-text">Log in with the account you want to connect</span>
+              </div>
+              <div class="step">
+                <span class="step-number">3</span>
+                <span class="step-text">Come back here and click "Continue"</span>
+              </div>
+            </div>
+
+            <p class="modal-reassurance">
+              This won't affect your existing connections — you can post to all connected accounts.
+            </p>
+          </div>
+
+          <div class="modal-actions">
+            <button @click="closeModal" class="btn-cancel">Cancel</button>
+            <button @click="openPlatformLogout" class="btn-open-platform">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              Open {{ pendingPlatform?.name }}
+            </button>
+            <button @click="continueConnect" class="btn-continue">
+              Continue to Connect
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -273,5 +385,171 @@ const handleConnectBluesky = async () => {
 .btn-bluesky:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Logout Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  max-width: 480px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 24px 16px;
+  text-align: center;
+}
+
+.modal-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.modal-body {
+  padding: 0 24px 24px;
+}
+
+.modal-description {
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.modal-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.step-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.step-text {
+  font-size: 13px;
+  color: var(--text);
+  padding-top: 2px;
+}
+
+.modal-reassurance {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  padding: 12px;
+  background: rgba(34, 197, 94, 0.1);
+  border-radius: var(--radius-md);
+  margin: 0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  padding: 16px 24px;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid var(--border);
+}
+
+.btn-cancel {
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+
+.btn-open-platform {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-open-platform svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-open-platform:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-continue {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--accent);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-continue:hover {
+  opacity: 0.9;
 }
 </style>
