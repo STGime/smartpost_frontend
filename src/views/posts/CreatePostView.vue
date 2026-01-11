@@ -188,15 +188,16 @@ onMounted(async () => {
     selectedAccountIds.value = validAccountIds
 
     // Copy media - check if media still exists
+    // Note: PostMedia has both 'id' (join table ID) and 'mediaId' (actual media ID)
     const validMediaIds: string[] = []
     const missingMedia: string[] = []
     if (template.media) {
       for (const media of template.media) {
-        const exists = mediaStore.items.find(m => m.id === media.id)
+        const exists = mediaStore.items.find(m => m.id === media.mediaId)
         if (exists) {
-          validMediaIds.push(media.id)
+          validMediaIds.push(media.mediaId)
         } else {
-          missingMedia.push(media.name || media.id)
+          missingMedia.push(media.name || media.mediaId)
         }
       }
     }
