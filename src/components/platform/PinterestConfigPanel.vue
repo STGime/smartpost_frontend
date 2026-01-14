@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { PinterestConfiguration, MediaListItem, SocialAccount } from '@/types'
+import { ref, computed, watch, onMounted } from 'vue'
+import type { PinterestConfiguration, MediaListItem, SocialAccount, PinterestBoard } from '@/types'
+import { socialAccountsService } from '@/services/socialAccounts'
 import PinterestPostPreview from './previews/PinterestPostPreview.vue'
 
 const props = defineProps<{
@@ -15,6 +16,10 @@ const emit = defineEmits<{
   'update:modelValue': [value: PinterestConfiguration]
 }>()
 
+const boards = ref<PinterestBoard[]>([])
+const isLoadingBoards = ref(false)
+const boardsError = ref<string | null>(null)
+
 const config = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value)
@@ -26,6 +31,35 @@ const updateField = <K extends keyof PinterestConfiguration>(
 ) => {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
 }
+
+const fetchBoards = async () => {
+  if (!props.account?.id) return
+
+  isLoadingBoards.value = true
+  boardsError.value = null
+
+  try {
+    const response = await socialAccountsService.getPinterestBoards(props.account.id)
+    boards.value = response.boards
+  } catch (e: unknown) {
+    const error = e as { response?: { data?: { error?: string } } }
+    boardsError.value = error.response?.data?.error || 'Failed to load boards'
+  } finally {
+    isLoadingBoards.value = false
+  }
+}
+
+watch(() => props.account?.id, (newId) => {
+  if (newId) {
+    fetchBoards()
+  }
+}, { immediate: true })
+
+onMounted(() => {
+  if (props.account?.id) {
+    fetchBoards()
+  }
+})
 </script>
 
 <template>
@@ -107,12 +141,42 @@ const updateField = <K extends keyof PinterestConfiguration>(
         <span class="field-hint">{{ (config.caption || '').length }}/500 characters</span>
       </div>
 
-      <!-- Tip -->
-      <div class="config-tip">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span>Board selection will be available after connecting your Pinterest account with board access.</span>
+      <!-- Board Selection -->
+      <div class="config-field">
+        <label class="field-label">
+          Board
+          <span class="required">*</span>
+        </label>
+        <div v-if="!account" class="board-notice">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Connect a Pinterest account to select a board.</span>
+        </div>
+        <div v-else-if="isLoadingBoards" class="board-loading">
+          <div class="spinner-small"></div>
+          <span>Loading boards...</span>
+        </div>
+        <div v-else-if="boardsError" class="board-error">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>{{ boardsError }}</span>
+          <button @click="fetchBoards" class="retry-btn">Retry</button>
+        </div>
+        <template v-else>
+          <select
+            class="form-input form-select"
+            :value="config.board_id || ''"
+            @change="updateField('board_id', ($event.target as HTMLSelectElement).value || undefined)"
+          >
+            <option value="">Select a board...</option>
+            <option v-for="board in boards" :key="board.id" :value="board.id">
+              {{ board.name }}
+            </option>
+          </select>
+          <span class="field-hint">Required - Select the board where this Pin will be saved</span>
+        </template>
       </div>
 
       <!-- Preview -->
@@ -185,6 +249,10 @@ const updateField = <K extends keyof PinterestConfiguration>(
   color: var(--muted);
 }
 
+.field-label .required {
+  color: #ef4444;
+}
+
 .field-hint {
   font-size: 11px;
   color: var(--muted);
@@ -200,9 +268,21 @@ const updateField = <K extends keyof PinterestConfiguration>(
   min-height: 50px;
 }
 
-.config-tip {
+.form-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.board-notice,
+.board-loading,
+.board-error {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   padding: 12px;
   background: rgba(189, 8, 28, 0.1);
@@ -211,12 +291,54 @@ const updateField = <K extends keyof PinterestConfiguration>(
   color: var(--muted);
 }
 
-.config-tip svg {
+.board-notice svg,
+.board-error svg {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
   color: #BD081C;
-  margin-top: 1px;
+}
+
+.board-loading {
+  background: rgba(100, 116, 139, 0.1);
+}
+
+.board-error {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.board-error svg {
+  color: #ef4444;
+}
+
+.spinner-small {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.retry-btn {
+  margin-left: auto;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.retry-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 /* Preview */

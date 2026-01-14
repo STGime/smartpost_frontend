@@ -1,5 +1,5 @@
 import api from './api'
-import type { SocialAccount, SocialPlatform, PlatformInfo } from '@/types'
+import type { SocialAccount, SocialPlatform, PlatformInfo, PinterestBoard } from '@/types'
 
 export const socialAccountsService = {
   async getPlatforms(): Promise<{ platforms: PlatformInfo[] }> {
@@ -45,6 +45,11 @@ export const socialAccountsService = {
       identifier,
       appPassword,
     })
+    return response.data
+  },
+
+  async getPinterestBoards(accountId: string): Promise<{ boards: PinterestBoard[] }> {
+    const response = await api.get<{ boards: PinterestBoard[] }>(`/social-accounts/${accountId}/boards`)
     return response.data
   },
 }

@@ -234,9 +234,18 @@ export interface YouTubeConfiguration extends BasePlatformConfiguration {
   notifySubscribers?: boolean
 }
 
+// Pinterest board
+export interface PinterestBoard {
+  id: string
+  name: string
+  description?: string
+  privacy?: 'PUBLIC' | 'PROTECTED' | 'SECRET'
+  pinCount?: number
+}
+
 // Pinterest configuration
 export interface PinterestConfiguration extends BasePlatformConfiguration {
-  board_ids?: string[]
+  board_id?: string
   link?: string
   video_cover_timestamp_ms?: number
   title?: string

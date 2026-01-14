@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useSocialAccountsStore } from '@/stores'
 import PlatformIcon from '@/components/PlatformIcon.vue'
 import type { SocialAccount } from '@/types'
 
 const socialAccountsStore = useSocialAccountsStore()
+
+const showDisconnectModal = ref(false)
+const pendingDeleteAccount = ref<SocialAccount | null>(null)
+const isDeleting = ref(false)
 
 onMounted(() => {
   socialAccountsStore.fetchAccounts()
@@ -30,10 +34,22 @@ const getAccountStatus = (account: SocialAccount): string => {
   return 'active'
 }
 
-const handleDelete = async (accountId: string) => {
-  if (confirm('Are you sure you want to disconnect this account?')) {
-    await socialAccountsStore.deleteAccount(accountId)
-  }
+const handleDelete = (account: SocialAccount) => {
+  pendingDeleteAccount.value = account
+  showDisconnectModal.value = true
+}
+
+const confirmDisconnect = async () => {
+  if (!pendingDeleteAccount.value) return
+  isDeleting.value = true
+  await socialAccountsStore.deleteAccount(pendingDeleteAccount.value.id)
+  isDeleting.value = false
+  closeModal()
+}
+
+const closeModal = () => {
+  showDisconnectModal.value = false
+  pendingDeleteAccount.value = null
 }
 </script>
 
@@ -85,12 +101,51 @@ const handleDelete = async (accountId: string) => {
           <span :class="['status-badge', `status-${getAccountStatus(account)}`]">
             {{ getAccountStatus(account) }}
           </span>
-          <button @click="handleDelete(account.id)" class="disconnect-btn">
+          <button @click="handleDelete(account)" class="disconnect-btn">
             Disconnect
           </button>
         </div>
       </div>
     </div>
+
+    <!-- Disconnect Confirmation Modal -->
+    <Teleport to="body">
+      <div v-if="showDisconnectModal" class="modal-overlay" @click.self="closeModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="modal-icon warning">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h2>Disconnect Account</h2>
+          </div>
+
+          <div class="modal-body">
+            <div v-if="pendingDeleteAccount" class="account-preview">
+              <PlatformIcon :platform="pendingDeleteAccount.platform" size="md" />
+              <div class="account-preview-details">
+                <p class="account-preview-name">{{ pendingDeleteAccount.displayName || pendingDeleteAccount.username }}</p>
+                <p class="account-preview-username">@{{ pendingDeleteAccount.username }}</p>
+              </div>
+            </div>
+
+            <p class="modal-description">
+              Are you sure you want to disconnect this account? You can reconnect it later.
+            </p>
+          </div>
+
+          <div class="modal-actions">
+            <button @click="closeModal" class="btn-cancel" :disabled="isDeleting">
+              Cancel
+            </button>
+            <button @click="confirmDisconnect" class="btn-disconnect" :disabled="isDeleting">
+              {{ isDeleting ? 'Disconnecting...' : 'Disconnect' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -266,5 +321,151 @@ const handleDelete = async (accountId: string) => {
   background: var(--error-soft);
   border-color: rgba(239, 68, 68, 0.4);
   color: #fca5a5;
+}
+
+/* Disconnect Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  max-width: 400px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 24px 16px;
+  text-align: center;
+}
+
+.modal-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-icon.warning {
+  background: var(--warning-soft);
+  color: #fcd34d;
+}
+
+.modal-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.modal-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.modal-body {
+  padding: 0 24px 24px;
+}
+
+.account-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+
+.account-preview-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.account-preview-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.account-preview-username {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.modal-description {
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+  margin: 0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  padding: 16px 24px;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid var(--border);
+}
+
+.btn-cancel {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+
+.btn-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-disconnect {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  background: #ef4444;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-disconnect:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.btn-disconnect:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 </style>
