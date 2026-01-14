@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useUserStore, useAuthStore } from '@/stores'
 
 const userStore = useUserStore()
 const authStore = useAuthStore()
-
-const displayName = ref('')
-const isSaving = ref(false)
-const saveSuccess = ref(false)
 
 // Password change state
 const currentPassword = ref('')
@@ -30,26 +26,6 @@ const canSubmitPassword = computed(() =>
 onMounted(() => {
   userStore.fetchProfile()
 })
-
-watch(() => userStore.profile, (profile) => {
-  if (profile) {
-    displayName.value = profile.display_name || ''
-  }
-}, { immediate: true })
-
-const handleSave = async () => {
-  isSaving.value = true
-  saveSuccess.value = false
-  try {
-    await userStore.updateProfile({ display_name: displayName.value })
-    saveSuccess.value = true
-    setTimeout(() => saveSuccess.value = false, 3000)
-  } catch {
-    // Error handled in store
-  } finally {
-    isSaving.value = false
-  }
-}
 
 const handlePasswordChange = async () => {
   if (!canSubmitPassword.value) return
@@ -94,11 +70,7 @@ const handlePasswordChange = async () => {
         </div>
       </div>
 
-      <form @submit.prevent="handleSave" class="settings-form">
-        <div v-if="saveSuccess" class="alert-success">
-          Profile updated successfully
-        </div>
-
+      <div class="settings-form">
         <div class="form-group">
           <label class="form-label">Email</label>
           <input
@@ -107,29 +79,8 @@ const handlePasswordChange = async () => {
             disabled
             class="form-input form-input-disabled"
           />
-          <p class="form-hint">Email cannot be changed</p>
         </div>
-
-        <div class="form-group">
-          <label class="form-label">Display Name</label>
-          <input
-            v-model="displayName"
-            type="text"
-            class="form-input"
-            placeholder="Your display name"
-          />
-        </div>
-
-        <div class="form-actions">
-          <button
-            type="submit"
-            :disabled="isSaving"
-            class="btn-primary"
-          >
-            {{ isSaving ? 'Saving...' : 'Save Changes' }}
-          </button>
-        </div>
-      </form>
+      </div>
     </div>
 
     <!-- Security Section -->
@@ -336,11 +287,6 @@ const handlePasswordChange = async () => {
   background: rgba(31, 41, 55, 0.5);
   color: var(--muted);
   cursor: not-allowed;
-}
-
-.form-hint {
-  font-size: 11px;
-  color: var(--muted);
 }
 
 .form-input-error {

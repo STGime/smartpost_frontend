@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useSocialAccountsStore } from '@/stores'
 import type { SocialPlatform, PlatformInfo } from '@/types'
 import PlatformIcon from '@/components/PlatformIcon.vue'
