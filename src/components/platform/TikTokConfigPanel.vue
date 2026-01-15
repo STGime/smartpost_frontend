@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { TikTokConfiguration, MediaListItem, SocialAccount } from '@/types'
+import { computed, ref, onMounted, watch } from 'vue'
+import type { TikTokConfiguration, TikTokCreatorInfo, TikTokPrivacyLevel, MediaListItem, SocialAccount } from '@/types'
+import { socialAccountsService } from '@/services/socialAccounts'
 import TikTokPostPreview from './previews/TikTokPostPreview.vue'
 
 const props = defineProps<{
@@ -26,6 +27,66 @@ const updateField = <K extends keyof TikTokConfiguration>(
 ) => {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
 }
+
+// Creator info state
+const creatorInfo = ref<TikTokCreatorInfo | null>(null)
+const creatorInfoLoading = ref(false)
+const creatorInfoError = ref<string | null>(null)
+
+// Determine if this is a photo post (no duet/stitch available)
+const isPhotoPost = computed(() => {
+  if (!props.selectedMedia || props.selectedMedia.length === 0) return false
+  return props.selectedMedia.every(m => m.type === 'image')
+})
+
+// Privacy level options with labels
+const privacyLevelLabels: Record<TikTokPrivacyLevel, string> = {
+  'PUBLIC_TO_EVERYONE': 'Everyone',
+  'MUTUAL_FOLLOW_FRIENDS': 'Friends',
+  'FOLLOWER_OF_CREATOR': 'Followers',
+  'SELF_ONLY': 'Only me'
+}
+
+// Check if "Only me" should be disabled (when branded content is selected)
+const isOnlyMeDisabled = computed(() => {
+  return config.value.brandContentToggle === true
+})
+
+// Fetch creator info when account changes
+async function fetchCreatorInfo() {
+  if (!props.account?.id) return
+
+  creatorInfoLoading.value = true
+  creatorInfoError.value = null
+
+  try {
+    creatorInfo.value = await socialAccountsService.getTikTokCreatorInfo(props.account.id)
+  } catch (error) {
+    creatorInfoError.value = error instanceof Error ? error.message : 'Failed to load creator info'
+    console.error('Failed to fetch TikTok creator info:', error)
+  } finally {
+    creatorInfoLoading.value = false
+  }
+}
+
+onMounted(() => {
+  if (props.account?.id) {
+    fetchCreatorInfo()
+  }
+})
+
+watch(() => props.account?.id, (newId) => {
+  if (newId) {
+    fetchCreatorInfo()
+  }
+})
+
+// Handle privacy level change - clear if branded content disables "Only me"
+watch(() => config.value.brandContentToggle, (isBranded) => {
+  if (isBranded && config.value.privacyLevel === 'SELF_ONLY') {
+    updateField('privacyLevel', undefined)
+  }
+})
 </script>
 
 <template>
@@ -40,6 +101,34 @@ const updateField = <K extends keyof TikTokConfiguration>(
     </div>
 
     <div class="config-body">
+      <!-- Creator Account Info (TikTok UX Requirement) -->
+      <div class="creator-info-section" v-if="account">
+        <div v-if="creatorInfoLoading" class="creator-info loading">
+          <div class="loading-spinner"></div>
+          <span>Loading account info...</span>
+        </div>
+        <div v-else-if="creatorInfoError" class="creator-info error">
+          <span class="error-icon">!</span>
+          <span>{{ creatorInfoError }}</span>
+          <button type="button" class="retry-btn" @click="fetchCreatorInfo">Retry</button>
+        </div>
+        <div v-else class="creator-info">
+          <img
+            v-if="creatorInfo?.creatorAvatarUrl"
+            :src="creatorInfo.creatorAvatarUrl"
+            :alt="creatorInfo.creatorNickname"
+            class="creator-avatar"
+          />
+          <div v-else class="creator-avatar placeholder">
+            {{ (account?.displayName || account?.username || 'T').charAt(0).toUpperCase() }}
+          </div>
+          <div class="creator-details">
+            <span class="creator-name">{{ creatorInfo?.creatorNickname || account?.displayName || account?.username }}</span>
+            <span class="creator-username">@{{ creatorInfo?.creatorUsername || account?.username }}</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Video Title -->
       <div class="config-field">
         <label class="field-label">
@@ -55,6 +144,33 @@ const updateField = <K extends keyof TikTokConfiguration>(
           maxlength="150"
         />
         <span class="field-hint">Displayed in search results</span>
+      </div>
+
+      <!-- Privacy Level (TikTok UX Requirement: dropdown with no default) -->
+      <div class="config-field" v-if="!config.draft">
+        <label class="field-label">
+          Who can view this video
+          <span class="required">*</span>
+        </label>
+        <select
+          class="form-select"
+          :value="config.privacyLevel || ''"
+          @change="updateField('privacyLevel', ($event.target as HTMLSelectElement).value as TikTokPrivacyLevel || undefined)"
+        >
+          <option value="" disabled>Select visibility...</option>
+          <option
+            v-for="level in (creatorInfo?.privacyLevelOptions || ['PUBLIC_TO_EVERYONE', 'MUTUAL_FOLLOW_FRIENDS', 'SELF_ONLY'] as TikTokPrivacyLevel[])"
+            :key="level"
+            :value="level"
+            :disabled="level === 'SELF_ONLY' && isOnlyMeDisabled"
+          >
+            {{ privacyLevelLabels[level as TikTokPrivacyLevel] }}
+            <template v-if="level === 'SELF_ONLY' && isOnlyMeDisabled"> (unavailable for branded content)</template>
+          </option>
+        </select>
+        <span v-if="isOnlyMeDisabled && config.privacyLevel === 'SELF_ONLY'" class="field-warning">
+          Branded content visibility cannot be set to private
+        </span>
       </div>
 
       <!-- Save as Draft -->
@@ -85,6 +201,72 @@ const updateField = <K extends keyof TikTokConfiguration>(
         </div>
       </div>
 
+      <!-- Interaction Settings (TikTok UX Requirement: "Allow" checkboxes, unchecked by default) -->
+      <div class="config-field" v-if="!config.draft">
+        <label class="field-label">Interaction Settings</label>
+        <div class="checkbox-group">
+          <!-- Allow Comments -->
+          <div :class="['checkbox-row', { disabled: creatorInfo?.commentDisabled }]">
+            <input
+              type="checkbox"
+              id="tiktok-allow-comments"
+              :checked="config.allowComment"
+              :disabled="creatorInfo?.commentDisabled"
+              @change="updateField('allowComment', ($event.target as HTMLInputElement).checked)"
+            />
+            <label for="tiktok-allow-comments" class="checkbox-label">
+              <span class="checkbox-box"></span>
+              <span class="checkbox-text">
+                Allow Comments
+                <span v-if="creatorInfo?.commentDisabled" class="checkbox-hint disabled-hint">
+                  Disabled in your TikTok settings
+                </span>
+              </span>
+            </label>
+          </div>
+
+          <!-- Allow Duet (hidden for photo posts per TikTok guidelines) -->
+          <div v-if="!isPhotoPost" :class="['checkbox-row', { disabled: creatorInfo?.duetDisabled }]">
+            <input
+              type="checkbox"
+              id="tiktok-allow-duet"
+              :checked="config.allowDuet"
+              :disabled="creatorInfo?.duetDisabled"
+              @change="updateField('allowDuet', ($event.target as HTMLInputElement).checked)"
+            />
+            <label for="tiktok-allow-duet" class="checkbox-label">
+              <span class="checkbox-box"></span>
+              <span class="checkbox-text">
+                Allow Duet
+                <span v-if="creatorInfo?.duetDisabled" class="checkbox-hint disabled-hint">
+                  Disabled in your TikTok settings
+                </span>
+              </span>
+            </label>
+          </div>
+
+          <!-- Allow Stitch (hidden for photo posts per TikTok guidelines) -->
+          <div v-if="!isPhotoPost" :class="['checkbox-row', { disabled: creatorInfo?.stitchDisabled }]">
+            <input
+              type="checkbox"
+              id="tiktok-allow-stitch"
+              :checked="config.allowStitch"
+              :disabled="creatorInfo?.stitchDisabled"
+              @change="updateField('allowStitch', ($event.target as HTMLInputElement).checked)"
+            />
+            <label for="tiktok-allow-stitch" class="checkbox-label">
+              <span class="checkbox-box"></span>
+              <span class="checkbox-text">
+                Allow Stitch
+                <span v-if="creatorInfo?.stitchDisabled" class="checkbox-hint disabled-hint">
+                  Disabled in your TikTok settings
+                </span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
       <!-- AI Generated Content Disclosure -->
       <div class="config-field">
         <div class="checkbox-row">
@@ -104,82 +286,53 @@ const updateField = <K extends keyof TikTokConfiguration>(
         </div>
       </div>
 
-      <!-- Engagement Settings -->
+      <!-- Content Disclosure Toggle (TikTok UX Requirement: wrapper toggle, off by default) -->
       <div class="config-field">
-        <label class="field-label">Engagement Settings</label>
-        <div class="checkbox-group">
-          <div class="checkbox-row">
+        <div class="disclosure-toggle">
+          <label class="field-label">Content Disclosure</label>
+          <label class="switch">
             <input
               type="checkbox"
-              id="tiktok-comments"
-              :checked="config.disableComment"
-              @change="updateField('disableComment', ($event.target as HTMLInputElement).checked)"
+              :checked="config.contentDisclosureEnabled"
+              @change="updateField('contentDisclosureEnabled', ($event.target as HTMLInputElement).checked)"
             />
-            <label for="tiktok-comments" class="checkbox-label">
-              <span class="checkbox-box"></span>
-              <span class="checkbox-text">Disable Comments</span>
-            </label>
-          </div>
-          <div class="checkbox-row">
-            <input
-              type="checkbox"
-              id="tiktok-duet"
-              :checked="config.disableDuet"
-              @change="updateField('disableDuet', ($event.target as HTMLInputElement).checked)"
-            />
-            <label for="tiktok-duet" class="checkbox-label">
-              <span class="checkbox-box"></span>
-              <span class="checkbox-text">Disable Duet</span>
-            </label>
-          </div>
-          <div class="checkbox-row">
-            <input
-              type="checkbox"
-              id="tiktok-stitch"
-              :checked="config.disableStitch"
-              @change="updateField('disableStitch', ($event.target as HTMLInputElement).checked)"
-            />
-            <label for="tiktok-stitch" class="checkbox-label">
-              <span class="checkbox-box"></span>
-              <span class="checkbox-text">Disable Stitch</span>
-            </label>
-          </div>
+            <span class="slider"></span>
+          </label>
         </div>
-      </div>
 
-      <!-- Brand Content -->
-      <div class="config-field">
-        <label class="field-label">Brand Content</label>
-        <div class="checkbox-group">
-          <div class="checkbox-row">
-            <input
-              type="checkbox"
-              id="tiktok-brand-content"
-              :checked="config.brandContentToggle"
-              @change="updateField('brandContentToggle', ($event.target as HTMLInputElement).checked)"
-            />
-            <label for="tiktok-brand-content" class="checkbox-label">
-              <span class="checkbox-box"></span>
-              <span class="checkbox-text">
-                <strong>Paid Partnership</strong>
-                <span class="checkbox-hint">This is a paid promotion</span>
-              </span>
-            </label>
-          </div>
-          <div class="checkbox-row">
-            <input
-              type="checkbox"
-              id="tiktok-brand-organic"
-              :checked="config.brandOrganicToggle"
-              @change="updateField('brandOrganicToggle', ($event.target as HTMLInputElement).checked)"
-            />
-            <label for="tiktok-brand-organic" class="checkbox-label">
-              <span class="checkbox-box"></span>
-              <span class="checkbox-text">
-                <strong>Your Brand</strong>
-                <span class="checkbox-hint">Promoting your own brand/business</span>
-              </span>
-            </label>
+        <!-- Brand Content Options (shown when disclosure is enabled) -->
+        <div v-if="config.contentDisclosureEnabled" class="disclosure-options">
+          <div class="checkbox-group">
+            <div class="checkbox-row">
+              <input
+                type="checkbox"
+                id="tiktok-brand-organic"
+                :checked="config.brandOrganicToggle"
+                @change="updateField('brandOrganicToggle', ($event.target as HTMLInputElement).checked)"
+              />
+              <label for="tiktok-brand-organic" class="checkbox-label">
+                <span class="checkbox-box"></span>
+                <span class="checkbox-text">
+                  <strong>Your Brand</strong>
+                  <span class="checkbox-hint">Promoting your own brand/business</span>
+                </span>
+              </label>
+            </div>
+            <div class="checkbox-row">
+              <input
+                type="checkbox"
+                id="tiktok-brand-content"
+                :checked="config.brandContentToggle"
+                @change="updateField('brandContentToggle', ($event.target as HTMLInputElement).checked)"
+              />
+              <label for="tiktok-brand-content" class="checkbox-label">
+                <span class="checkbox-box"></span>
+                <span class="checkbox-text">
+                  <strong>Branded Content</strong>
+                  <span class="checkbox-hint">Paid promotion for another brand</span>
+                </span>
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -199,6 +352,20 @@ const updateField = <K extends keyof TikTokConfiguration>(
           maxlength="2200"
         ></textarea>
         <span class="field-hint">{{ (config.caption || '').length }}/2200 characters</span>
+      </div>
+
+      <!-- User Consent Declaration (TikTok UX Requirement) -->
+      <div class="consent-declaration">
+        <p v-if="config.brandContentToggle">
+          By posting, you agree to TikTok's
+          <a href="https://www.tiktok.com/legal/page/global/bc-policy/en" target="_blank" rel="noopener">Branded Content Policy</a>
+          and
+          <a href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en" target="_blank" rel="noopener">Music Usage Confirmation</a>.
+        </p>
+        <p v-else>
+          By posting, you agree to TikTok's
+          <a href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en" target="_blank" rel="noopener">Music Usage Confirmation</a>.
+        </p>
       </div>
 
       <!-- Preview -->
@@ -254,6 +421,106 @@ const updateField = <K extends keyof TikTokConfiguration>(
   gap: 16px;
 }
 
+/* Creator Info Section */
+.creator-info-section {
+  margin-bottom: 8px;
+}
+
+.creator-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-md);
+}
+
+.creator-info.loading,
+.creator-info.error {
+  justify-content: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.creator-info.error {
+  color: #f87171;
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: #f87171;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.retry-btn {
+  margin-left: 8px;
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.retry-btn:hover {
+  border-color: var(--accent);
+}
+
+.creator-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.creator-avatar.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ff0050, #00f2ea);
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.creator-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.creator-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.creator-username {
+  font-size: 12px;
+  color: var(--muted);
+}
+
 .config-field {
   display: flex;
   flex-direction: column;
@@ -271,8 +538,48 @@ const updateField = <K extends keyof TikTokConfiguration>(
   color: var(--muted);
 }
 
+.field-label .required {
+  color: #f87171;
+}
+
 .field-hint {
   font-size: 11px;
+  color: var(--muted);
+}
+
+.field-warning {
+  font-size: 11px;
+  color: #fbbf24;
+}
+
+/* Select dropdown */
+.form-select {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23888'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.form-select option {
+  background: #1e293b;
+  color: var(--text);
+}
+
+.form-select option:disabled {
   color: var(--muted);
 }
 
@@ -330,6 +637,14 @@ const updateField = <K extends keyof TikTokConfiguration>(
   align-items: flex-start;
 }
 
+.checkbox-row.disabled {
+  opacity: 0.5;
+}
+
+.checkbox-row.disabled .checkbox-label {
+  cursor: not-allowed;
+}
+
 .checkbox-row input[type="checkbox"] {
   display: none;
 }
@@ -375,6 +690,11 @@ const updateField = <K extends keyof TikTokConfiguration>(
   transform: scale(1);
 }
 
+.checkbox-row input:disabled + .checkbox-label .checkbox-box {
+  background: rgba(15, 23, 42, 0.4);
+  border-color: var(--border);
+}
+
 .checkbox-text {
   display: flex;
   flex-direction: column;
@@ -390,6 +710,93 @@ const updateField = <K extends keyof TikTokConfiguration>(
 .checkbox-hint {
   font-size: 11px;
   color: var(--muted);
+}
+
+.checkbox-hint.disabled-hint {
+  color: #fbbf24;
+}
+
+/* Content Disclosure Toggle */
+.disclosure-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border);
+  transition: 0.2s;
+  border-radius: 22px;
+}
+
+.slider::before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.2s;
+  border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+  background-color: var(--accent);
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(18px);
+}
+
+.disclosure-options {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-md);
+  border-left: 2px solid var(--accent);
+}
+
+/* Consent Declaration */
+.consent-declaration {
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.consent-declaration p {
+  margin: 0;
+}
+
+.consent-declaration a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.consent-declaration a:hover {
+  text-decoration: underline;
 }
 
 /* Preview */

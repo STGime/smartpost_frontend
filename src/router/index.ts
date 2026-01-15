@@ -75,6 +75,12 @@ const routes: RouteRecordRaw[] = [
         props: true,
       },
       {
+        path: 'posts/:id/edit',
+        name: 'edit-post',
+        component: () => import('@/views/posts/CreatePostView.vue'),
+        props: true,
+      },
+      {
         path: 'calendar',
         name: 'calendar',
         component: () => import('@/views/calendar/CalendarView.vue'),

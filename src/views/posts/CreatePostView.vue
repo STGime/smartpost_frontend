@@ -9,11 +9,20 @@ import HashtagLimitWarnings from '@/components/HashtagLimitWarnings.vue'
 import { checkPlatformMediaCompatibility } from '@/config/platformLimits'
 import type { MediaListItem, PlatformConfigurations, SocialPlatform } from '@/types'
 
+// Props for edit mode
+const props = defineProps<{
+  id?: string
+}>()
+
 const router = useRouter()
 const postsStore = usePostsStore()
 const mediaStore = useMediaStore()
 const socialAccountsStore = useSocialAccountsStore()
 const tagsStore = useTagsStore()
+
+// Edit mode detection
+const isEditMode = computed(() => !!props.id)
+const isLoadingPost = ref(false)
 
 const caption = ref('')
 const hashtags = ref<string[]>([])
@@ -92,6 +101,43 @@ const selectedPlatforms = computed(() => {
   return [...new Set(platforms)]
 })
 
+// Validation for TikTok direct posts - privacy level is required
+const tiktokValidation = computed(() => {
+  const hasTikTok = selectedPlatforms.value.includes('tiktok')
+  if (!hasTikTok) return { valid: true, message: null }
+
+  const tiktokConfig = platformConfigurations.value.tiktok
+  const isDraft = tiktokConfig?.draft === true
+
+  // Privacy level only required for direct posts, not drafts
+  if (!isDraft && !tiktokConfig?.privacyLevel) {
+    return {
+      valid: false,
+      message: 'TikTok requires you to select who can view your video for direct posts'
+    }
+  }
+
+  return { valid: true, message: null }
+})
+
+// Overall form validation
+const formValidation = computed(() => {
+  const errors: string[] = []
+
+  if (selectedAccountIds.value.length === 0) {
+    errors.push('Select at least one social account')
+  }
+
+  if (!tiktokValidation.value.valid && tiktokValidation.value.message) {
+    errors.push(tiktokValidation.value.message)
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors
+  }
+})
+
 // Get full media objects for selected media (for carousel ordering)
 const selectedMediaItems = computed(() => {
   return mediaStore.items.filter(item => selectedMediaIds.value.includes(item.id))
@@ -160,6 +206,52 @@ onMounted(async () => {
   // Fetch all media items without status filter (matches MediaView behavior)
   await mediaStore.fetchMedia({ limit: 100 })
   await socialAccountsStore.fetchAccounts()
+
+  // Edit mode: Load existing post data
+  if (isEditMode.value && props.id) {
+    isLoadingPost.value = true
+    try {
+      await postsStore.fetchPostById(props.id)
+      const post = postsStore.currentPost
+      if (post) {
+        // Populate form fields from existing post
+        caption.value = post.caption || ''
+        hashtags.value = post.hashtags || []
+
+        // Copy platform configurations if they exist
+        if (post.platformConfigurations) {
+          platformConfigurations.value = { ...post.platformConfigurations }
+        }
+
+        // Copy social accounts - only those that still exist and are active
+        const validAccountIds: string[] = []
+        if (post.socialAccounts) {
+          for (const account of post.socialAccounts) {
+            const exists = availableAccounts.value.find(a => a.id === account.id)
+            if (exists) {
+              validAccountIds.push(account.id)
+            }
+          }
+        }
+        selectedAccountIds.value = validAccountIds
+
+        // Copy media - check if media still exists
+        const validMediaIds: string[] = []
+        if (post.media) {
+          for (const media of post.media) {
+            const exists = mediaStore.items.find(m => m.id === media.mediaId)
+            if (exists) {
+              validMediaIds.push(media.mediaId)
+            }
+          }
+        }
+        selectedMediaIds.value = validMediaIds
+      }
+    } finally {
+      isLoadingPost.value = false
+    }
+    return
+  }
 
   // Check if there's a template to load
   if (postsStore.templatePost) {
@@ -230,21 +322,36 @@ const handleSubmit = async () => {
       try {
         await tagsStore.saveTags(hashtags.value)
       } catch {
-        // Silently fail - don't block post creation
+        // Silently fail - don't block post creation/update
       }
     }
 
-    const post = await postsStore.createPost({
-      caption: caption.value,
-      hashtags: hashtags.value,
-      mediaIds: selectedMediaIds.value,
-      socialAccountIds: selectedAccountIds.value,
-      isDraft: true,
-      platformConfigurations: Object.keys(platformConfigurations.value).length > 0
-        ? platformConfigurations.value
-        : undefined,
-    })
-    router.push(`/app/posts/${post.id}`)
+    if (isEditMode.value && props.id) {
+      // Update existing post
+      await postsStore.updatePost(props.id, {
+        caption: caption.value,
+        hashtags: hashtags.value,
+        mediaIds: selectedMediaIds.value,
+        socialAccountIds: selectedAccountIds.value,
+        platformConfigurations: Object.keys(platformConfigurations.value).length > 0
+          ? platformConfigurations.value
+          : undefined,
+      })
+      router.push(`/app/posts/${props.id}`)
+    } else {
+      // Create new post
+      const post = await postsStore.createPost({
+        caption: caption.value,
+        hashtags: hashtags.value,
+        mediaIds: selectedMediaIds.value,
+        socialAccountIds: selectedAccountIds.value,
+        isDraft: true,
+        platformConfigurations: Object.keys(platformConfigurations.value).length > 0
+          ? platformConfigurations.value
+          : undefined,
+      })
+      router.push(`/app/posts/${post.id}`)
+    }
   } catch {
     // Error handled in store
   }
@@ -327,12 +434,17 @@ const closePreviewModal = () => {
 <template>
   <div class="create-post-page">
     <div class="page-header">
-      <h1>Create Post</h1>
-      <p>Compose and schedule your social media content</p>
+      <h1>{{ isEditMode ? 'Edit Post' : 'Create Post' }}</h1>
+      <p>{{ isEditMode ? 'Update your post content and settings' : 'Compose and schedule your social media content' }}</p>
     </div>
 
-    <!-- Template loaded notice -->
-    <div v-if="loadedFromTemplate" class="template-notice card">
+    <!-- Loading state for edit mode -->
+    <div v-if="isLoadingPost" class="loading-state">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Template loaded notice (only show in create mode) -->
+    <div v-if="loadedFromTemplate && !isEditMode" class="template-notice card">
       <div class="template-notice-content">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -352,7 +464,7 @@ const closePreviewModal = () => {
       </button>
     </div>
 
-    <form @submit.prevent="handleSubmit" class="create-form">
+    <form v-if="!isLoadingPost" @submit.prevent="handleSubmit" class="create-form">
       <!-- Account selection (FIRST) -->
       <div class="form-section card">
         <div class="section-label">
@@ -635,20 +747,31 @@ const closePreviewModal = () => {
         />
       </div>
 
+      <!-- Validation Errors -->
+      <div v-if="!formValidation.valid && formValidation.errors.length > 0" class="validation-errors">
+        <div v-for="error in formValidation.errors" :key="error" class="validation-error">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          {{ error }}
+        </div>
+      </div>
+
       <!-- Submit -->
       <div class="form-actions">
-        <RouterLink to="/app/posts" class="btn-secondary">
+        <RouterLink :to="isEditMode ? `/app/posts/${id}` : '/app/posts'" class="btn-secondary">
           Cancel
         </RouterLink>
         <button
           type="submit"
-          :disabled="selectedAccountIds.length === 0 || postsStore.isLoading"
+          :disabled="!formValidation.valid || postsStore.isLoading"
           class="btn-primary"
         >
           <svg v-if="!postsStore.isLoading" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="btn-icon">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            <path v-if="isEditMode" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          {{ postsStore.isLoading ? 'Creating...' : 'Create Draft' }}
+          {{ postsStore.isLoading ? (isEditMode ? 'Saving...' : 'Creating...') : (isEditMode ? 'Save Changes' : 'Create Draft') }}
         </button>
       </div>
     </form>
@@ -917,6 +1040,12 @@ const closePreviewModal = () => {
 }
 
 /* Loading/Empty States */
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 64px;
+}
+
 .loading-state-sm {
   display: flex;
   justify-content: center;
@@ -1195,6 +1324,30 @@ const closePreviewModal = () => {
 }
 
 /* Form Actions */
+.validation-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-md);
+}
+
+.validation-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #f87171;
+}
+
+.validation-error svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
 .form-actions {
   display: flex;
   gap: 12px;
