@@ -53,7 +53,7 @@ const previewMedia = computed(() => props.mediaItems[0] || null)
 
 <style scoped>
 .pin-preview {
-  max-width: 236px;
+  width: 236px;
   margin: 0 auto;
   background: #1e1e1e;
   border-radius: 16px;
@@ -63,14 +63,14 @@ const previewMedia = computed(() => props.mediaItems[0] || null)
 
 .pin-image {
   position: relative;
-  aspect-ratio: 2/3;
+  width: 100%;
   background: #2e2e2e;
 }
 
 .pin-image img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  display: block;
 }
 
 .pin-placeholder {

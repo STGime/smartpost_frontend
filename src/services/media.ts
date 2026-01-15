@@ -42,13 +42,19 @@ export const mediaService = {
   },
 
   async uploadFile(uploadUrl: string, file: File): Promise<void> {
-    await fetch(uploadUrl, {
+    const response = await fetch(uploadUrl, {
       method: 'PUT',
       body: file,
       headers: {
         'Content-Type': file.type,
       },
     })
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error')
+      console.error('GCS upload failed:', response.status, errorText)
+      throw new Error(`Upload failed: ${response.status} ${response.statusText}`)
+    }
   },
 
   async generateCarouselPDF(mediaIds: string[], title?: string): Promise<{
