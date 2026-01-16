@@ -10,6 +10,20 @@ const userStore = useUserStore()
 // Connected accounts - use actual count from social accounts store
 const connectedAccountsCount = computed(() => socialAccountsStore.accounts.length)
 
+// Accounts with issues (inactive, has error, or expired token)
+const accountsWithIssues = computed(() => {
+  const now = new Date()
+  return socialAccountsStore.accounts.filter(account => {
+    // Check if inactive
+    if (!account.isActive) return true
+    // Check if has connection error
+    if (account.connectionError) return true
+    // Check if token is expired
+    if (account.tokenExpiresAt && new Date(account.tokenExpiresAt) < now) return true
+    return false
+  })
+})
+
 onMounted(async () => {
   // Fetch all data in parallel
   await Promise.all([
@@ -26,6 +40,26 @@ onMounted(async () => {
     <div class="dashboard-header">
       <h1>Dashboard</h1>
       <p>Welcome back! Here's an overview of your activity.</p>
+    </div>
+
+    <!-- Account Issues Warning -->
+    <div v-if="accountsWithIssues.length > 0" class="accounts-warning">
+      <div class="warning-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <div class="warning-content">
+        <p class="warning-title">
+          {{ accountsWithIssues.length }} account{{ accountsWithIssues.length > 1 ? 's' : '' }} need{{ accountsWithIssues.length === 1 ? 's' : '' }} attention
+        </p>
+        <p class="warning-accounts">
+          {{ accountsWithIssues.map(a => `${a.username} (${a.platform})`).join(', ') }}
+        </p>
+      </div>
+      <RouterLink to="/app/accounts" class="warning-action">
+        View Accounts
+      </RouterLink>
     </div>
 
     <!-- Stats -->
@@ -382,5 +416,84 @@ onMounted(async () => {
 .status-failed {
   background: var(--error-soft);
   color: #fca5a5;
+}
+
+/* Account Issues Warning */
+.accounts-warning {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  border-radius: var(--radius-lg);
+  background: var(--warning-soft);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.warning-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: rgba(251, 191, 36, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fbbf24;
+}
+
+.warning-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.warning-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.warning-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fcd34d;
+  margin-bottom: 2px;
+}
+
+.warning-accounts {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.warning-action {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.warning-action:hover {
+  background: rgba(251, 191, 36, 0.3);
+}
+
+@media (max-width: 600px) {
+  .accounts-warning {
+    flex-wrap: wrap;
+  }
+
+  .warning-content {
+    flex-basis: calc(100% - 48px);
+  }
+
+  .warning-action {
+    width: 100%;
+    text-align: center;
+  }
 }
 </style>

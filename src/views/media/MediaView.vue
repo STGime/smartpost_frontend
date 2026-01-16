@@ -3,6 +3,12 @@ import { ref, computed, onMounted } from 'vue'
 import { useMediaStore } from '@/stores'
 import type { MediaListItem } from '@/types'
 
+// File size limits (must match backend)
+const MAX_IMAGE_SIZE_MB = 20
+const MAX_VIDEO_SIZE_MB = 20
+const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
+const MAX_VIDEO_SIZE_BYTES = MAX_VIDEO_SIZE_MB * 1024 * 1024
+
 const mediaStore = useMediaStore()
 const fileInput = ref<HTMLInputElement | null>(null)
 const showDeleteModal = ref(false)
@@ -72,6 +78,16 @@ const handleFileSelect = async (event: Event) => {
   if (!files?.length) return
 
   for (const file of Array.from(files)) {
+    // Validate file size before uploading
+    const isVideo = file.type.startsWith('video/')
+    const maxSize = isVideo ? MAX_VIDEO_SIZE_BYTES : MAX_IMAGE_SIZE_BYTES
+    const maxSizeMB = isVideo ? MAX_VIDEO_SIZE_MB : MAX_IMAGE_SIZE_MB
+
+    if (file.size > maxSize) {
+      mediaStore.error = `File "${file.name}" is too large. Maximum size is ${maxSizeMB}MB for ${isVideo ? 'videos' : 'images'}.`
+      continue
+    }
+
     try {
       await mediaStore.uploadMedia(file)
     } catch {
@@ -136,6 +152,7 @@ const closePreviewModal = () => {
       <div>
         <h1>Media Library</h1>
         <p>Upload and manage your images and videos</p>
+        <p class="size-limit-info">Maximum file size: {{ MAX_IMAGE_SIZE_MB }}MB for images, {{ MAX_VIDEO_SIZE_MB }}MB for videos</p>
       </div>
       <div>
         <input
@@ -446,6 +463,13 @@ const closePreviewModal = () => {
 .page-header p {
   font-size: 14px;
   color: var(--muted);
+}
+
+.size-limit-info {
+  font-size: 12px !important;
+  color: var(--muted);
+  opacity: 0.7;
+  margin-top: 4px;
 }
 
 .btn-icon {

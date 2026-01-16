@@ -9,6 +9,12 @@ import HashtagLimitWarnings from '@/components/HashtagLimitWarnings.vue'
 import { checkPlatformMediaCompatibility } from '@/config/platformLimits'
 import type { MediaListItem, PlatformConfigurations, SocialPlatform } from '@/types'
 
+// File size limits (must match backend)
+const MAX_IMAGE_SIZE_MB = 20
+const MAX_VIDEO_SIZE_MB = 20
+const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
+const MAX_VIDEO_SIZE_BYTES = MAX_VIDEO_SIZE_MB * 1024 * 1024
+
 // Props for edit mode
 const props = defineProps<{
   id?: string
@@ -388,6 +394,16 @@ const handleFileSelect = async (event: Event) => {
   if (!files?.length) return
 
   for (const file of Array.from(files)) {
+    // Validate file size before uploading
+    const isVideo = file.type.startsWith('video/')
+    const maxSize = isVideo ? MAX_VIDEO_SIZE_BYTES : MAX_IMAGE_SIZE_BYTES
+    const maxSizeMB = isVideo ? MAX_VIDEO_SIZE_MB : MAX_IMAGE_SIZE_MB
+
+    if (file.size > maxSize) {
+      mediaStore.error = `File "${file.name}" is too large. Maximum size is ${maxSizeMB}MB for ${isVideo ? 'videos' : 'images'}.`
+      continue
+    }
+
     try {
       await mediaStore.uploadMedia(file)
     } catch {
