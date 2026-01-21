@@ -17,12 +17,21 @@ const isRescheduling = ref(false)
 // Modal state
 const showDeleteModal = ref(false)
 const showCancelModal = ref(false)
+const showPublishModal = ref(false)
+
+// TikTok policy consent for publish modal
+const tiktokPolicyConsent = ref(false)
 
 onMounted(() => {
   postsStore.fetchPostById(postId)
 })
 
 const post = computed(() => postsStore.currentPost)
+
+// Check if post includes TikTok accounts (for policy consent requirement)
+const hasTikTokAccount = computed(() => {
+  return post.value?.socialAccounts?.some(account => account.platform === 'tiktok') ?? false
+})
 
 // Determine back path based on where user came from
 const backPath = computed(() => {
@@ -43,7 +52,13 @@ const confirmDelete = async () => {
   router.push(backPath.value)
 }
 
-const handlePublish = async () => {
+const openPublishModal = () => {
+  tiktokPolicyConsent.value = false
+  showPublishModal.value = true
+}
+
+const confirmPublish = async () => {
+  showPublishModal.value = false
   await postsStore.publishPost(postId)
 }
 
@@ -412,7 +427,7 @@ const useAsTemplate = () => {
         </RouterLink>
         <button
           v-if="post.status === 'draft'"
-          @click="handlePublish"
+          @click="openPublishModal"
           :disabled="postsStore.isLoading"
           class="btn-primary btn-lg"
         >
@@ -477,6 +492,82 @@ const useAsTemplate = () => {
       @confirm="confirmCancelSchedule"
       @cancel="showCancelModal = false"
     />
+
+    <!-- Publish Confirmation Modal (TikTok UX Requirement) -->
+    <Teleport to="body">
+      <div v-if="showPublishModal" class="modal-overlay" @click.self="showPublishModal = false">
+        <div class="publish-modal">
+          <div class="publish-modal-header">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+            <h3>Confirm Publish</h3>
+          </div>
+
+          <div class="publish-modal-body">
+            <p class="publish-message">
+              Your post will be published to {{ post?.socialAccounts?.length || 0 }} platform{{ (post?.socialAccounts?.length || 0) !== 1 ? 's' : '' }}.
+              This action cannot be undone.
+            </p>
+
+            <!-- TikTok Policy Consent (Required when posting to TikTok) -->
+            <div v-if="hasTikTokAccount" class="tiktok-consent-section">
+              <div class="consent-header">
+                <svg viewBox="0 0 24 24" fill="currentColor" class="tiktok-icon">
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                </svg>
+                <span>TikTok Policy Agreement</span>
+              </div>
+
+              <div class="policy-links">
+                <p>By publishing to TikTok, you agree to:</p>
+                <ul>
+                  <li><a href="https://www.tiktok.com/legal/music-usage-confirmation" target="_blank" rel="noopener">Music Usage Confirmation</a></li>
+                  <li><a href="https://www.tiktok.com/community-guidelines" target="_blank" rel="noopener">Community Guidelines</a></li>
+                  <li><a href="https://www.tiktok.com/legal/terms-of-service" target="_blank" rel="noopener">Terms of Service</a></li>
+                </ul>
+              </div>
+
+              <label class="consent-checkbox">
+                <input
+                  type="checkbox"
+                  v-model="tiktokPolicyConsent"
+                />
+                <span class="checkbox-mark"></span>
+                <span class="checkbox-label">I have read and agree to TikTok's policies</span>
+              </label>
+            </div>
+
+            <p class="processing-note">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Processing may take a few moments depending on file size and platform requirements.
+            </p>
+          </div>
+
+          <div class="publish-modal-footer">
+            <button
+              class="btn-secondary"
+              @click="showPublishModal = false"
+              :disabled="postsStore.isLoading"
+            >
+              Cancel
+            </button>
+            <button
+              class="btn-primary"
+              @click="confirmPublish"
+              :disabled="postsStore.isLoading || (hasTikTokAccount && !tiktokPolicyConsent)"
+            >
+              <svg v-if="postsStore.isLoading" class="btn-spinner" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="31.4" stroke-linecap="round" />
+              </svg>
+              {{ postsStore.isLoading ? 'Publishing...' : 'Confirm Publish' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -1227,6 +1318,230 @@ const useAsTemplate = () => {
   }
   50% {
     opacity: 0.4;
+  }
+}
+
+/* Publish Confirmation Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.publish-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.publish-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.publish-modal-header svg {
+  width: 24px;
+  height: 24px;
+  color: var(--accent);
+}
+
+.publish-modal-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.publish-modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.publish-message {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.tiktok-consent-section {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.consent-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ff0050;
+}
+
+.tiktok-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.policy-links {
+  margin-bottom: 16px;
+}
+
+.policy-links p {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 8px 0;
+}
+
+.policy-links ul {
+  margin: 0;
+  padding: 0 0 0 20px;
+  list-style: disc;
+}
+
+.policy-links li {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.policy-links a {
+  color: var(--accent-light);
+  text-decoration: none;
+}
+
+.policy-links a:hover {
+  text-decoration: underline;
+}
+
+.consent-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  transition: border-color 0.15s;
+}
+
+.consent-checkbox:hover {
+  border-color: var(--border-hover);
+}
+
+.consent-checkbox input {
+  display: none;
+}
+
+.checkbox-mark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.checkbox-mark::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: var(--accent);
+  border-radius: 2px;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.15s;
+}
+
+.consent-checkbox input:checked + .checkbox-mark {
+  border-color: var(--accent);
+}
+
+.consent-checkbox input:checked + .checkbox-mark::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.checkbox-label {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.processing-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  color: #93c5fd;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.processing-note svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.publish-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+}
+
+.publish-modal-footer .btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.publish-modal-footer .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+}
+
+@media (max-width: 500px) {
+  .publish-modal-footer {
+    flex-direction: column;
+  }
+
+  .publish-modal-footer button {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>

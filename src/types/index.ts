@@ -34,31 +34,37 @@ export interface AuthResponse extends AuthTokens {
 }
 
 // Plan types
-export type PlanName = 'free' | 'starter' | 'professional' | 'business'
-export type PlanStatus = 'active' | 'cancelled' | 'expired' | 'trial'
+export type PlanName = 'trial' | 'starter' | 'professional' | 'premium'
+export type PlanStatus = 'active' | 'cancelled' | 'expired' | 'grace_period'
 
 export interface PlanLimits {
-  posts_per_month: number
-  media_storage_mb: number
-  connected_accounts: number
-  scheduled_posts: number
+  max_posts_per_month: number
+  max_networks_per_post: number
+  max_social_accounts: number
 }
 
 export interface PlanUsage {
   posts_this_month: number
-  storage_used_mb: number
+  posts_remaining: number
   connected_accounts: number
-  scheduled_posts: number
+  accounts_remaining: number
+  period_start: string
+  period_end: string
 }
 
 export interface Plan {
   plan: {
-    name: PlanName
+    type: PlanName
     status: PlanStatus
-    started_at: string
-    expires_at?: string
+    is_active: boolean
+    is_in_grace_period: boolean
+    grace_period_ends_at: string | null
+    trial_ends_at: string | null
+    subscription_ends_at: string | null
+    days_remaining: number | null
+    hours_remaining: number | null
+    limits: PlanLimits
   }
-  limits: PlanLimits
   usage: PlanUsage
 }
 
@@ -197,10 +203,57 @@ export interface PlatformInfo {
 // Post types
 export type PostStatus = 'draft' | 'scheduled' | 'processing' | 'posted' | 'partially_posted' | 'failed'
 
+// Lightweight post type for calendar view
+export interface CalendarPost {
+  id: string
+  caption: string | null
+  status: PostStatus
+  scheduledAt: string | null
+  publishedAt: string | null
+  createdAt: string
+  platforms: string[]
+  hasThumbnail: boolean
+  dateKey: string // YYYY-MM-DD format for grouping
+}
+
 // Base platform configuration
 export interface BasePlatformConfiguration {
   caption?: string
   media?: string[] // Media IDs to override default
+}
+
+// TikTok privacy levels
+export type TikTokPrivacyLevel = 'PUBLIC_TO_EVERYONE' | 'MUTUAL_FOLLOW_FRIENDS' | 'FOLLOWER_OF_CREATOR' | 'SELF_ONLY'
+
+// TikTok policy URLs
+export interface TikTokPolicyUrls {
+  musicUsageConfirmation: string
+  brandedContentPolicy: string
+  communityGuidelines: string
+  termsOfService: string
+}
+
+// TikTok UX guidance from backend
+export interface TikTokUxGuidance {
+  privacyLevelRequired: boolean
+  interactionControlsDefaultOff: boolean
+  brandedContentRestrictsPrivacy: string[]
+}
+
+// TikTok creator info (from creator_info API)
+export interface TikTokCreatorInfo {
+  creatorAvatarUrl: string
+  creatorUsername: string
+  creatorNickname: string
+  privacyLevelOptions: TikTokPrivacyLevel[]
+  commentDisabled: boolean
+  duetDisabled: boolean
+  stitchDisabled: boolean
+  maxVideoPostDurationSec: number
+  canPost: boolean
+  cannotPostReason: string | null
+  policyUrls: TikTokPolicyUrls
+  uxGuidance: TikTokUxGuidance
 }
 
 // TikTok configuration
@@ -209,11 +262,13 @@ export interface TikTokConfiguration extends BasePlatformConfiguration {
   videoCoverTimestampMs?: number
   draft?: boolean
   isAigc?: boolean
-  disableComment?: boolean
-  disableDuet?: boolean
-  disableStitch?: boolean
-  brandContentToggle?: boolean
-  brandOrganicToggle?: boolean
+  privacyLevel?: TikTokPrivacyLevel
+  allowComment?: boolean // Per TikTok UX guidelines: unchecked by default
+  allowDuet?: boolean // Per TikTok UX guidelines: unchecked by default
+  allowStitch?: boolean // Per TikTok UX guidelines: unchecked by default
+  brandContentToggle?: boolean // Branded content (paid partnership)
+  brandOrganicToggle?: boolean // Your brand promotion
+  contentDisclosureEnabled?: boolean // Wrapper toggle for brand content options
 }
 
 // Instagram configuration

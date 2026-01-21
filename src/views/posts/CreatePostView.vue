@@ -126,6 +126,25 @@ const tiktokValidation = computed(() => {
   return { valid: true, message: null }
 })
 
+// Platform validation errors (from config panels)
+const platformValidationErrors = ref<Record<string, string[]>>({})
+
+// Handle validation changes from platform config panels
+const handlePlatformValidation = (platform: string, valid: boolean, errors: string[]) => {
+  if (valid) {
+    delete platformValidationErrors.value[platform]
+  } else {
+    platformValidationErrors.value[platform] = errors
+  }
+  // Trigger reactivity
+  platformValidationErrors.value = { ...platformValidationErrors.value }
+}
+
+// Get all platform validation errors as a flat array
+const allPlatformErrors = computed(() => {
+  return Object.values(platformValidationErrors.value).flat()
+})
+
 // Overall form validation
 const formValidation = computed(() => {
   const errors: string[] = []
@@ -138,10 +157,24 @@ const formValidation = computed(() => {
     errors.push(tiktokValidation.value.message)
   }
 
+  // Add platform validation errors (excluding ones already shown inline)
+  // Note: We don't add allPlatformErrors here as they're shown inline in the config panels
+
   return {
-    valid: errors.length === 0,
+    valid: errors.length === 0 && allPlatformErrors.value.length === 0,
     errors
   }
+})
+
+// Tooltip message for disabled button
+const disabledButtonTooltip = computed(() => {
+  if (allPlatformErrors.value.length > 0) {
+    return allPlatformErrors.value[0]
+  }
+  if (formValidation.value.errors.length > 0) {
+    return formValidation.value.errors[0]
+  }
+  return ''
 })
 
 // Get full media objects for selected media (for carousel ordering)
@@ -760,6 +793,7 @@ const closePreviewModal = () => {
           :caption="caption"
           :hashtags="hashtags"
           v-model="platformConfigurations"
+          @validation-change="handlePlatformValidation"
         />
       </div>
 
@@ -778,17 +812,19 @@ const closePreviewModal = () => {
         <RouterLink :to="isEditMode ? `/app/posts/${id}` : '/app/posts'" class="btn-secondary">
           Cancel
         </RouterLink>
-        <button
-          type="submit"
-          :disabled="!formValidation.valid || postsStore.isLoading"
-          class="btn-primary"
-        >
-          <svg v-if="!postsStore.isLoading" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="btn-icon">
-            <path v-if="isEditMode" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          {{ postsStore.isLoading ? (isEditMode ? 'Saving...' : 'Creating...') : (isEditMode ? 'Save Changes' : 'Create Draft') }}
-        </button>
+        <div class="submit-btn-wrapper" :title="(!formValidation.valid || allPlatformErrors.length > 0) ? disabledButtonTooltip : ''">
+          <button
+            type="submit"
+            :disabled="!formValidation.valid || postsStore.isLoading"
+            class="btn-primary"
+          >
+            <svg v-if="!postsStore.isLoading" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="btn-icon">
+              <path v-if="isEditMode" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            {{ postsStore.isLoading ? (isEditMode ? 'Saving...' : 'Creating...') : (isEditMode ? 'Save Changes' : 'Create Draft') }}
+          </button>
+        </div>
       </div>
     </form>
 
@@ -1369,6 +1405,19 @@ const closePreviewModal = () => {
   gap: 12px;
   justify-content: flex-end;
   padding-top: 8px;
+}
+
+.submit-btn-wrapper {
+  display: inline-block;
+  cursor: not-allowed;
+}
+
+.submit-btn-wrapper:has(button:not(:disabled)) {
+  cursor: auto;
+}
+
+.submit-btn-wrapper button:disabled {
+  pointer-events: none;
 }
 
 .btn-icon {

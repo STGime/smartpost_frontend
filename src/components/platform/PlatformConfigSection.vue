@@ -25,7 +25,13 @@ const getAccountForPlatform = (platform: SocialPlatform) =>
 
 const emit = defineEmits<{
   'update:modelValue': [value: PlatformConfigurations]
+  'validation-change': [platform: SocialPlatform, valid: boolean, errors: string[]]
 }>()
+
+// Handle validation changes from platform config panels
+const handleValidationChange = (platform: SocialPlatform, valid: boolean, errors: string[]) => {
+  emit('validation-change', platform, valid, errors)
+}
 
 // Track which panels are expanded
 const expandedPanels = ref<Set<SocialPlatform>>(new Set())
@@ -154,6 +160,7 @@ const getPlatformName = (platform: SocialPlatform) => {
             :hashtags="hashtags"
             :account="getAccountForPlatform('tiktok')"
             @update:model-value="updatePlatformConfig('tiktok', $event)"
+            @validation-change="(valid, errors) => handleValidationChange('tiktok', valid, errors)"
           />
 
           <!-- Instagram -->

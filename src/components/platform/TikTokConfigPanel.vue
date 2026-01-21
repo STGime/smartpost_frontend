@@ -14,6 +14,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: TikTokConfiguration]
+  'validation-change': [valid: boolean, errors: string[]]
 }>()
 
 const config = computed({
@@ -52,6 +53,72 @@ const isOnlyMeDisabled = computed(() => {
   return config.value.brandContentToggle === true
 })
 
+// Calculate total video duration from selected media
+const totalVideoDuration = computed(() => {
+  if (!props.selectedMedia || props.selectedMedia.length === 0) return 0
+  return props.selectedMedia.reduce((sum, media) => {
+    if (media.type === 'video' && media.duration) {
+      return sum + media.duration
+    }
+    return sum
+  }, 0)
+})
+
+// Check if video duration exceeds TikTok's maximum
+const videoDurationExceeded = computed(() => {
+  if (!creatorInfo.value?.maxVideoPostDurationSec) return false
+  if (totalVideoDuration.value === 0) return false
+  return totalVideoDuration.value > creatorInfo.value.maxVideoPostDurationSec
+})
+
+// Check if content disclosure is enabled but no option selected
+const contentDisclosureIncomplete = computed(() => {
+  return config.value.contentDisclosureEnabled === true &&
+    config.value.brandOrganicToggle !== true &&
+    config.value.brandContentToggle !== true
+})
+
+// Validation errors list (shown in the top banner)
+const validationErrors = computed(() => {
+  const errors: string[] = []
+
+  // Check canPost status
+  if (creatorInfo.value && creatorInfo.value.canPost === false) {
+    errors.push(creatorInfo.value.cannotPostReason || 'You have reached your posting limit for today')
+  }
+
+  // Check video duration
+  if (videoDurationExceeded.value && creatorInfo.value?.maxVideoPostDurationSec) {
+    const maxMinutes = Math.floor(creatorInfo.value.maxVideoPostDurationSec / 60)
+    const currentMinutes = Math.floor(totalVideoDuration.value / 60)
+    const currentSeconds = Math.round(totalVideoDuration.value % 60)
+    errors.push(`Video duration (${currentMinutes}:${currentSeconds.toString().padStart(2, '0')}) exceeds TikTok's maximum of ${maxMinutes} minutes`)
+  }
+
+  // Note: contentDisclosureIncomplete is NOT shown here - it's shown inline in the disclosure section
+
+  return errors
+})
+
+// All validation errors including content disclosure (for blocking publish)
+const allValidationErrors = computed(() => {
+  const errors = [...validationErrors.value]
+
+  if (contentDisclosureIncomplete.value) {
+    errors.push('You need to indicate if your content promotes yourself, a third party, or both.')
+  }
+
+  return errors
+})
+
+// Is the TikTok configuration valid for publishing?
+const isValid = computed(() => allValidationErrors.value.length === 0)
+
+// Emit validation state whenever it changes (includes all errors for button disabling)
+watch([isValid, allValidationErrors], ([valid, errors]) => {
+  emit('validation-change', valid, errors)
+}, { immediate: true })
+
 // Fetch creator info when account changes
 async function fetchCreatorInfo() {
   if (!props.account?.id) return
@@ -86,6 +153,24 @@ watch(() => config.value.brandContentToggle, (isBranded) => {
   if (isBranded && config.value.privacyLevel === 'SELF_ONLY') {
     updateField('privacyLevel', undefined)
   }
+})
+
+// Content disclosure label based on selections (TikTok UX Requirement)
+const contentDisclosureLabel = computed(() => {
+  const hasBrandedContent = config.value.brandContentToggle === true
+  const hasYourBrand = config.value.brandOrganicToggle === true
+
+  // If branded content is selected (alone or with your brand), show "Paid partnership"
+  if (hasBrandedContent) {
+    return "Your photo/video will be labeled as 'Paid partnership'"
+  }
+
+  // If only your brand is selected, show "Promotional content"
+  if (hasYourBrand) {
+    return "Your photo/video will be labeled as 'Promotional content'"
+  }
+
+  return null
 })
 </script>
 
@@ -126,6 +211,16 @@ watch(() => config.value.brandContentToggle, (isBranded) => {
             <span class="creator-name">{{ creatorInfo?.creatorNickname || account?.displayName || account?.username }}</span>
             <span class="creator-username">@{{ creatorInfo?.creatorUsername || account?.username }}</span>
           </div>
+        </div>
+      </div>
+
+      <!-- Validation Error Banner (TikTok UX Requirement) -->
+      <div v-if="validationErrors.length > 0" class="validation-errors">
+        <div class="validation-error" v-for="(error, index) in validationErrors" :key="index">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>{{ error }}</span>
         </div>
       </div>
 
@@ -314,7 +409,7 @@ watch(() => config.value.brandContentToggle, (isBranded) => {
                 <span class="checkbox-box"></span>
                 <span class="checkbox-text">
                   <strong>Your Brand</strong>
-                  <span class="checkbox-hint">Promoting your own brand/business</span>
+                  <span class="checkbox-hint">You are promoting yourself or your own business. This content will be classified as Brand Organic.</span>
                 </span>
               </label>
             </div>
@@ -329,10 +424,26 @@ watch(() => config.value.brandContentToggle, (isBranded) => {
                 <span class="checkbox-box"></span>
                 <span class="checkbox-text">
                   <strong>Branded Content</strong>
-                  <span class="checkbox-hint">Paid promotion for another brand</span>
+                  <span class="checkbox-hint">You are promoting another brand or a third party. This content will be classified as Branded Content.</span>
                 </span>
               </label>
             </div>
+          </div>
+
+          <!-- Content Disclosure Warning (when no option selected) -->
+          <div v-if="contentDisclosureIncomplete" class="content-disclosure-warning" title="You need to indicate if your content promotes yourself, a third party, or both.">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>You need to indicate if your content promotes yourself, a third party, or both.</span>
+          </div>
+
+          <!-- Content Disclosure Label (TikTok UX Requirement) -->
+          <div v-if="contentDisclosureLabel" class="content-disclosure-label">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ contentDisclosureLabel }}</span>
           </div>
         </div>
       </div>
@@ -358,13 +469,18 @@ watch(() => config.value.brandContentToggle, (isBranded) => {
       <div class="consent-declaration">
         <p v-if="config.brandContentToggle">
           By posting, you agree to TikTok's
-          <a href="https://www.tiktok.com/legal/page/global/bc-policy/en" target="_blank" rel="noopener">Branded Content Policy</a>
+          <a :href="creatorInfo?.policyUrls?.brandedContentPolicy || 'https://www.tiktok.com/legal/bc-policy'" target="_blank" rel="noopener">Branded Content Policy</a>,
+          <a :href="creatorInfo?.policyUrls?.musicUsageConfirmation || 'https://www.tiktok.com/legal/music-usage-confirmation'" target="_blank" rel="noopener">Music Usage Confirmation</a>,
+          <a :href="creatorInfo?.policyUrls?.communityGuidelines || 'https://www.tiktok.com/community-guidelines'" target="_blank" rel="noopener">Community Guidelines</a>,
           and
-          <a href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en" target="_blank" rel="noopener">Music Usage Confirmation</a>.
+          <a :href="creatorInfo?.policyUrls?.termsOfService || 'https://www.tiktok.com/legal/terms-of-service'" target="_blank" rel="noopener">Terms of Service</a>.
         </p>
         <p v-else>
           By posting, you agree to TikTok's
-          <a href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en" target="_blank" rel="noopener">Music Usage Confirmation</a>.
+          <a :href="creatorInfo?.policyUrls?.musicUsageConfirmation || 'https://www.tiktok.com/legal/music-usage-confirmation'" target="_blank" rel="noopener">Music Usage Confirmation</a>,
+          <a :href="creatorInfo?.policyUrls?.communityGuidelines || 'https://www.tiktok.com/community-guidelines'" target="_blank" rel="noopener">Community Guidelines</a>,
+          and
+          <a :href="creatorInfo?.policyUrls?.termsOfService || 'https://www.tiktok.com/legal/terms-of-service'" target="_blank" rel="noopener">Terms of Service</a>.
         </p>
       </div>
 
@@ -776,6 +892,51 @@ watch(() => config.value.brandContentToggle, (isBranded) => {
   border-left: 2px solid var(--accent);
 }
 
+/* Content Disclosure Warning */
+.content-disclosure-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  color: #fcd34d;
+  line-height: 1.4;
+  cursor: help;
+}
+
+.content-disclosure-warning svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: #fbbf24;
+}
+
+/* Content Disclosure Label */
+.content-disclosure-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px;
+  background: rgba(255, 0, 80, 0.1);
+  border: 1px solid rgba(255, 0, 80, 0.3);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  color: #ff6b9d;
+  line-height: 1.4;
+}
+
+.content-disclosure-label svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: #ff0050;
+}
+
 /* Consent Declaration */
 .consent-declaration {
   padding: 12px;
@@ -797,6 +958,33 @@ watch(() => config.value.brandContentToggle, (isBranded) => {
 
 .consent-declaration a:hover {
   text-decoration: underline;
+}
+
+/* Validation Errors */
+.validation-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.validation-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-md);
+  color: #fca5a5;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.validation-error svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: #f87171;
 }
 
 /* Preview */
