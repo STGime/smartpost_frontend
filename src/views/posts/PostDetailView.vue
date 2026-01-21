@@ -22,6 +22,10 @@ const showPublishModal = ref(false)
 // TikTok policy consent for publish modal
 const tiktokPolicyConsent = ref(false)
 
+// Track if we're scheduling (true) or publishing immediately (false)
+const isSchedulingAction = ref(false)
+const pendingScheduleTime = ref<string | null>(null)
+
 onMounted(() => {
   postsStore.fetchPostById(postId)
 })
@@ -52,21 +56,39 @@ const confirmDelete = async () => {
   router.push(backPath.value)
 }
 
-const openPublishModal = () => {
+const openPublishModal = (forScheduling: boolean = false) => {
   tiktokPolicyConsent.value = false
+  isSchedulingAction.value = forScheduling
+  if (forScheduling) {
+    pendingScheduleTime.value = scheduledAt.value
+  }
   showPublishModal.value = true
 }
 
-const confirmPublish = async () => {
+const confirmPublishOrSchedule = async () => {
   showPublishModal.value = false
-  await postsStore.publishPost(postId)
+
+  if (isSchedulingAction.value && pendingScheduleTime.value) {
+    await postsStore.schedulePost(postId, pendingScheduleTime.value)
+    scheduledAt.value = null
+    pendingScheduleTime.value = null
+    isRescheduling.value = false
+  } else {
+    await postsStore.publishPost(postId)
+  }
 }
 
 const handleSchedule = async () => {
   if (!scheduledAt.value) return
-  await postsStore.schedulePost(postId, scheduledAt.value)
-  scheduledAt.value = null
-  isRescheduling.value = false
+
+  // Show consent modal for TikTok posts
+  if (hasTikTokAccount.value) {
+    openPublishModal(true)
+  } else {
+    await postsStore.schedulePost(postId, scheduledAt.value)
+    scheduledAt.value = null
+    isRescheduling.value = false
+  }
 }
 
 const openCancelModal = () => {
@@ -288,7 +310,18 @@ const useAsTemplate = () => {
             :key="media.id"
             class="media-item"
           >
-            <img :src="media.thumbnailUrl || media.originalUrl" alt="" />
+            <img
+              v-if="media.thumbnailUrl || media.originalUrl"
+              :src="media.thumbnailUrl || media.originalUrl"
+              alt=""
+              @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
+            />
+            <div v-else class="media-placeholder">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>{{ media.name || 'Media' }}</span>
+            </div>
             <span v-if="media.type === 'video'" class="video-indicator">
               <svg fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
@@ -493,21 +526,32 @@ const useAsTemplate = () => {
       @cancel="showCancelModal = false"
     />
 
-    <!-- Publish Confirmation Modal (TikTok UX Requirement) -->
+    <!-- Publish/Schedule Confirmation Modal (TikTok UX Requirement) -->
     <Teleport to="body">
       <div v-if="showPublishModal" class="modal-overlay" @click.self="showPublishModal = false">
         <div class="publish-modal">
           <div class="publish-modal-header">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg v-if="isSchedulingAction" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" />
+              <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" />
+              <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" />
+              <line x1="3" y1="10" x2="21" y2="10" stroke-width="2" />
+            </svg>
+            <svg v-else fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
             </svg>
-            <h3>Confirm Publish</h3>
+            <h3>{{ isSchedulingAction ? 'Confirm Schedule' : 'Confirm Publish' }}</h3>
           </div>
 
           <div class="publish-modal-body">
             <p class="publish-message">
-              Your post will be published to {{ post?.socialAccounts?.length || 0 }} platform{{ (post?.socialAccounts?.length || 0) !== 1 ? 's' : '' }}.
-              This action cannot be undone.
+              <template v-if="isSchedulingAction">
+                Your post will be scheduled for {{ pendingScheduleTime ? formatDate(pendingScheduleTime) : 'the selected time' }} and published to {{ post?.socialAccounts?.length || 0 }} platform{{ (post?.socialAccounts?.length || 0) !== 1 ? 's' : '' }}.
+              </template>
+              <template v-else>
+                Your post will be published to {{ post?.socialAccounts?.length || 0 }} platform{{ (post?.socialAccounts?.length || 0) !== 1 ? 's' : '' }}.
+                This action cannot be undone.
+              </template>
             </p>
 
             <!-- TikTok Policy Consent (Required when posting to TikTok) -->
@@ -536,6 +580,17 @@ const useAsTemplate = () => {
                 <span class="checkbox-mark"></span>
                 <span class="checkbox-label">I have read and agree to TikTok's policies</span>
               </label>
+
+              <div class="tiktok-processing-notice">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div class="notice-content">
+                  <strong>Processing Time</strong>
+                  <p v-if="isSchedulingAction">When your scheduled post is published, it may take a few minutes for your content to be processed and visible on your TikTok profile. We'll track the status and notify you when it's ready.</p>
+                  <p v-else>After publishing, it may take a few minutes for your content to be processed and visible on your TikTok profile. We'll track the status and notify you when it's ready.</p>
+                </div>
+              </div>
             </div>
 
             <p class="processing-note">
@@ -556,13 +611,18 @@ const useAsTemplate = () => {
             </button>
             <button
               class="btn-primary"
-              @click="confirmPublish"
+              @click="confirmPublishOrSchedule"
               :disabled="postsStore.isLoading || (hasTikTokAccount && !tiktokPolicyConsent)"
             >
               <svg v-if="postsStore.isLoading" class="btn-spinner" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="31.4" stroke-linecap="round" />
               </svg>
-              {{ postsStore.isLoading ? 'Publishing...' : 'Confirm Publish' }}
+              <template v-if="isSchedulingAction">
+                {{ postsStore.isLoading ? 'Scheduling...' : 'Confirm Schedule' }}
+              </template>
+              <template v-else>
+                {{ postsStore.isLoading ? 'Publishing...' : 'Confirm Publish' }}
+              </template>
             </button>
           </div>
         </div>
@@ -755,6 +815,34 @@ const useAsTemplate = () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.media-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.6);
+  color: var(--muted);
+}
+
+.media-placeholder svg {
+  width: 32px;
+  height: 32px;
+  opacity: 0.5;
+}
+
+.media-placeholder span {
+  font-size: 11px;
+  text-align: center;
+  padding: 0 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .video-indicator {
@@ -1487,6 +1575,43 @@ const useAsTemplate = () => {
   font-size: 13px;
   color: var(--text);
   line-height: 1.4;
+}
+
+.tiktok-processing-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(255, 0, 80, 0.08);
+  border: 1px solid rgba(255, 0, 80, 0.2);
+  border-radius: var(--radius-md);
+}
+
+.tiktok-processing-notice svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #ff6b9d;
+}
+
+.tiktok-processing-notice .notice-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tiktok-processing-notice strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ff6b9d;
+}
+
+.tiktok-processing-notice p {
+  font-size: 12px;
+  color: #fda4af;
+  line-height: 1.5;
+  margin: 0;
 }
 
 .processing-note {
