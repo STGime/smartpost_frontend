@@ -48,9 +48,14 @@ const privacyLevelLabels: Record<TikTokPrivacyLevel, string> = {
   'SELF_ONLY': 'Only me'
 }
 
-// Check if "Only me" should be disabled (when branded content is selected)
+// Check if "Only me" should be disabled (when content disclosure is ON AND branded content is checked)
 const isOnlyMeDisabled = computed(() => {
-  return config.value.brandContentToggle === true
+  return config.value.contentDisclosureEnabled === true && config.value.brandContentToggle === true
+})
+
+// Check if "Branded Content" should be disabled (when visibility is "Only me")
+const isBrandedContentDisabled = computed(() => {
+  return config.value.privacyLevel === 'SELF_ONLY'
 })
 
 // Calculate total video duration from selected media
@@ -148,9 +153,16 @@ watch(() => props.account?.id, (newId) => {
   }
 })
 
-// Handle privacy level change - clear if branded content disables "Only me"
+// Handle privacy level change - clear branded content if "Only me" is selected
+watch(() => config.value.privacyLevel, (privacyLevel) => {
+  if (privacyLevel === 'SELF_ONLY' && config.value.brandContentToggle === true) {
+    updateField('brandContentToggle', false)
+  }
+})
+
+// Handle branded content change - clear "Only me" if branded content is selected
 watch(() => config.value.brandContentToggle, (isBranded) => {
-  if (isBranded && config.value.privacyLevel === 'SELF_ONLY') {
+  if (isBranded && config.value.contentDisclosureEnabled && config.value.privacyLevel === 'SELF_ONLY') {
     updateField('privacyLevel', undefined)
   }
 })
@@ -263,8 +275,8 @@ const contentDisclosureLabel = computed(() => {
             <template v-if="level === 'SELF_ONLY' && isOnlyMeDisabled"> (unavailable for branded content)</template>
           </option>
         </select>
-        <span v-if="isOnlyMeDisabled && config.privacyLevel === 'SELF_ONLY'" class="field-warning">
-          Branded content visibility cannot be set to private
+        <span v-if="isOnlyMeDisabled" class="field-warning">
+          Branded content visibility cannot be set to private.
         </span>
       </div>
 
@@ -413,11 +425,12 @@ const contentDisclosureLabel = computed(() => {
                 </span>
               </label>
             </div>
-            <div class="checkbox-row">
+            <div :class="['checkbox-row', { disabled: isBrandedContentDisabled }]">
               <input
                 type="checkbox"
                 id="tiktok-brand-content"
                 :checked="config.brandContentToggle"
+                :disabled="isBrandedContentDisabled"
                 @change="updateField('brandContentToggle', ($event.target as HTMLInputElement).checked)"
               />
               <label for="tiktok-brand-content" class="checkbox-label">
@@ -425,6 +438,9 @@ const contentDisclosureLabel = computed(() => {
                 <span class="checkbox-text">
                   <strong>Branded Content</strong>
                   <span class="checkbox-hint">You are promoting another brand or a third party. This content will be classified as Branded Content.</span>
+                  <span v-if="isBrandedContentDisabled" class="checkbox-hint disabled-hint">
+                    Visibility for branded content can't be private. Change visibility to enable this option.
+                  </span>
                 </span>
               </label>
             </div>
