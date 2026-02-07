@@ -4,8 +4,14 @@
 User-agent: *
 Allow: /
 
-# Sitemap location
-Sitemap: https://getposta.app/sitemap.xml
+# Disallow auth and app pages
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /app/
+Disallow: /oauth/
+Disallow: /auth/
 
 # Disallow API endpoints
 Disallow: /v1/
@@ -17,3 +23,6 @@ Allow: /*.js
 Allow: /*.svg
 Allow: /*.png
 Allow: /*.jpg
+
+# Sitemap location
+Sitemap: https://getposta.app/sitemap.xml

@@ -460,7 +460,7 @@ const useAsTemplate = () => {
         </RouterLink>
         <button
           v-if="post.status === 'draft'"
-          @click="openPublishModal"
+          @click="openPublishModal()"
           :disabled="postsStore.isLoading"
           class="btn-primary btn-lg"
         >

@@ -21,9 +21,13 @@ log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# Step 1: Build for production
-log_info "Building frontend..."
-npm run build
+# Step 1: Ensure Playwright browser is available for pre-rendering
+log_info "Ensuring Playwright Chromium is installed..."
+npx playwright install chromium --with-deps 2>/dev/null || npx playwright install chromium
+
+# Step 2: Build for production (with pre-rendering for SEO)
+log_info "Building frontend with pre-rendering..."
+npm run build:seo
 
 if [ ! -d "dist" ]; then
     echo "Build failed - dist directory not found"
@@ -33,7 +37,7 @@ fi
 log_info "Build completed successfully"
 log_info "Build size: $(du -sh dist | cut -f1)"
 
-# Step 2: Deploy to GCS
+# Step 3: Deploy to GCS
 log_info "Deploying to gs://$GCS_BUCKET..."
 
 # Sync files to bucket (delete removed files)
@@ -47,6 +51,15 @@ gsutil -m setmeta -h "Cache-Control:public, max-age=31536000, immutable" \
 # Set no-cache for index.html (always fetch latest)
 gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" \
     "gs://$GCS_BUCKET/index.html"
+
+# Set no-cache for pre-rendered HTML pages
+log_info "Setting cache headers for pre-rendered pages..."
+for dir in social-media-scheduler instagram-scheduler tiktok-scheduler auto-post-social-media social-media-tools terms privacy impressum; do
+    if [ -f "dist/$dir/index.html" ]; then
+        gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" \
+            "gs://$GCS_BUCKET/$dir/index.html" 2>/dev/null || true
+    fi
+done
 
 echo ""
 echo "============================================"

@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { isSignupEnabled } from '@/config/featureFlags'
 
 const routes: RouteRecordRaw[] = [
   // Public routes
@@ -22,6 +23,33 @@ const routes: RouteRecordRaw[] = [
     name: 'impressum',
     component: () => import('@/views/legal/ImpressumView.vue'),
   },
+  // SEO landing pages
+  {
+    path: '/social-media-scheduler',
+    name: 'social-media-scheduler',
+    component: () => import('@/views/seo/SocialMediaSchedulerView.vue'),
+  },
+  {
+    path: '/instagram-scheduler',
+    name: 'instagram-scheduler',
+    component: () => import('@/views/seo/InstagramSchedulerView.vue'),
+  },
+  {
+    path: '/tiktok-scheduler',
+    name: 'tiktok-scheduler',
+    component: () => import('@/views/seo/TikTokSchedulerView.vue'),
+  },
+  {
+    path: '/auto-post-social-media',
+    name: 'auto-post-social-media',
+    component: () => import('@/views/seo/AutoPostView.vue'),
+  },
+  {
+    path: '/social-media-tools',
+    name: 'social-media-tools',
+    component: () => import('@/views/seo/SocialMediaToolsView.vue'),
+  },
+
   {
     path: '/login',
     name: 'login',
@@ -33,6 +61,12 @@ const routes: RouteRecordRaw[] = [
     name: 'signup',
     component: () => import('@/views/auth/SignupView.vue'),
     meta: { guest: true },
+    beforeEnter: () => {
+      if (!isSignupEnabled()) {
+        return { name: 'home' }
+      }
+      return true
+    },
   },
   {
     path: '/forgot-password',
@@ -118,12 +152,25 @@ const routes: RouteRecordRaw[] = [
     ],
   },
 
-  // OAuth callback
+  // OAuth callbacks
   {
     path: '/oauth/callback',
     name: 'oauth-callback',
     component: () => import('@/views/auth/OAuthCallbackView.vue'),
     meta: { requiresAuth: true },
+  },
+  {
+    path: '/auth/google/callback',
+    name: 'google-callback',
+    component: () => import('@/views/auth/GoogleCallbackView.vue'),
+  },
+
+  // Onboarding (requires auth but separate from main app)
+  {
+    path: '/app/onboarding',
+    name: 'onboarding',
+    component: () => import('@/views/onboarding/OnboardingView.vue'),
+    meta: { requiresAuth: true, isOnboarding: true },
   },
 
   // 404
@@ -139,17 +186,76 @@ const router = createRouter({
   routes,
 })
 
-// Navigation guard for authentication
-router.beforeEach((to, _from, next) => {
-  const isAuthenticated = !!localStorage.getItem('access_token')
+// Cache for onboarding status to avoid repeated API calls
+let onboardingStatus: { checked: boolean; completed: boolean } = { checked: false, completed: false }
+
+// Navigation guard for authentication and onboarding
+router.beforeEach(async (to, _from, next) => {
+  const accessToken = localStorage.getItem('access_token')
+  const isAuthenticated = !!accessToken
+
+  // Reset onboarding cache on logout
+  if (!isAuthenticated) {
+    onboardingStatus = { checked: false, completed: false }
+  }
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } })
-  } else if (to.meta.guest && isAuthenticated) {
-    next({ name: 'dashboard' })
-  } else {
-    next()
+    return
   }
+
+  // For guest routes (login/signup), only redirect if user is truly authenticated
+  // Don't redirect based on stale tokens - validate first
+  if (to.meta.guest && isAuthenticated) {
+    // Validate the token before redirecting
+    try {
+      const { userService } = await import('@/services')
+      await userService.getProfile()
+      // Token is valid - redirect to dashboard
+      next({ name: 'dashboard' })
+      return
+    } catch {
+      // Token is invalid - clear it and let user access the auth page
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
+      onboardingStatus = { checked: false, completed: false }
+      // Continue to the guest page
+    }
+  }
+
+  // Check onboarding status for authenticated users going to protected routes
+  if (isAuthenticated && to.meta.requiresAuth && !to.meta.isOnboarding) {
+    // Only check once per session
+    if (!onboardingStatus.checked) {
+      try {
+        const { userService } = await import('@/services')
+        const profile = await userService.getProfile()
+        onboardingStatus = { checked: true, completed: profile.onboarding_completed }
+      } catch {
+        // If we can't fetch profile, assume onboarding is complete to avoid blocking
+        onboardingStatus = { checked: true, completed: true }
+      }
+    }
+
+    // Redirect to onboarding if not completed
+    if (!onboardingStatus.completed) {
+      next({ name: 'onboarding' })
+      return
+    }
+  }
+
+  // If user completed onboarding and tries to access onboarding page, redirect to dashboard
+  if (to.meta.isOnboarding && onboardingStatus.checked && onboardingStatus.completed) {
+    next({ name: 'dashboard' })
+    return
+  }
+
+  next()
 })
+
+// Export function to reset onboarding status (call after completing onboarding)
+export const resetOnboardingStatus = () => {
+  onboardingStatus = { checked: true, completed: true }
+}
 
 export default router

@@ -1,0 +1,19 @@
+import api from './api'
+
+export type WaitingListSource = 'hero' | 'header' | 'pricing' | 'seo-scheduler' | 'seo-instagram' | 'seo-tiktok' | 'seo-autopost' | 'seo-tools'
+
+interface JoinWaitingListResponse {
+  success: boolean
+  message: string
+  already_registered?: boolean
+}
+
+export const waitingListService = {
+  async join(email: string, source: WaitingListSource): Promise<JoinWaitingListResponse> {
+    const response = await api.post<JoinWaitingListResponse>('/waiting-list', {
+      email,
+      source,
+    })
+    return response.data
+  },
+}

@@ -31,6 +31,7 @@ export interface SignupRequest extends LoginRequest {
 
 export interface AuthResponse extends AuthTokens {
   user: User
+  message?: string
 }
 
 // Plan types
@@ -177,6 +178,16 @@ export type SocialPlatform =
   | 'bluesky'
   | 'threads'
 
+export interface SocialAccountMetadata {
+  // Instagram-specific
+  accountType?: 'BUSINESS' | 'MEDIA_CREATOR' | 'PERSONAL'
+  facebookPageId?: string
+  // TikTok-specific
+  creatorMarketplaceEnabled?: boolean
+  // YouTube-specific
+  channelId?: string
+}
+
 export interface SocialAccount {
   id: string
   platform: SocialPlatform
@@ -188,6 +199,7 @@ export interface SocialAccount {
   tokenExpiresAt?: string
   connectedAt: string
   lastUsedAt?: string
+  metadata?: SocialAccountMetadata
 }
 
 export interface PlatformInfo {
@@ -438,25 +450,31 @@ export type BillingInterval = 'month' | 'year'
 
 export interface PricingPlan {
   id: string
-  name: string
-  displayName: string
-  price: number
+  planType: 'starter' | 'professional'
+  billingInterval: BillingInterval
+  priceCents: number
   currency: string
-  interval: BillingInterval
+  maxPostsPerMonth: number
+  maxSocialAccounts: number
+  maxScheduledPosts: number
   features: string[]
-  limits: PlanLimits
-  stripePriceId: string
+  lemonSqueezyVariantId: string
+  lemonSqueezyProductId: string
 }
 
 export interface Subscription {
   id: string
-  status: 'active' | 'cancelled' | 'past_due' | 'incomplete'
+  status: 'active' | 'on_trial' | 'cancelled' | 'past_due'
   planType: PlanName
   billingInterval: BillingInterval
   currentPeriodStart: string
   currentPeriodEnd: string
   cancelAtPeriodEnd: boolean
   cancelledAt?: string
+  customerPortalUrl?: string
+  lemonSqueezySubscriptionId?: string
+  lemonSqueezyCustomerId?: string
+  lemonSqueezyVariantId?: string
 }
 
 export interface PaymentHistoryItem {
@@ -557,7 +575,7 @@ export interface PostAnalyticsListResponse {
 }
 
 export type AnalyticsMetric = 'likes' | 'comments' | 'shares' | 'views' | 'impressions' | 'engagement'
-export type AnalyticsPeriod = '7d' | '30d' | '90d' | '12m'
+export type AnalyticsPeriod = '7d' | '30d' | '90d' | '12m' | 'custom'
 export type AnalyticsGroupBy = 'day' | 'week' | 'month'
 
 export interface AccountNeedingUpgrade {
@@ -573,6 +591,78 @@ export interface AccountNeedingUpgrade {
 export interface ScopeStatusResponse {
   needsUpgrade: boolean
   accounts: AccountNeedingUpgrade[]
+}
+
+// Analytics capabilities (from GET /analytics/capabilities)
+export interface AnalyticsCapabilities {
+  tier: 'trial' | 'starter' | 'professional'
+  maxPeriod: '7d' | '90d' | 'unlimited'
+  features: {
+    postDetail: boolean
+    manualRefresh: boolean
+    bestTimes: boolean
+    contentTypes: boolean
+    hashtags: boolean
+    customDateRange: boolean
+    export: boolean
+    postComparison: boolean
+    benchmarks: boolean
+  }
+}
+
+export interface BestTimeSlot {
+  day: number    // 0-6 (Sun-Sat)
+  hour: number   // 0-23
+  avgEngagement: number
+  postCount: number
+}
+
+export interface BestTimesResponse {
+  heatmap: BestTimeSlot[]
+}
+
+export interface ContentTypeStats {
+  type: 'image' | 'video' | 'carousel' | 'document'
+  postCount: number
+  avgLikes: number
+  avgComments: number
+  avgShares: number
+  avgViews: number
+  avgEngagementRate: number
+}
+
+export interface ContentTypesResponse {
+  types: ContentTypeStats[]
+}
+
+export interface HashtagStats {
+  tag: string
+  usageCount: number
+  avgLikes: number
+  avgComments: number
+  avgViews: number
+  avgEngagementRate: number
+}
+
+export interface HashtagsResponse {
+  hashtags: HashtagStats[]
+}
+
+export interface BenchmarkData {
+  platform: string
+  contentType: string
+  avgEngagementRate: number
+  avgLikesPerPost: number | null
+  avgCommentsPerPost: number | null
+  source: string | null
+}
+
+export interface BenchmarksResponse {
+  benchmarks: BenchmarkData[]
+}
+
+export interface PostComparisonResponse {
+  posts: PostAnalyticsDetail[]
 }
 
 // Platform specifications

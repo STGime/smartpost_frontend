@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { usePostsStore } from '@/stores'
-import type { Post } from '@/types'
+import { postsService } from '@/services/posts'
+import type { CalendarPost } from '@/types'
 import CalendarGrid from '@/components/calendar/CalendarGrid.vue'
 import CalendarDayModal from '@/components/calendar/CalendarDayModal.vue'
 
 const router = useRouter()
-const postsStore = usePostsStore()
 
 // Current view month/year
 const currentYear = ref(new Date().getFullYear())
 const currentMonth = ref(new Date().getMonth())
+
+// Local state for calendar posts
+const calendarPosts = ref<CalendarPost[]>([])
+const isLoading = ref(false)
 
 // Modal state
 const showDayModal = ref(false)
@@ -25,40 +28,60 @@ const MONTH_NAMES = [
 
 const currentMonthName = computed(() => MONTH_NAMES[currentMonth.value])
 
-// Fetch posts when component mounts or month changes
+// Calculate date range for the visible calendar (includes partial weeks from prev/next months)
+const getCalendarDateRange = () => {
+  // First day of the month
+  const firstDay = new Date(currentYear.value, currentMonth.value, 1)
+  const firstDayOfWeek = firstDay.getDay()
+
+  // Start from the first visible day (may be in previous month)
+  const startDate = new Date(currentYear.value, currentMonth.value, 1 - firstDayOfWeek)
+
+  // End date: 42 days from start (6 weeks)
+  const endDate = new Date(startDate)
+  endDate.setDate(startDate.getDate() + 41)
+
+  // Format as YYYY-MM-DD
+  const formatDate = (d: Date) => {
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  return { start: formatDate(startDate), end: formatDate(endDate) }
+}
+
+// Fetch posts for the visible calendar range
 const fetchMonthPosts = async () => {
-  await postsStore.fetchPosts({ limit: 100 })
+  isLoading.value = true
+  try {
+    const { start, end } = getCalendarDateRange()
+    calendarPosts.value = await postsService.fetchCalendarPosts(start, end)
+  } catch (error) {
+    console.error('Failed to fetch calendar posts:', error)
+    calendarPosts.value = []
+  } finally {
+    isLoading.value = false
+  }
 }
 
 onMounted(fetchMonthPosts)
 watch([currentYear, currentMonth], fetchMonthPosts)
 
-// Format date to YYYY-MM-DD using local time (not UTC)
-const formatLocalDateKey = (date: Date): string => {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-// Group posts by date (YYYY-MM-DD key in local time)
+// Group posts by date using pre-computed dateKey from backend
 const postsByDate = computed(() => {
-  const grouped: Record<string, Post[]> = {}
+  const grouped: Record<string, CalendarPost[]> = {}
 
-  postsStore.posts.forEach((post) => {
-    const dateStr = post.scheduledAt || post.publishedAt || post.createdAt
-    if (!dateStr) return
-
-    const date = new Date(dateStr)
-    const key = formatLocalDateKey(date)
-
+  calendarPosts.value.forEach((post) => {
+    const key = post.dateKey
     if (!grouped[key]) {
       grouped[key] = []
     }
     grouped[key].push(post)
   })
 
-  // Sort posts within each day by time
+  // Sort posts within each day by time (backend returns sorted, but ensure order)
   Object.keys(grouped).forEach((key) => {
     const posts = grouped[key]
     if (posts) {
@@ -99,7 +122,7 @@ const goToToday = () => {
 }
 
 // Event handlers
-const handlePostClick = (post: Post) => {
+const handlePostClick = (post: CalendarPost) => {
   router.push(`/app/posts/${post.id}?from=calendar`)
 }
 
@@ -108,20 +131,34 @@ const handleShowAll = (date: Date) => {
   showDayModal.value = true
 }
 
-const handleViewPost = (post: Post) => {
+const handleViewPost = (post: CalendarPost) => {
   showDayModal.value = false
   router.push(`/app/posts/${post.id}?from=calendar`)
 }
 
-const handleCancelPost = async (post: Post) => {
+const handleCancelPost = async (post: CalendarPost) => {
   if (confirm('Are you sure you want to cancel this scheduled post?')) {
-    await postsStore.cancelScheduledPost(post.id)
+    try {
+      await postsService.cancelScheduledPost(post.id)
+      // Refresh the calendar after cancellation
+      await fetchMonthPosts()
+    } catch (error) {
+      console.error('Failed to cancel post:', error)
+    }
   }
 }
 
 const closeDayModal = () => {
   showDayModal.value = false
   selectedDate.value = null
+}
+
+// Format date to YYYY-MM-DD for lookup
+const formatLocalDateKey = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 // Get posts for selected date in modal
@@ -181,7 +218,7 @@ const selectedDatePosts = computed(() => {
     </div>
 
     <!-- Loading State -->
-    <div v-if="postsStore.isLoading" class="loading-state">
+    <div v-if="isLoading" class="loading-state">
       <div class="spinner"></div>
     </div>
 

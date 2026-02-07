@@ -1,5 +1,5 @@
 import api from './api'
-import type { SocialAccount, SocialPlatform, PlatformInfo, PinterestBoard } from '@/types'
+import type { SocialAccount, SocialPlatform, PlatformInfo, PinterestBoard, TikTokCreatorInfo } from '@/types'
 
 export const socialAccountsService = {
   async getPlatforms(): Promise<{ platforms: PlatformInfo[] }> {
@@ -50,6 +50,11 @@ export const socialAccountsService = {
 
   async getPinterestBoards(accountId: string): Promise<{ boards: PinterestBoard[] }> {
     const response = await api.get<{ boards: PinterestBoard[] }>(`/social-accounts/${accountId}/boards`)
+    return response.data
+  },
+
+  async getTikTokCreatorInfo(accountId: string): Promise<TikTokCreatorInfo> {
+    const response = await api.get<TikTokCreatorInfo>(`/social-accounts/${accountId}/tiktok/creator-info`)
     return response.data
   },
 }

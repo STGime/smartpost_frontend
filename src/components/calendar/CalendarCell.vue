@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import type { Post } from '@/types'
+import type { CalendarPost } from '@/types'
 import CalendarPostCard from './CalendarPostCard.vue'
 
 defineProps<{
   day: number
   date: Date
-  posts: Post[]
+  posts: CalendarPost[]
   isToday: boolean
   isCurrentMonth: boolean
 }>()
 
 const emit = defineEmits<{
-  'post-click': [post: Post]
+  'post-click': [post: CalendarPost]
   'show-all': [date: Date]
 }>()
 

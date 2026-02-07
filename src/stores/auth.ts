@@ -93,9 +93,17 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await authService.signup(data)
       user.value = response.user
-      setTokens(response.access_token, response.refresh_token)
-      connectSSE()
-      router.push({ name: 'dashboard' })
+
+      // If email confirmation is required, tokens will be empty
+      if (response.access_token) {
+        setTokens(response.access_token, response.refresh_token)
+        connectSSE()
+        // New users go to onboarding
+        router.push({ name: 'onboarding' })
+      } else {
+        // Email confirmation required - show message and stay on signup
+        error.value = response.message || 'Please check your email to confirm your account'
+      }
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } }
       error.value = e.response?.data?.error || 'Signup failed'
@@ -103,6 +111,38 @@ export const useAuthStore = defineStore('auth', () => {
     } finally {
       isLoading.value = false
     }
+  }
+
+  /**
+   * Handle Google OAuth callback tokens (from URL hash)
+   * This is called when user returns from Google OAuth flow
+   */
+  const loginWithGoogleTokens = (tokens: {
+    accessToken: string
+    refreshToken: string
+    expiresAt: number
+    userId: string
+    userEmail: string
+    userName: string
+  }) => {
+    user.value = {
+      id: tokens.userId,
+      email: tokens.userEmail,
+      display_name: tokens.userName || undefined,
+      created_at: new Date().toISOString(),
+    }
+    setTokens(tokens.accessToken, tokens.refreshToken)
+    connectSSE()
+    // Google signup/login goes to onboarding (guard will redirect if already completed)
+    router.push({ name: 'onboarding' })
+  }
+
+  /**
+   * Redirect to Google OAuth
+   */
+  const loginWithGoogle = () => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+    window.location.href = `${apiUrl}/v1/auth/google`
   }
 
   const login = async (data: LoginRequest, stayOnPage = false) => {
@@ -219,5 +259,7 @@ export const useAuthStore = defineStore('auth', () => {
     changePassword,
     requireReauth,
     closeReauthModal,
+    loginWithGoogle,
+    loginWithGoogleTokens,
   }
 })

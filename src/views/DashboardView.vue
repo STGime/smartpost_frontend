@@ -73,7 +73,7 @@ onMounted(async () => {
         <div class="stat-content">
           <p class="stat-label">Posts this month</p>
           <p class="stat-value">{{ userStore.plan?.usage?.posts_this_month || postsStore.total }}</p>
-          <p class="stat-sub">of {{ userStore.plan?.limits?.posts_per_month ?? 0 }}</p>
+          <p class="stat-sub">of {{ userStore.plan?.plan?.limits?.max_posts_per_month ?? 0 }}</p>
         </div>
       </div>
 
@@ -86,7 +86,7 @@ onMounted(async () => {
         <div class="stat-content">
           <p class="stat-label">Connected accounts</p>
           <p class="stat-value">{{ connectedAccountsCount }}</p>
-          <p class="stat-sub">of {{ userStore.plan?.limits?.connected_accounts ?? 0 }}</p>
+          <p class="stat-sub">of {{ userStore.plan?.plan?.limits?.max_social_accounts ?? 0 }}</p>
         </div>
       </div>
 
@@ -98,7 +98,7 @@ onMounted(async () => {
         </div>
         <div class="stat-content">
           <p class="stat-label">Scheduled posts</p>
-          <p class="stat-value">{{ userStore.plan?.usage?.scheduled_posts ?? 0 }}</p>
+          <p class="stat-value">{{ postsStore.posts.filter(p => p.status === 'scheduled').length }}</p>
         </div>
       </div>
 

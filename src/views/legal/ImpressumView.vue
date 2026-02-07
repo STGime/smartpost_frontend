@@ -1,5 +1,16 @@
 <script setup lang="ts">
+import { useHead } from '@unhead/vue'
+
 // Impressum is in German as required by German law
+useHead({
+  title: 'Impressum',
+  meta: [
+    { name: 'description', content: 'Impressum – Legal notice for Posta, a social media scheduling platform operated by Stefan Gimeson, Berlin, Germany.' },
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://getposta.app/impressum' },
+  ],
+})
 </script>
 
 <template>

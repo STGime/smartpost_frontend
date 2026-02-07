@@ -1,4 +1,16 @@
 <script setup lang="ts">
+import { useHead } from '@unhead/vue'
+
+useHead({
+  title: 'Privacy Policy',
+  meta: [
+    { name: 'description', content: 'Privacy Policy for Posta – learn how we collect, use, and protect your data on our social media scheduling platform.' },
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://getposta.app/privacy' },
+  ],
+})
+
 const currentYear = new Date().getFullYear()
 </script>
 
@@ -42,7 +54,7 @@ const currentYear = new Date().getFullYear()
         <ul>
           <li><strong>Account Information:</strong> Email address, name, and password when you create an account</li>
           <li><strong>Profile Information:</strong> Display name, avatar, and preferences</li>
-          <li><strong>Payment Information:</strong> Billing details processed securely through Stripe</li>
+          <li><strong>Payment Information:</strong> Billing details processed securely through LemonSqueezy</li>
           <li><strong>User Content:</strong> Images, videos, captions, and other content you upload</li>
           <li><strong>Communications:</strong> Messages you send to us for support or feedback</li>
         </ul>
@@ -113,7 +125,7 @@ const currentYear = new Date().getFullYear()
           <li><strong>User data and metadata:</strong> Stored in Supabase (PostgreSQL databases)</li>
           <li><strong>Media files:</strong> Stored in Google Cloud Storage with encryption at rest</li>
           <li><strong>OAuth tokens:</strong> Encrypted using AES-256 before storage</li>
-          <li><strong>Payment data:</strong> Processed and stored by Stripe (we do not store card details)</li>
+          <li><strong>Payment data:</strong> Processed and stored by LemonSqueezy (we do not store card details)</li>
         </ul>
 
         <h3>3.2 Security Measures</h3>
@@ -130,7 +142,7 @@ const currentYear = new Date().getFullYear()
         <p>We do not sell your personal information. We may share your data with:</p>
         <ul>
           <li><strong>Social Media Platforms:</strong> To publish content on your behalf (TikTok, Instagram, etc.)</li>
-          <li><strong>Service Providers:</strong> Cloud hosting (Google Cloud), payment processing (Stripe), authentication (Supabase)</li>
+          <li><strong>Service Providers:</strong> Cloud hosting (Google Cloud), payment processing (LemonSqueezy), authentication (Supabase)</li>
           <li><strong>Legal Requirements:</strong> When required by law, legal process, or to protect our rights</li>
           <li><strong>Business Transfers:</strong> In connection with a merger, acquisition, or sale of assets</li>
         </ul>

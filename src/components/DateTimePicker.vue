@@ -63,9 +63,6 @@ const selectedDate = computed(() => {
 })
 
 // Selected values for internal use
-const selectedYear = computed(() => selectedDate.value?.getFullYear() ?? null)
-const selectedMonth = computed(() => selectedDate.value?.getMonth() ?? null)
-const selectedDay = computed(() => selectedDate.value?.getDate() ?? null)
 const selectedHour = computed(() => selectedDate.value?.getHours() ?? 12)
 const selectedMinute = computed(() => {
   if (!selectedDate.value) return 0

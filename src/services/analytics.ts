@@ -8,6 +8,12 @@ import type {
   AnalyticsPeriod,
   AnalyticsGroupBy,
   ScopeStatusResponse,
+  AnalyticsCapabilities,
+  BestTimesResponse,
+  ContentTypesResponse,
+  HashtagsResponse,
+  BenchmarksResponse,
+  PostComparisonResponse,
 } from '@/types'
 
 interface OverviewParams {
@@ -29,9 +35,32 @@ interface TrendsParams {
   period: AnalyticsPeriod
   groupBy?: AnalyticsGroupBy
   platforms?: string[]
+  startDate?: string
+  endDate?: string
+}
+
+interface PlatformFilterParams {
+  platforms?: string[]
+}
+
+interface HashtagsParams {
+  sortBy?: 'engagement' | 'usage' | 'views'
+  limit?: number
+  platforms?: string[]
+}
+
+interface ExportParams {
+  startDate?: string
+  endDate?: string
+  platforms?: string[]
 }
 
 export const analyticsService = {
+  async getCapabilities(): Promise<AnalyticsCapabilities> {
+    const response = await api.get<AnalyticsCapabilities>('/analytics/capabilities')
+    return response.data
+  },
+
   async getOverview(params?: OverviewParams): Promise<AnalyticsOverview> {
     const queryParams: Record<string, string> = {}
 
@@ -69,6 +98,8 @@ export const analyticsService = {
 
     if (params.groupBy) queryParams.groupBy = params.groupBy
     if (params.platforms?.length) queryParams.platforms = params.platforms.join(',')
+    if (params.startDate) queryParams.startDate = params.startDate
+    if (params.endDate) queryParams.endDate = params.endDate
 
     const response = await api.get<TrendsResponse>('/analytics/trends', { params: queryParams })
     return response.data
@@ -103,6 +134,73 @@ export const analyticsService = {
       failedCount: number
       nextRefreshAt?: string
     }>('/analytics/refresh-all')
+    return response.data
+  },
+
+  async getBestTimes(params?: PlatformFilterParams): Promise<BestTimesResponse> {
+    const queryParams: Record<string, string> = {}
+    if (params?.platforms?.length) queryParams.platforms = params.platforms.join(',')
+
+    const response = await api.get<BestTimesResponse>('/analytics/best-times', { params: queryParams })
+    return response.data
+  },
+
+  async getContentTypes(params?: PlatformFilterParams): Promise<ContentTypesResponse> {
+    const queryParams: Record<string, string> = {}
+    if (params?.platforms?.length) queryParams.platforms = params.platforms.join(',')
+
+    const response = await api.get<ContentTypesResponse>('/analytics/content-types', { params: queryParams })
+    return response.data
+  },
+
+  async getHashtags(params?: HashtagsParams): Promise<HashtagsResponse> {
+    const queryParams: Record<string, string | number> = {}
+    if (params?.sortBy) queryParams.sortBy = params.sortBy
+    if (params?.limit) queryParams.limit = params.limit
+    if (params?.platforms?.length) queryParams.platforms = params.platforms.join(',')
+
+    const response = await api.get<HashtagsResponse>('/analytics/hashtags', { params: queryParams })
+    return response.data
+  },
+
+  async comparePosts(postIds: string[]): Promise<PostComparisonResponse> {
+    const response = await api.get<PostComparisonResponse>('/analytics/compare', {
+      params: { postIds: postIds.join(',') },
+    })
+    return response.data
+  },
+
+  async getBenchmarks(params?: PlatformFilterParams): Promise<BenchmarksResponse> {
+    const queryParams: Record<string, string> = {}
+    if (params?.platforms?.length) queryParams.platforms = params.platforms.join(',')
+
+    const response = await api.get<BenchmarksResponse>('/analytics/benchmarks', { params: queryParams })
+    return response.data
+  },
+
+  async exportCsv(params?: ExportParams): Promise<Blob> {
+    const queryParams: Record<string, string> = {}
+    if (params?.startDate) queryParams.startDate = params.startDate
+    if (params?.endDate) queryParams.endDate = params.endDate
+    if (params?.platforms?.length) queryParams.platforms = params.platforms.join(',')
+
+    const response = await api.get('/analytics/export/csv', {
+      params: queryParams,
+      responseType: 'blob',
+    })
+    return response.data
+  },
+
+  async exportPdf(params?: ExportParams): Promise<Blob> {
+    const queryParams: Record<string, string> = {}
+    if (params?.startDate) queryParams.startDate = params.startDate
+    if (params?.endDate) queryParams.endDate = params.endDate
+    if (params?.platforms?.length) queryParams.platforms = params.platforms.join(',')
+
+    const response = await api.get('/analytics/export/pdf', {
+      params: queryParams,
+      responseType: 'blob',
+    })
     return response.data
   },
 }

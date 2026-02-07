@@ -3,17 +3,29 @@ import { computed, onMounted, watch } from 'vue'
 import { useAnalyticsStore } from '@/stores'
 import type { AnalyticsPeriod, AnalyticsMetric } from '@/types'
 import PlatformIcon from '@/components/PlatformIcon.vue'
+import {
+  TrialUpgradeBanner,
+  LockedFeature,
+  BestTimesHeatmap,
+  ContentTypesChart,
+  HashtagsTable,
+  BenchmarksCard,
+  ExportButtons,
+  DateRangePicker,
+  PostComparison,
+} from '@/components/analytics'
 
 const analyticsStore = useAnalyticsStore()
 
-const periodOptions: { value: AnalyticsPeriod; label: string }[] = [
+// All possible options (filtered by tier in template)
+const allPeriodOptions: { value: AnalyticsPeriod; label: string }[] = [
   { value: '7d', label: '7 days' },
   { value: '30d', label: '30 days' },
   { value: '90d', label: '90 days' },
   { value: '12m', label: '12 months' },
 ]
 
-const metricOptions: { value: AnalyticsMetric; label: string }[] = [
+const allMetricOptions: { value: AnalyticsMetric; label: string }[] = [
   { value: 'engagement', label: 'Engagement' },
   { value: 'likes', label: 'Likes' },
   { value: 'comments', label: 'Comments' },
@@ -21,6 +33,20 @@ const metricOptions: { value: AnalyticsMetric; label: string }[] = [
   { value: 'views', label: 'Views' },
   { value: 'impressions', label: 'Impressions' },
 ]
+
+// Filtered by available periods/metrics
+const periodOptions = computed(() =>
+  allPeriodOptions.filter(o => analyticsStore.availablePeriods.includes(o.value))
+)
+
+const metricOptions = computed(() =>
+  allMetricOptions.filter(o => analyticsStore.availableMetrics.includes(o.value))
+)
+
+// Disabled period options (for showing as locked)
+const disabledPeriods = computed(() =>
+  allPeriodOptions.filter(o => !analyticsStore.availablePeriods.includes(o.value))
+)
 
 // Load data on mount
 onMounted(async () => {
@@ -75,10 +101,26 @@ const engagementRate = computed(() => {
   const engagement = overview.totalLikes + overview.totalComments + overview.totalShares
   return ((engagement / overview.totalImpressions) * 100).toFixed(2)
 })
+
+// Handle custom date range
+const handleCustomDateRange = (range: { startDate: string; endDate: string }) => {
+  analyticsStore.setFilters({
+    period: 'custom',
+    dateRange: { start: range.startDate, end: range.endDate },
+  })
+  analyticsStore.fetchTrends()
+  analyticsStore.fetchOverview()
+}
+
+// Whether we're showing custom period
+const isCustomPeriod = computed(() => analyticsStore.selectedPeriod === 'custom')
 </script>
 
 <template>
   <div class="analytics-page">
+    <!-- Trial upgrade banner -->
+    <TrialUpgradeBanner v-if="analyticsStore.isTrial" />
+
     <div class="page-header">
       <div class="page-header-content">
         <div>
@@ -86,7 +128,22 @@ const engagementRate = computed(() => {
           <p>Track your post performance across all platforms</p>
         </div>
         <div class="header-actions">
+          <!-- Export buttons (pro only) -->
+          <RouterLink
+            v-if="!analyticsStore.features.export"
+            to="/app/billing"
+            class="btn-locked-export"
+          >
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="lock-icon-sm">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            Export
+          </RouterLink>
+          <ExportButtons v-else />
+
+          <!-- Refresh button (starter+) -->
           <button
+            v-if="analyticsStore.features.manualRefresh"
             class="btn-refresh"
             :disabled="!analyticsStore.canRefresh || analyticsStore.isRefreshing"
             :title="analyticsStore.canRefresh ? 'Refresh analytics from social platforms' : `Next refresh available in ${analyticsStore.timeUntilNextRefresh}`"
@@ -269,8 +326,38 @@ const engagementRate = computed(() => {
               >
                 {{ option.label }}
               </button>
+              <!-- Show disabled periods with tooltip -->
+              <button
+                v-for="option in disabledPeriods"
+                :key="'d-' + option.value"
+                class="period-tab disabled"
+                :title="`Upgrade to unlock ${option.label}`"
+                disabled
+              >
+                {{ option.label }}
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="lock-mini">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </button>
+              <!-- Custom date range tab (pro only) -->
+              <button
+                v-if="analyticsStore.features.customDateRange"
+                :class="['period-tab', { active: isCustomPeriod }]"
+                @click="analyticsStore.selectedPeriod = 'custom'"
+              >
+                Custom
+              </button>
             </div>
           </div>
+        </div>
+
+        <!-- Custom date range picker -->
+        <div v-if="isCustomPeriod && analyticsStore.features.customDateRange" class="custom-date-row">
+          <DateRangePicker
+            :start-date="analyticsStore.dateRange.start"
+            :end-date="analyticsStore.dateRange.end"
+            @change="handleCustomDateRange"
+          />
         </div>
 
         <div class="card-body">
@@ -296,7 +383,7 @@ const engagementRate = computed(() => {
         </div>
       </div>
 
-      <!-- Two column layout -->
+      <!-- Two column layout: Platform breakdown + Best Times -->
       <div class="two-col-grid">
         <!-- Platform breakdown -->
         <div class="card">
@@ -345,13 +432,100 @@ const engagementRate = computed(() => {
           </div>
         </div>
 
-        <!-- Top posts -->
-        <div class="card">
-          <div class="card-header">
-            <h2>Top Performing Posts</h2>
-          </div>
-          <div class="card-body">
-            <div v-if="analyticsStore.topPosts.length" class="top-posts-list">
+        <!-- Best Times Heatmap (starter+) -->
+        <LockedFeature
+          v-if="!analyticsStore.features.bestTimes"
+          required-tier="starter"
+          feature-name="Best Time to Post"
+        >
+          <BestTimesHeatmap :heatmap="[]" />
+        </LockedFeature>
+        <BestTimesHeatmap
+          v-else
+          :heatmap="analyticsStore.bestTimes?.heatmap ?? []"
+        />
+      </div>
+
+      <!-- Two column layout: Content Types + Benchmarks -->
+      <div class="two-col-grid">
+        <!-- Content Types Chart (starter+) -->
+        <LockedFeature
+          v-if="!analyticsStore.features.contentTypes"
+          required-tier="starter"
+          feature-name="Content Type Breakdown"
+        >
+          <ContentTypesChart :types="[]" />
+        </LockedFeature>
+        <ContentTypesChart
+          v-else
+          :types="analyticsStore.contentTypes?.types ?? []"
+        />
+
+        <!-- Benchmarks Card (pro) -->
+        <LockedFeature
+          v-if="!analyticsStore.features.benchmarks"
+          required-tier="professional"
+          feature-name="Engagement Benchmarks"
+        >
+          <BenchmarksCard
+            :benchmarks="[]"
+            :user-engagement-rate="0"
+          />
+        </LockedFeature>
+        <BenchmarksCard
+          v-else
+          :benchmarks="analyticsStore.benchmarks?.benchmarks ?? []"
+          :user-engagement-rate="parseFloat(engagementRate)"
+        />
+      </div>
+
+      <!-- Hashtag Performance (pro) -->
+      <LockedFeature
+        v-if="!analyticsStore.features.hashtags"
+        required-tier="professional"
+        feature-name="Hashtag Performance"
+      >
+        <HashtagsTable :hashtags="[]" />
+      </LockedFeature>
+      <HashtagsTable
+        v-else
+        :hashtags="analyticsStore.hashtags?.hashtags ?? []"
+      />
+
+      <!-- Top posts -->
+      <div class="card">
+        <div class="card-header">
+          <h2>Top Performing Posts</h2>
+        </div>
+        <div class="card-body">
+          <div v-if="analyticsStore.topPosts.length" class="top-posts-list">
+            <!-- Trial: no click-through -->
+            <template v-if="analyticsStore.isTrial">
+              <div
+                v-for="(post, index) in analyticsStore.topPosts"
+                :key="post.postId"
+                class="top-post-item top-post-no-link"
+              >
+                <span class="top-post-rank">{{ index + 1 }}</span>
+                <div v-if="post.thumbnailUrl" class="top-post-thumb">
+                  <img :src="post.thumbnailUrl" alt="" />
+                </div>
+                <div v-else class="top-post-thumb top-post-thumb-empty">
+                  <PlatformIcon :platform="post.platform" size="sm" />
+                </div>
+                <div class="top-post-content">
+                  <p class="top-post-caption">{{ post.caption || 'No caption' }}</p>
+                  <div class="top-post-meta">
+                    <PlatformIcon :platform="post.platform" size="xs" />
+                    <span>{{ formatNumber(post.totalEngagement) }} engagement</span>
+                  </div>
+                </div>
+                <span class="top-post-upgrade-hint">Starter</span>
+              </div>
+            </template>
+
+            <!-- Starter+: clickable posts -->
+            <template v-else>
               <RouterLink
                 v-for="(post, index) in analyticsStore.topPosts"
                 :key="post.postId"
@@ -373,13 +547,23 @@ const engagementRate = computed(() => {
                   </div>
                 </div>
               </RouterLink>
-            </div>
-            <div v-else class="no-data">
-              <p>No posts available</p>
-            </div>
+            </template>
+          </div>
+          <div v-else class="no-data">
+            <p>No posts available</p>
           </div>
         </div>
       </div>
+
+      <!-- Post Comparison (pro) -->
+      <LockedFeature
+        v-if="!analyticsStore.features.postComparison"
+        required-tier="professional"
+        feature-name="Post Comparison"
+      >
+        <PostComparison />
+      </LockedFeature>
+      <PostComparison v-else />
     </template>
   </div>
 </template>
@@ -413,6 +597,36 @@ const engagementRate = computed(() => {
 
 .header-actions {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-locked-export {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--muted);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-locked-export:hover {
+  background: rgba(15, 23, 42, 0.8);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.lock-icon-sm {
+  width: 14px;
+  height: 14px;
 }
 
 .btn-refresh {
@@ -669,15 +883,33 @@ const engagementRate = computed(() => {
   color: var(--muted);
   cursor: pointer;
   transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.period-tab:hover {
+.period-tab:hover:not(:disabled) {
   color: var(--text);
 }
 
 .period-tab.active {
   background: var(--accent-soft);
   color: var(--text);
+}
+
+.period-tab.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.lock-mini {
+  width: 10px;
+  height: 10px;
+}
+
+.custom-date-row {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
 }
 
 /* Chart */
@@ -732,6 +964,7 @@ const engagementRate = computed(() => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
+  margin-bottom: 24px;
 }
 
 @media (max-width: 800px) {
@@ -740,7 +973,7 @@ const engagementRate = computed(() => {
   }
 }
 
-.two-col-grid .card {
+.two-col-grid > .card {
   margin-bottom: 0;
 }
 
@@ -835,8 +1068,12 @@ const engagementRate = computed(() => {
   transition: all 0.15s;
 }
 
-.top-post-item:hover {
+.top-post-item:not(.top-post-no-link):hover {
   background: rgba(15, 23, 42, 0.8);
+}
+
+.top-post-no-link {
+  cursor: default;
 }
 
 .top-post-rank {
@@ -892,6 +1129,15 @@ const engagementRate = computed(() => {
   gap: 4px;
   font-size: 11px;
   color: var(--muted);
+}
+
+.top-post-upgrade-hint {
+  font-size: 10px;
+  padding: 2px 8px;
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+  color: var(--accent-light);
+  flex-shrink: 0;
 }
 
 /* Upgrade banner */

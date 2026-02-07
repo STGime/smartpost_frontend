@@ -20,6 +20,15 @@ const config = computed({
   set: (value) => emit('update:modelValue', value)
 })
 
+// Instagram Stories are only supported for Business accounts via the API
+// Creator accounts (MEDIA_CREATOR) and Personal accounts don't support Stories
+const supportsStories = computed(() => {
+  const accountType = props.account?.metadata?.accountType
+  // If no account type info (legacy accounts), allow Stories (will fail at API level if not supported)
+  // Only explicitly hide if we know it's a Creator account
+  return !accountType || accountType === 'BUSINESS'
+})
+
 const updateField = <K extends keyof InstagramConfiguration>(
   field: K,
   value: InstagramConfiguration[K]
@@ -75,7 +84,7 @@ const updateField = <K extends keyof InstagramConfiguration>(
               Reels
             </span>
           </label>
-          <label class="radio-option" :class="{ active: config.placement === 'story' }">
+          <label v-if="supportsStories" class="radio-option" :class="{ active: config.placement === 'story' }">
             <input
               type="radio"
               name="instagram-placement"

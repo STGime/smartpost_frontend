@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useSocialAccountsStore } from '@/stores'
 import type { SocialPlatform, PlatformInfo } from '@/types'
 import PlatformIcon from '@/components/PlatformIcon.vue'
 
 const socialAccountsStore = useSocialAccountsStore()
+
+// Filter out platforms that are not yet supported
+// X (Twitter) is commented out for now - backend logic is preserved for future use
+const availablePlatforms = computed(() =>
+  socialAccountsStore.platforms.filter(p => p.id !== 'x')
+)
 
 const blueskyIdentifier = ref('')
 const blueskyPassword = ref('')
@@ -128,7 +134,7 @@ const handleConnectBluesky = async () => {
 
     <div v-else class="platforms-grid">
       <div
-        v-for="platform in socialAccountsStore.platforms"
+        v-for="platform in availablePlatforms"
         :key="platform.id"
         class="platform-card card"
       >

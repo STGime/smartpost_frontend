@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore, useUserStore } from '@/stores'
 import LoginModal from '@/components/LoginModal.vue'
+import ExpiredPlanModal from '@/components/ExpiredPlanModal.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -17,6 +18,12 @@ const isNavActive = computed(() => (itemPath: string) => {
 })
 const isSidebarOpen = ref(false)
 const currentYear = new Date().getFullYear()
+
+const showExpiredPlanModal = computed(() => {
+  const planData = userStore.plan?.plan
+  if (!planData) return false
+  return planData.is_active === false
+})
 
 const navigation = [
   { name: 'Dashboard', to: '/app', icon: 'dashboard' },
@@ -111,7 +118,10 @@ onMounted(() => {
                 {{ userStore.profile?.display_name || userStore.profile?.email || 'User' }}
               </p>
               <p class="user-plan">
-                {{ userStore.plan?.plan?.name || 'Free' }} plan
+                {{ userStore.plan?.plan?.type === 'trial' ? 'Starter' : (userStore.plan?.plan?.type || 'Free') }} plan
+              </p>
+              <p v-if="userStore.plan?.plan?.type === 'trial' && userStore.plan?.plan?.days_remaining != null" class="trial-days">
+                {{ userStore.plan.plan.days_remaining }} day{{ userStore.plan.plan.days_remaining === 1 ? '' : 's' }} left
               </p>
             </div>
           </div>
@@ -164,6 +174,8 @@ onMounted(() => {
       :is-reauth="true"
       @close="authStore.closeReauthModal()"
     />
+
+    <ExpiredPlanModal :show="showExpiredPlanModal" />
   </div>
 </template>
 
@@ -323,6 +335,12 @@ onMounted(() => {
   font-size: 11px;
   color: var(--muted);
   text-transform: capitalize;
+}
+
+.trial-days {
+  font-size: 10px;
+  color: #fbbf24;
+  margin-top: 1px;
 }
 
 .logout-btn {

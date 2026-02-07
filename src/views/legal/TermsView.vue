@@ -1,4 +1,16 @@
 <script setup lang="ts">
+import { useHead } from '@unhead/vue'
+
+useHead({
+  title: 'Terms of Service',
+  meta: [
+    { name: 'description', content: 'Terms of Service for Posta – the social media scheduling and smart cropping platform for creators and teams.' },
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://getposta.app/terms' },
+  ],
+})
+
 const currentYear = new Date().getFullYear()
 </script>
 

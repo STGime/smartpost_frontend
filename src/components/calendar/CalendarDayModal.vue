@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Post } from '@/types'
+import type { CalendarPost, SocialPlatform } from '@/types'
 import PlatformIcon from '@/components/PlatformIcon.vue'
 
 const props = defineProps<{
   show: boolean
   date: Date | null
-  posts: Post[]
+  posts: CalendarPost[]
 }>()
 
 const emit = defineEmits<{
   close: []
-  'view-post': [post: Post]
-  'cancel-post': [post: Post]
+  'view-post': [post: CalendarPost]
+  'cancel-post': [post: CalendarPost]
 }>()
 
 const formattedDate = computed(() => {
@@ -84,12 +84,11 @@ const getStatusClass = (status: string) => {
 
                 <div class="post-platforms">
                   <span
-                    v-for="account in post.socialAccounts"
-                    :key="account.id"
+                    v-for="platform in post.platforms"
+                    :key="platform"
                     class="platform-chip"
                   >
-                    <PlatformIcon :platform="account.platform" size="sm" />
-                    <span>@{{ account.username }}</span>
+                    <PlatformIcon :platform="platform as SocialPlatform" size="sm" />
                   </span>
                 </div>
               </div>

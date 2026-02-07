@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Post } from '@/types'
+import type { CalendarPost } from '@/types'
 import CalendarCell from './CalendarCell.vue'
 
 const props = defineProps<{
   year: number
   month: number // 0-indexed (0 = January)
-  postsByDate: Record<string, Post[]>
+  postsByDate: Record<string, CalendarPost[]>
 }>()
 
 const emit = defineEmits<{
-  'post-click': [post: Post]
+  'post-click': [post: CalendarPost]
   'show-all': [date: Date]
 }>()
 
@@ -89,7 +89,7 @@ function formatDateKey(date: Date): string {
   return `${year}-${month}-${day}`
 }
 
-function getPostsForDate(dateKey: string): Post[] {
+function getPostsForDate(dateKey: string): CalendarPost[] {
   return props.postsByDate[dateKey] || []
 }
 </script>

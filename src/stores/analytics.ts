@@ -10,6 +10,11 @@ import type {
   AnalyticsPeriod,
   AnalyticsGroupBy,
   AccountNeedingUpgrade,
+  AnalyticsCapabilities,
+  BestTimeSlot,
+  ContentTypeStats,
+  HashtagStats,
+  BenchmarkData,
 } from '@/types'
 
 export const useAnalyticsStore = defineStore('analytics', () => {
@@ -25,6 +30,14 @@ export const useAnalyticsStore = defineStore('analytics', () => {
   // Scope upgrade state
   const accountsNeedingUpgrade = ref<AccountNeedingUpgrade[]>([])
   const scopeStatusLoaded = ref(false)
+
+  // Tiered analytics state
+  const capabilities = ref<AnalyticsCapabilities | null>(null)
+  const bestTimes = ref<{ heatmap: BestTimeSlot[] } | null>(null)
+  const contentTypes = ref<{ types: ContentTypeStats[] } | null>(null)
+  const hashtags = ref<{ hashtags: HashtagStats[] } | null>(null)
+  const benchmarks = ref<{ benchmarks: BenchmarkData[] } | null>(null)
+  const comparisonPosts = ref<PostAnalyticsDetail[]>([])
 
   // Filter state
   const selectedPeriod = ref<AnalyticsPeriod>('30d')
@@ -53,7 +66,77 @@ export const useAnalyticsStore = defineStore('analytics', () => {
       .sort((a, b) => b.likes - a.likes)
   })
 
+  // Tier-aware computed properties
+  const isTrial = computed(() => capabilities.value?.tier === 'trial')
+  const isStarter = computed(() => capabilities.value?.tier === 'starter')
+  const isProfessional = computed(() => capabilities.value?.tier === 'professional')
+
+  const features = computed(() => capabilities.value?.features ?? {
+    postDetail: false,
+    manualRefresh: false,
+    bestTimes: false,
+    contentTypes: false,
+    hashtags: false,
+    customDateRange: false,
+    export: false,
+    postComparison: false,
+    benchmarks: false,
+  })
+
+  const availablePeriods = computed<AnalyticsPeriod[]>(() => {
+    if (!capabilities.value) return ['7d']
+    switch (capabilities.value.maxPeriod) {
+      case '7d': return ['7d']
+      case '90d': return ['7d', '30d', '90d']
+      case 'unlimited': return ['7d', '30d', '90d', '12m']
+      default: return ['7d']
+    }
+  })
+
+  const availableMetrics = computed<AnalyticsMetric[]>(() => {
+    return ['likes', 'comments', 'shares', 'views', 'impressions', 'engagement']
+  })
+
   // Actions
+  const fetchCapabilities = async () => {
+    try {
+      const caps = await analyticsService.getCapabilities()
+
+      // Trial is a 14-day free trial of Starter — treat it as starter tier
+      if (caps.tier === 'trial') {
+        caps.tier = 'starter'
+      }
+
+      capabilities.value = caps
+
+      // Adjust current filters if they exceed the user's tier
+      if (!availablePeriods.value.includes(selectedPeriod.value)) {
+        selectedPeriod.value = availablePeriods.value[availablePeriods.value.length - 1] || '7d'
+      }
+      if (!availableMetrics.value.includes(selectedMetric.value)) {
+        selectedMetric.value = 'engagement'
+      }
+    } catch (err: unknown) {
+      console.error('Failed to fetch capabilities:', err)
+      // Default to starter if capabilities fetch fails
+      capabilities.value = {
+        tier: 'starter',
+        maxPeriod: '90d',
+        features: {
+          postDetail: true,
+          manualRefresh: true,
+          bestTimes: true,
+          contentTypes: true,
+          hashtags: true,
+          customDateRange: true,
+          export: false,
+          postComparison: false,
+          benchmarks: false,
+        },
+      }
+    }
+  }
+
   const fetchOverview = async () => {
     isLoading.value = true
     error.value = null
@@ -128,6 +211,8 @@ export const useAnalyticsStore = defineStore('analytics', () => {
         period: selectedPeriod.value,
         groupBy: selectedGroupBy.value,
         platforms: selectedPlatforms.value.length > 0 ? selectedPlatforms.value : undefined,
+        startDate: dateRange.value.start || undefined,
+        endDate: dateRange.value.end || undefined,
       })
       trends.value = response.data
     } catch (err: unknown) {
@@ -168,7 +253,7 @@ export const useAnalyticsStore = defineStore('analytics', () => {
   }
 
   const clearFilters = () => {
-    selectedPeriod.value = '30d'
+    selectedPeriod.value = availablePeriods.value[availablePeriods.value.length - 1] || '30d'
     selectedMetric.value = 'engagement'
     selectedGroupBy.value = 'day'
     selectedPlatforms.value = []
@@ -218,19 +303,10 @@ export const useAnalyticsStore = defineStore('analytics', () => {
   const loadRefreshState = () => {
     // Disabled for testing - clear any stored value
     localStorage.removeItem('analytics_last_refresh')
-    /*
-    const stored = localStorage.getItem('analytics_last_refresh')
-    if (stored) {
-      lastRefreshAt.value = new Date(stored)
-      nextRefreshAt.value = new Date(lastRefreshAt.value.getTime() + REFRESH_COOLDOWN_MS)
-    }
-    */
   }
 
   const canRefresh = computed(() => {
     return true // Disabled for testing
-    // if (!lastRefreshAt.value) return true
-    // return Date.now() >= lastRefreshAt.value.getTime() + REFRESH_COOLDOWN_MS
   })
 
   const timeUntilNextRefresh = computed(() => {
@@ -275,13 +351,117 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     }
   }
 
+  // Tiered analytics actions
+  const fetchBestTimes = async () => {
+    try {
+      bestTimes.value = await analyticsService.getBestTimes({
+        platforms: selectedPlatforms.value.length > 0 ? selectedPlatforms.value : undefined,
+      })
+    } catch (err) {
+      console.error('Failed to fetch best times:', err)
+    }
+  }
+
+  const fetchContentTypes = async () => {
+    try {
+      contentTypes.value = await analyticsService.getContentTypes({
+        platforms: selectedPlatforms.value.length > 0 ? selectedPlatforms.value : undefined,
+      })
+    } catch (err) {
+      console.error('Failed to fetch content types:', err)
+    }
+  }
+
+  const fetchHashtags = async (params?: { sortBy?: 'engagement' | 'usage' | 'views'; limit?: number }) => {
+    try {
+      hashtags.value = await analyticsService.getHashtags({
+        sortBy: params?.sortBy,
+        limit: params?.limit,
+        platforms: selectedPlatforms.value.length > 0 ? selectedPlatforms.value : undefined,
+      })
+    } catch (err) {
+      console.error('Failed to fetch hashtags:', err)
+    }
+  }
+
+  const fetchBenchmarks = async () => {
+    try {
+      benchmarks.value = await analyticsService.getBenchmarks({
+        platforms: selectedPlatforms.value.length > 0 ? selectedPlatforms.value : undefined,
+      })
+    } catch (err) {
+      console.error('Failed to fetch benchmarks:', err)
+    }
+  }
+
+  const fetchComparison = async (postIds: string[]) => {
+    try {
+      const result = await analyticsService.comparePosts(postIds)
+      comparisonPosts.value = result.posts
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } }
+      error.value = e.response?.data?.error || 'Failed to compare posts'
+      throw err
+    }
+  }
+
+  const downloadCsv = async () => {
+    try {
+      const blob = await analyticsService.exportCsv({
+        startDate: dateRange.value.start || undefined,
+        endDate: dateRange.value.end || undefined,
+        platforms: selectedPlatforms.value.length > 0 ? selectedPlatforms.value : undefined,
+      })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `smartpost-analytics-${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } }
+      error.value = e.response?.data?.error || 'Failed to export CSV'
+      throw err
+    }
+  }
+
+  const downloadPdf = async () => {
+    try {
+      const blob = await analyticsService.exportPdf({
+        startDate: dateRange.value.start || undefined,
+        endDate: dateRange.value.end || undefined,
+        platforms: selectedPlatforms.value.length > 0 ? selectedPlatforms.value : undefined,
+      })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `smartpost-analytics-${new Date().toISOString().split('T')[0]}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } }
+      error.value = e.response?.data?.error || 'Failed to export PDF'
+      throw err
+    }
+  }
+
   const fetchAll = async () => {
-    await Promise.all([
+    await fetchCapabilities() // must be first
+    const promises: Promise<void>[] = [
       fetchOverview(),
       fetchPostsAnalytics(),
       fetchTrends(),
       fetchScopeStatus(),
-    ])
+    ]
+    if (features.value.bestTimes) promises.push(fetchBestTimes())
+    if (features.value.contentTypes) promises.push(fetchContentTypes())
+    if (features.value.hashtags) promises.push(fetchHashtags())
+    if (features.value.benchmarks) promises.push(fetchBenchmarks())
+    await Promise.allSettled(promises)
   }
 
   // Computed for upgrade banner
@@ -299,6 +479,14 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     accountsNeedingUpgrade,
     scopeStatusLoaded,
 
+    // Tiered state
+    capabilities,
+    bestTimes,
+    contentTypes,
+    hashtags,
+    benchmarks,
+    comparisonPosts,
+
     // Filters
     selectedPeriod,
     selectedMetric,
@@ -312,6 +500,14 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     platformBreakdown,
     needsUpgrade,
 
+    // Tier-aware computed
+    isTrial,
+    isStarter,
+    isProfessional,
+    features,
+    availablePeriods,
+    availableMetrics,
+
     // Manual refresh state
     isRefreshing,
     lastRefreshAt,
@@ -321,6 +517,7 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     timeUntilNextRefresh,
 
     // Actions
+    fetchCapabilities,
     fetchOverview,
     fetchPostsAnalytics,
     fetchPostAnalytics,
@@ -334,5 +531,14 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     dismissUpgradeBanner,
     refreshAllAnalytics,
     loadRefreshState,
+
+    // Tiered actions
+    fetchBestTimes,
+    fetchContentTypes,
+    fetchHashtags,
+    fetchBenchmarks,
+    fetchComparison,
+    downloadCsv,
+    downloadPdf,
   }
 })

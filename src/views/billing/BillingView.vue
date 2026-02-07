@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { paymentsService } from '@/services'
-import { useUserStore } from '@/stores'
-import type { PricingPlan, Subscription } from '@/types'
-
-const userStore = useUserStore()
+import { ref, computed, onMounted } from 'vue'
+import { paymentsService, userService } from '@/services'
+import type { Subscription, Plan, PricingPlan } from '@/types'
 
 const plans = ref<PricingPlan[]>([])
 const subscription = ref<Subscription | null>(null)
+const currentPlan = ref<Plan | null>(null)
 const isLoading = ref(true)
 const billingInterval = ref<'month' | 'year'>('month')
 
 onMounted(async () => {
   try {
-    const [plansData, subData] = await Promise.all([
+    const [plansData, subData, planData] = await Promise.all([
       paymentsService.getPlans(),
-      paymentsService.getSubscription()
+      paymentsService.getSubscription(),
+      userService.getPlan()
     ])
     plans.value = plansData.allPlans
     subscription.value = subData.subscription
+    currentPlan.value = planData
   } catch {
     // Handle error
   } finally {
@@ -26,9 +26,59 @@ onMounted(async () => {
   }
 })
 
-const filteredPlans = () => {
-  return plans.value.filter(p => p.interval === billingInterval.value)
+// Get plans filtered by billing interval, excluding trial
+const filteredPlans = computed(() => {
+  return plans.value.filter(p => p.billingInterval === billingInterval.value && (p.planType as string) !== 'trial')
+})
+
+// Check if a plan is the user's current plan (trial counts as starter)
+const isCurrentPlan = (planType: string) => {
+  const userType = currentPlan.value?.plan?.type
+  if (userType === 'trial' && planType === 'starter') return true
+  return userType === planType
 }
+
+// Get display name for a plan type
+const getPlanDisplayName = (planType: string) => {
+  if (planType === 'trial') return 'Starter (Trial)'
+  return planType.charAt(0).toUpperCase() + planType.slice(1)
+}
+
+// Filter out features that duplicate the limit displays
+const getFilteredFeatures = (plan: PricingPlan) => {
+  const excludePatterns = [
+    /social account/i,
+    /posts?\s*\/\s*month/i,
+    /posts?\/month/i,
+    /scheduled post/i,
+  ]
+  return (plan.features || []).filter(feature =>
+    !excludePatterns.some(pattern => pattern.test(feature))
+  )
+}
+
+// Get currency symbol
+const getCurrencySymbol = (currency: string) => {
+  return currency === 'eur' ? '€' : '$'
+}
+
+// Format the current plan display name
+const currentPlanDisplayName = computed(() => {
+  const type = currentPlan.value?.plan?.type
+  if (!type) return 'No Plan'
+  if (type === 'trial') return 'Starter (Trial)'
+  return type.charAt(0).toUpperCase() + type.slice(1)
+})
+
+// Check if user is on trial
+const isOnTrial = computed(() => {
+  return currentPlan.value?.plan?.type === 'trial'
+})
+
+// Get days remaining
+const daysRemaining = computed(() => {
+  return currentPlan.value?.plan?.days_remaining ?? null
+})
 
 const handleSubscribe = async (planType: string) => {
   try {
@@ -46,9 +96,7 @@ const handleSubscribe = async (planType: string) => {
 
 const handleManageSubscription = async () => {
   try {
-    const { url } = await paymentsService.createPortalSession(
-      `${window.location.origin}/app/billing`
-    )
+    const { url } = await paymentsService.createPortalSession()
     window.location.href = url
   } catch {
     // Handle error
@@ -63,30 +111,43 @@ const handleManageSubscription = async () => {
       <p>Manage your subscription and payment methods</p>
     </div>
 
-    <!-- Current subscription -->
-    <div v-if="subscription" class="subscription-card card">
+    <!-- Current Plan -->
+    <div v-if="currentPlan" class="subscription-card card">
       <div class="subscription-header">
-        <div class="subscription-icon">
+        <div class="subscription-icon" :class="{ 'trial-icon': isOnTrial }">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
           </svg>
         </div>
         <div>
-          <h2>Current Subscription</h2>
+          <h2>Current Plan</h2>
           <p>Your active plan details</p>
         </div>
       </div>
       <div class="subscription-content">
         <div class="subscription-details">
-          <p class="subscription-plan">{{ subscription.planType }} Plan</p>
-          <p class="subscription-billing">
+          <p class="subscription-plan">{{ currentPlanDisplayName }}</p>
+          <p v-if="isOnTrial && daysRemaining !== null" class="subscription-trial">
+            {{ daysRemaining }} days remaining
+          </p>
+          <p v-else-if="subscription" class="subscription-billing">
             {{ subscription.billingInterval === 'year' ? 'Yearly' : 'Monthly' }} billing
           </p>
-          <p v-if="subscription.cancelAtPeriodEnd" class="subscription-warning">
+          <p v-if="subscription?.cancelAtPeriodEnd" class="subscription-warning">
             Cancels at end of period
           </p>
+          <div class="current-limits">
+            <span>{{ currentPlan.plan?.limits?.max_social_accounts }} accounts</span>
+            <span class="dot">·</span>
+            <span>{{ currentPlan.plan?.limits?.max_posts_per_month }} posts/mo</span>
+          </div>
+          <div class="current-usage">
+            <span>{{ currentPlan.usage?.connected_accounts }}/{{ currentPlan.plan?.limits?.max_social_accounts }} accounts used</span>
+            <span class="dot">·</span>
+            <span>{{ currentPlan.usage?.posts_this_month }}/{{ currentPlan.plan?.limits?.max_posts_per_month }} posts this month</span>
+          </div>
         </div>
-        <button @click="handleManageSubscription" class="btn-secondary">
+        <button v-if="subscription" @click="handleManageSubscription" class="btn-secondary">
           Manage Subscription
         </button>
       </div>
@@ -117,57 +178,43 @@ const handleManageSubscription = async () => {
         <div class="spinner"></div>
       </div>
 
-      <div v-else class="plans-grid">
-        <!-- Free plan -->
-        <div class="plan-card">
-          <div class="plan-header">
-            <h3>Free</h3>
-            <div class="plan-price">
-              <span class="price-amount">$0</span>
-              <span class="price-period">/month</span>
-            </div>
-          </div>
-          <ul class="plan-features">
-            <li>
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-              {{ userStore.plan?.limits?.posts_per_month || 10 }} posts/month
-            </li>
-            <li>
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-              {{ userStore.plan?.limits?.connected_accounts || 2 }} connected accounts
-            </li>
-            <li>
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-              Basic support
-            </li>
-          </ul>
-          <button disabled class="plan-btn plan-btn-current">
-            Current Plan
-          </button>
-        </div>
+      <div v-else-if="filteredPlans.length === 0" class="empty-state">
+        <p>No plans available</p>
+      </div>
 
-        <!-- Paid plans -->
+      <div v-else class="plans-grid">
         <div
-          v-for="plan in filteredPlans()"
+          v-for="plan in filteredPlans"
           :key="plan.id"
-          class="plan-card plan-card-featured"
+          class="plan-card"
+          :class="{
+            'plan-card-featured': plan.planType === 'professional',
+            'plan-card-current': isCurrentPlan(plan.planType)
+          }"
         >
-          <div class="featured-badge">Recommended</div>
+          <div v-if="plan.planType === 'professional'" class="featured-badge">Recommended</div>
+          <div v-if="isCurrentPlan(plan.planType)" class="current-badge">Current</div>
           <div class="plan-header">
-            <h3>{{ plan.displayName }}</h3>
+            <h3>{{ getPlanDisplayName(plan.planType) }}</h3>
             <div class="plan-price">
-              <span class="price-amount">${{ plan.price / 100 }}</span>
-              <span class="price-period">/{{ plan.interval }}</span>
+              <span class="price-amount">{{ getCurrencySymbol(plan.currency) }}{{ (plan.priceCents / 100).toFixed(0) }}</span>
+              <span class="price-period">/{{ plan.billingInterval === 'year' ? 'yr' : 'mo' }}</span>
             </div>
           </div>
           <ul class="plan-features">
-            <li v-for="feature in plan.features" :key="feature">
+            <li>
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              {{ plan.maxSocialAccounts }} social accounts
+            </li>
+            <li>
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              {{ plan.maxPostsPerMonth }} posts/month
+            </li>
+            <li v-for="feature in getFilteredFeatures(plan)" :key="feature">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
@@ -175,10 +222,18 @@ const handleManageSubscription = async () => {
             </li>
           </ul>
           <button
-            @click="handleSubscribe(plan.name)"
+            v-if="isCurrentPlan(plan.planType)"
+            disabled
+            class="plan-btn plan-btn-current"
+          >
+            Current Plan
+          </button>
+          <button
+            v-else
+            @click="handleSubscribe(plan.planType)"
             class="plan-btn btn-primary"
           >
-            Subscribe
+            {{ isOnTrial ? 'Upgrade' : 'Subscribe' }}
           </button>
         </div>
       </div>
@@ -274,6 +329,37 @@ const handleManageSubscription = async () => {
   margin-top: 6px;
 }
 
+.subscription-trial {
+  font-size: 13px;
+  color: var(--accent-light);
+}
+
+.trial-icon {
+  background: var(--accent-soft) !important;
+  color: var(--accent-light) !important;
+}
+
+.current-limits,
+.current-usage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.current-limits .dot,
+.current-usage .dot {
+  opacity: 0.5;
+}
+
+.current-usage {
+  margin-top: 4px;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
 /* Plans Section */
 .plans-section {
   padding: 20px;
@@ -358,7 +444,8 @@ const handleManageSubscription = async () => {
   background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(15, 23, 42, 0.8));
 }
 
-.featured-badge {
+.featured-badge,
+.current-badge {
   position: absolute;
   top: -10px;
   left: 50%;
@@ -369,6 +456,20 @@ const handleManageSubscription = async () => {
   font-weight: 500;
   background: var(--accent);
   color: white;
+}
+
+.current-badge {
+  background: var(--success);
+}
+
+.plan-card-current {
+  border-color: var(--success);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px;
+  color: var(--muted);
 }
 
 .plan-header {

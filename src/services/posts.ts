@@ -5,6 +5,7 @@ import type {
   CreatePostRequest,
   UpdatePostRequest,
   PaginatedResponse,
+  CalendarPost,
 } from '@/types'
 
 interface ListPostsParams {
@@ -52,5 +53,12 @@ export const postsService = {
   async cancelScheduledPost(postId: string): Promise<Post> {
     const response = await api.post<Post>(`/posts/${postId}/cancel`)
     return response.data
+  },
+
+  async fetchCalendarPosts(start: string, end: string): Promise<CalendarPost[]> {
+    const response = await api.get<{ items: CalendarPost[] }>('/posts/calendar', {
+      params: { start, end }
+    })
+    return response.data.items
   },
 }

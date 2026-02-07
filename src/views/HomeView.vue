@@ -1,12 +1,241 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
+import { useHead } from '@unhead/vue'
 import { useAuthStore } from '@/stores'
 import LoginModal from '@/components/LoginModal.vue'
+import WaitingListModal from '@/components/WaitingListModal.vue'
+import { isSignupEnabled } from '@/config/featureFlags'
+import { paymentsService } from '@/services'
+import type { WaitingListSource } from '@/services'
+import type { PricingPlan, BillingInterval } from '@/types'
+
+useHead({
+  title: 'Smart Social Media Posting for Creators & Teams',
+  meta: [
+    { name: 'description', content: 'Posta lets you create once and publish everywhere. AI-powered smart cropping, face-aware framing, automatic compression and scheduling for TikTok, Instagram, YouTube Shorts and more.' },
+    { name: 'keywords', content: 'social media scheduler, auto post, TikTok scheduling, Instagram scheduler, smart cropping, face detection, multi-platform posting, content creator tools, social media automation' },
+    { name: 'robots', content: 'index, follow' },
+    { property: 'og:type', content: 'website' },
+    { property: 'og:url', content: 'https://getposta.app/' },
+    { property: 'og:title', content: 'Posta – Smart Social Media Posting for Creators & Teams' },
+    { property: 'og:description', content: 'Create once, publish everywhere. AI-powered smart cropping, face-aware framing, and scheduling for TikTok, Instagram, YouTube Shorts and more.' },
+    { property: 'og:image', content: 'https://getposta.app/assets/posta_og_image.png' },
+    { property: 'og:site_name', content: 'Posta' },
+    { property: 'og:locale', content: 'en_US' },
+    { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:url', content: 'https://getposta.app/' },
+    { name: 'twitter:title', content: 'Posta – Smart Social Media Posting for Creators & Teams' },
+    { name: 'twitter:description', content: 'Create once, publish everywhere. AI-powered smart cropping, face-aware framing, and scheduling for TikTok, Instagram, YouTube Shorts and more.' },
+    { name: 'twitter:image', content: 'https://getposta.app/assets/posta_og_image.png' },
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://getposta.app/' },
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: [
+          {
+            '@type': 'Question',
+            name: 'Who is Posta for?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Posta is for creators, solo founders and small marketing teams who post regularly across multiple platforms and are tired of manually resizing, re-exporting and re-uploading content.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'Will you support direct publishing?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes. The beta focuses on creating perfect, platform-ready assets. Direct publishing and scheduling to selected platforms will roll out step by step.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'How is this different from existing tools?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Posta goes deeper on media intelligence – face detection, safe crops and smart compression – instead of just duplicating your post across platforms.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'Can I influence the roadmap?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes. Early users help shape integrations, workflow and pricing. Tell us how you work and what your current stack looks like when you request access.',
+            },
+          },
+        ],
+      }),
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'HowTo',
+        name: 'How to schedule social media posts with Posta',
+        description: 'Three simple steps to go from a single asset to scheduled posts across all your social media platforms.',
+        step: [
+          {
+            '@type': 'HowToStep',
+            position: 1,
+            name: 'Drop in your source asset',
+            text: 'Start with a single image or video in the format you already use today. Posta analyzes subjects, faces and aspect ratio.',
+          },
+          {
+            '@type': 'HowToStep',
+            position: 2,
+            name: 'Pick platforms & variants',
+            text: 'Choose where you want to post. Posta prepares platform-ready variants with safe framing and compression.',
+          },
+          {
+            '@type': 'HowToStep',
+            position: 3,
+            name: 'Schedule & ship',
+            text: 'Approve the posts, set dates and times, and let Posta take care of the publishing calendar.',
+          },
+        ],
+      }),
+    },
+  ],
+})
 
 const authStore = useAuthStore()
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 const currentYear = new Date().getFullYear()
 const showLoginModal = ref(false)
+
+const signupEnabled = isSignupEnabled()
+const showWaitingListModal = ref(false)
+const waitingListSource = ref<WaitingListSource>('hero')
+
+const openWaitingList = (source: WaitingListSource) => {
+  waitingListSource.value = source
+  showWaitingListModal.value = true
+}
+
+// Pricing
+const pricingInterval = ref<BillingInterval>('year')
+const pricingPlans = ref<Record<string, { monthly: PricingPlan; yearly: PricingPlan }>>({})
+const pricingLoading = ref(true)
+const pricingError = ref(false)
+
+onMounted(async () => {
+  try {
+    const data = await paymentsService.getPlans()
+    pricingPlans.value = data.plans
+  } catch {
+    pricingError.value = true
+  } finally {
+    pricingLoading.value = false
+  }
+})
+
+const intervalKey = computed(() => pricingInterval.value === 'year' ? 'yearly' : 'monthly')
+
+const starterPlan = computed<PricingPlan | null>(() => {
+  return pricingPlans.value.starter?.[intervalKey.value] ?? null
+})
+
+const professionalPlan = computed<PricingPlan | null>(() => {
+  return pricingPlans.value.professional?.[intervalKey.value] ?? null
+})
+
+const formatPricingAmount = (plan: PricingPlan | null) => {
+  if (!plan) return ''
+  const symbol = plan.currency === 'eur' ? '€' : '$'
+  if (plan.billingInterval === 'year') {
+    return `${symbol}${Math.round(plan.priceCents / 12 / 100)}`
+  }
+  return `${symbol}${Math.round(plan.priceCents / 100)}`
+}
+
+interface ComparisonRow {
+  feature: string
+  starter: string | boolean
+  professional: string | boolean
+}
+
+interface ComparisonCategory {
+  name: string
+  rows: ComparisonRow[]
+}
+
+const comparisonTable = computed<ComparisonCategory[]>(() => {
+  const s = starterPlan.value
+  const p = professionalPlan.value
+  if (!s || !p) return []
+
+  return [
+    {
+      name: 'Usage Limits',
+      rows: [
+        { feature: 'Social accounts', starter: String(s.maxSocialAccounts), professional: String(p.maxSocialAccounts) },
+        { feature: 'Posts per month', starter: String(s.maxPostsPerMonth), professional: String(p.maxPostsPerMonth) },
+        { feature: 'Scheduled posts', starter: String(s.maxScheduledPosts), professional: String(p.maxScheduledPosts) },
+      ],
+    },
+    {
+      name: 'Platforms',
+      rows: [
+        { feature: 'Instagram', starter: true, professional: true },
+        { feature: 'TikTok', starter: true, professional: true },
+        { feature: 'YouTube', starter: true, professional: true },
+        { feature: 'Facebook', starter: true, professional: true },
+        { feature: 'LinkedIn', starter: true, professional: true },
+        { feature: 'Pinterest', starter: true, professional: true },
+        { feature: 'X (Twitter)', starter: true, professional: true },
+        { feature: 'Bluesky', starter: true, professional: true },
+        { feature: 'Threads', starter: true, professional: true },
+      ],
+    },
+    {
+      name: 'Media Processing',
+      rows: [
+        { feature: 'Auto-format for every platform', starter: true, professional: true },
+        { feature: 'Face-aware cropping', starter: true, professional: true },
+        { feature: 'Smart compression', starter: true, professional: true },
+        { feature: 'Video processing', starter: true, professional: true },
+      ],
+    },
+    {
+      name: 'Scheduling',
+      rows: [
+        { feature: 'Calendar view', starter: true, professional: true },
+        { feature: 'Timezone-safe scheduling', starter: true, professional: true },
+        { feature: 'Batch scheduling', starter: false, professional: true },
+      ],
+    },
+    {
+      name: 'Analytics',
+      rows: [
+        { feature: 'Overview & engagement trends', starter: '90 days', professional: '1 year' },
+        { feature: 'Per-post analytics', starter: true, professional: true },
+        { feature: 'Platform performance breakdown', starter: true, professional: true },
+        { feature: 'Best time to post', starter: true, professional: true },
+        { feature: 'Content type breakdown', starter: true, professional: true },
+        { feature: 'Manual refresh', starter: true, professional: true },
+        { feature: 'Hashtag performance', starter: false, professional: true },
+        { feature: 'Custom date ranges', starter: false, professional: true },
+        { feature: 'Post comparison', starter: false, professional: true },
+        { feature: 'Engagement benchmarks', starter: false, professional: true },
+        { feature: 'CSV & PDF export', starter: false, professional: true },
+      ],
+    },
+    {
+      name: 'Support',
+      rows: [
+        { feature: 'Email support', starter: true, professional: true },
+        { feature: 'Priority support', starter: false, professional: true },
+      ],
+    },
+  ]
+})
 </script>
 
 <template>
@@ -25,10 +254,18 @@ const showLoginModal = ref(false)
         </div>
         <div class="header-actions">
           <span class="beta-tag">Private beta</span>
-          <button v-if="!isAuthenticated" class="btn-login" @click="showLoginModal = true">
-            Log in
-          </button>
-          <RouterLink v-else to="/app" class="btn-primary">
+          <template v-if="!isAuthenticated">
+            <button class="btn-login" @click="showLoginModal = true">
+              Log in
+            </button>
+            <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary btn-header">
+              Sign up free
+            </RouterLink>
+            <button v-else class="btn-primary btn-header" @click="openWaitingList('header')">
+              Join waiting list
+            </button>
+          </template>
+          <RouterLink v-else to="/app" class="btn-primary btn-header">
             Dashboard
           </RouterLink>
         </div>
@@ -43,7 +280,7 @@ const showLoginModal = ref(false)
               <span>One workflow for all your socials</span>
             </div>
             <h1>
-              Create once, <span class="gradient-text">ship everywhere</span>.
+              Create once, <span class="gradient-text">post everywhere</span>.
             </h1>
             <p class="hero-sub">
               Posta turns one piece of content into platform-ready posts for TikTok, Instagram, YouTube & more –
@@ -64,10 +301,14 @@ const showLoginModal = ref(false)
             </div>
 
             <div class="hero-actions">
-              <a href="mailto:hello@getposta.app?subject=Posta%20beta%20access" class="btn-primary">
-                <span>Request early access</span>
+              <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary">
+                <span>Start free trial</span>
                 <span class="arrow">→</span>
-              </a>
+              </RouterLink>
+              <button v-else class="btn-primary" @click="openWaitingList('hero')">
+                <span>Join waiting list</span>
+                <span class="arrow">→</span>
+              </button>
               <a href="#how" class="btn-ghost">
                 See how it works
               </a>
@@ -137,28 +378,104 @@ const showLoginModal = ref(false)
           </p>
 
           <div class="feature-grid">
-            <div class="feature-card">
+            <div class="feature-card feature-card-with-image">
               <div class="feature-tag">Media intelligence</div>
               <div class="feature-title">Face detection & smart cropping</div>
               <div class="feature-body">
                 Automatically detects faces in your photos and videos and keeps them in frame when converting to
                 portrait, landscape or square formats.
               </div>
+              <img src="/assets/images/Smart crop.png" alt="Smart crop example" class="feature-image" />
             </div>
-            <div class="feature-card">
+            <div class="feature-card feature-card-with-image">
               <div class="feature-tag">Format once</div>
               <div class="feature-title">Auto layouts for every platform</div>
               <div class="feature-body">
-                Generate variants tailored for TikTok, Instagram, YouTube Shorts and more – without exporting ten
+                Generate variants tailored for TikTok, Instagram, YouTube Shorts and more – without exporting eight
                 different versions by hand.
               </div>
+              <div class="platform-previews">
+                <div class="platform-preview tiktok-preview">
+                  <img src="/assets/images/city.png" alt="TikTok format" />
+                  <div class="platform-overlay">
+                    <div class="tiktok-ui">
+                      <div class="tiktok-side">
+                        <div class="tiktok-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></div>
+                        <div class="tiktok-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/></svg></div>
+                        <div class="tiktok-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></div>
+                      </div>
+                      <div class="tiktok-bottom">
+                        <div class="tiktok-user">@posta</div>
+                        <div class="tiktok-desc">City vibes</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="platform-label">TikTok</div>
+                </div>
+                <div class="platform-preview instagram-preview">
+                  <img src="/assets/images/city.png" alt="Instagram format" />
+                  <div class="platform-overlay">
+                    <div class="instagram-ui">
+                      <div class="instagram-header">
+                        <div class="instagram-avatar"></div>
+                        <span>posta</span>
+                      </div>
+                      <div class="instagram-actions">
+                        <div class="instagram-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+                        <div class="instagram-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
+                        <div class="instagram-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="platform-label">Instagram</div>
+                </div>
+                <div class="platform-preview youtube-preview">
+                  <img src="/assets/images/city.png" alt="YouTube format" />
+                  <div class="platform-overlay">
+                    <div class="youtube-ui">
+                      <div class="youtube-play">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                      </div>
+                      <div class="youtube-progress">
+                        <div class="youtube-progress-fill"></div>
+                      </div>
+                      <div class="youtube-bottom">
+                        <span class="youtube-time">0:15</span>
+                        <span class="youtube-shorts">#Shorts</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="platform-label">YouTube</div>
+                </div>
+              </div>
             </div>
-            <div class="feature-card">
+            <div class="feature-card feature-card-with-image">
               <div class="feature-tag">Performance</div>
               <div class="feature-title">Smart compression engine</div>
               <div class="feature-body">
                 Compress images and video so they upload fast and still look good. Keep quality where it matters, save
                 bytes where it doesn't.
+              </div>
+              <div class="compression-demo">
+                <div class="compression-item">
+                  <img src="/assets/images/dog.png" alt="Original" />
+                  <div class="compression-size original">1.4 MB</div>
+                </div>
+                <div class="compression-arrow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                  <div class="compression-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-2 6h-2v2h-2v-2h-2v-2h2v-2h2v2h2v2z"/>
+                    </svg>
+                  </div>
+                  <span class="compression-label">-87%</span>
+                </div>
+                <div class="compression-item">
+                  <img src="/assets/images/dog.png" alt="Compressed" />
+                  <div class="compression-size compressed">182 KB</div>
+                </div>
               </div>
             </div>
           </div>
@@ -206,6 +523,178 @@ const showLoginModal = ref(false)
                 <span class="pill">Batch scheduling</span>
                 <span class="pill">Timezone safe</span>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section class="section" id="pricing">
+          <h2 class="section-title">Simple, predictable pricing</h2>
+          <p class="section-sub">
+            No bloated dashboards, no agency-level pricing. Pick a plan that fits your workflow and scale when you need to.
+          </p>
+
+          <!-- Billing Toggle -->
+          <div class="pricing-toggle-wrapper">
+            <div class="pricing-toggle">
+              <button
+                :class="['pricing-toggle-btn', { active: pricingInterval === 'month' }]"
+                @click="pricingInterval = 'month'"
+              >
+                Monthly
+              </button>
+              <button
+                :class="['pricing-toggle-btn', { active: pricingInterval === 'year' }]"
+                @click="pricingInterval = 'year'"
+              >
+                Yearly
+                <span class="pricing-save-badge">Save 20%</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Loading -->
+          <div v-if="pricingLoading" class="pricing-loading">
+            <div class="pricing-spinner"></div>
+          </div>
+
+          <!-- Error -->
+          <div v-else-if="pricingError" class="pricing-error">
+            <p>Unable to load plans. Please try again later.</p>
+          </div>
+
+          <!-- Plan Cards -->
+          <div v-else class="pricing-cards">
+            <!-- Starter -->
+            <div v-if="starterPlan" class="pricing-card">
+              <div class="pricing-trial-badge">14 days free</div>
+              <div class="pricing-card-header">
+                <h3 class="pricing-card-name">Starter</h3>
+                <p class="pricing-card-desc">For solo creators getting started with multi-platform publishing.</p>
+              </div>
+              <div class="pricing-card-price">
+                <span class="pricing-amount">{{ formatPricingAmount(starterPlan) }}</span>
+                <span class="pricing-period">/mo</span>
+              </div>
+              <p v-if="pricingInterval === 'year'" class="pricing-billed-note">
+                billed yearly
+              </p>
+              <div class="pricing-card-limits">
+                <div class="pricing-limit-row">
+                  <span class="pricing-limit-value">{{ starterPlan.maxSocialAccounts }}</span>
+                  <span class="pricing-limit-label">social accounts</span>
+                </div>
+                <div class="pricing-limit-row">
+                  <span class="pricing-limit-value">{{ starterPlan.maxPostsPerMonth }}</span>
+                  <span class="pricing-limit-label">posts / month</span>
+                </div>
+                <div class="pricing-limit-row">
+                  <span class="pricing-limit-value">{{ starterPlan.maxScheduledPosts }}</span>
+                  <span class="pricing-limit-label">scheduled posts</span>
+                </div>
+              </div>
+              <ul class="pricing-card-features">
+                <li v-for="feature in starterPlan.features" :key="feature">
+                  <svg class="pricing-check" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                  {{ feature }}
+                </li>
+              </ul>
+              <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary pricing-cta">
+                Start free trial
+                <span class="arrow">→</span>
+              </RouterLink>
+              <button v-else class="btn-ghost pricing-cta" @click="openWaitingList('pricing')">
+                Join waiting list
+                <span class="arrow">→</span>
+              </button>
+            </div>
+
+            <!-- Professional -->
+            <div v-if="professionalPlan" class="pricing-card pricing-card-featured">
+              <div class="pricing-popular-badge">Most Popular</div>
+              <div class="pricing-card-header">
+                <h3 class="pricing-card-name">Professional</h3>
+                <p class="pricing-card-desc">For teams and serious creators who need advanced features and higher limits.</p>
+              </div>
+              <div class="pricing-card-price">
+                <span class="pricing-amount">{{ formatPricingAmount(professionalPlan) }}</span>
+                <span class="pricing-period">/mo</span>
+              </div>
+              <p v-if="pricingInterval === 'year'" class="pricing-billed-note">
+                billed yearly
+              </p>
+              <div class="pricing-card-limits">
+                <div class="pricing-limit-row">
+                  <span class="pricing-limit-value">{{ professionalPlan.maxSocialAccounts }}</span>
+                  <span class="pricing-limit-label">social accounts</span>
+                </div>
+                <div class="pricing-limit-row">
+                  <span class="pricing-limit-value">{{ professionalPlan.maxPostsPerMonth }}</span>
+                  <span class="pricing-limit-label">posts / month</span>
+                </div>
+                <div class="pricing-limit-row">
+                  <span class="pricing-limit-value">{{ professionalPlan.maxScheduledPosts }}</span>
+                  <span class="pricing-limit-label">scheduled posts</span>
+                </div>
+              </div>
+              <ul class="pricing-card-features">
+                <li v-for="feature in professionalPlan.features" :key="feature">
+                  <svg class="pricing-check" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                  {{ feature }}
+                </li>
+              </ul>
+              <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary pricing-cta">
+                Start free trial
+                <span class="arrow">→</span>
+              </RouterLink>
+              <button v-else class="btn-primary pricing-cta" @click="openWaitingList('pricing')">
+                Join waiting list
+                <span class="arrow">→</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Comparison Table -->
+          <div v-if="!pricingLoading && !pricingError && comparisonTable.length > 0" class="comparison-wrapper">
+            <h3 class="comparison-title">Compare plans</h3>
+            <div class="comparison-scroll">
+              <table class="comparison-table">
+                <thead>
+                  <tr>
+                    <th class="comparison-feature-col">Feature</th>
+                    <th class="comparison-plan-col">Starter</th>
+                    <th class="comparison-plan-col comparison-pro-col">Professional</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template v-for="category in comparisonTable" :key="category.name">
+                    <tr class="comparison-category-row">
+                      <td colspan="3">{{ category.name }}</td>
+                    </tr>
+                    <tr v-for="row in category.rows" :key="row.feature" class="comparison-row">
+                      <td class="comparison-feature-cell">{{ row.feature }}</td>
+                      <td class="comparison-value-cell">
+                        <svg v-if="row.starter === true" class="comparison-check" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        <span v-else-if="row.starter === false" class="comparison-dash">—</span>
+                        <span v-else class="comparison-text">{{ row.starter }}</span>
+                      </td>
+                      <td class="comparison-value-cell comparison-pro-col">
+                        <svg v-if="row.professional === true" class="comparison-check" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        <span v-else-if="row.professional === false" class="comparison-dash">—</span>
+                        <span v-else class="comparison-text">{{ row.professional }}</span>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
             </div>
           </div>
         </section>
@@ -271,6 +760,7 @@ const showLoginModal = ref(false)
                 <div class="format-item"><span class="format-label">Feed</span><span class="format-size">1200×627</span></div>
                 <div class="format-item"><span class="format-label">Square</span><span class="format-size">1080×1080</span></div>
                 <div class="format-item"><span class="format-label">Portrait</span><span class="format-size">1080×1350</span></div>
+                <div class="format-item"><span class="format-label">PDF Carousel</span><span class="format-size">1080×1350</span></div>
               </div>
             </div>
 
@@ -331,36 +821,6 @@ const showLoginModal = ref(false)
           </div>
         </section>
 
-        <!-- Pricing Section -->
-        <section class="section">
-          <h2 class="section-title">Built for lean teams & indie founders</h2>
-          <p class="section-sub">
-            Posta focuses on a simple promise: more reach per asset, less time spent formatting and uploading. No
-            bloated dashboards, no agency-level pricing.
-          </p>
-
-          <div class="pricing-box">
-            <div class="pricing-label">Early access</div>
-            <div class="pricing-main">Fair, simple pricing – no surprise add-ons.</div>
-            <div class="pricing-sub">
-              During private beta, we are working with a small group of creators, founders and marketing teams to
-              refine workflows, integrations and pricing.
-            </div>
-            <div class="pricing-features">
-              <div>• Access for your core team</div>
-              <div>• Priority influence on roadmap</div>
-              <div>• Preferential pricing when Posta launches publicly</div>
-            </div>
-            <a
-              href="mailto:hello@getposta.app?subject=Posta%20beta%20access&body=Hi%20Posta%20team%2C%0A%0AI'd%20like%20to%20join%20the%20private%20beta.%20Here%20is%20some%20info%20about%20our%20use%20case%3A%0A"
-              class="btn-primary btn-sm"
-            >
-              Request a beta invite
-              <span class="arrow">→</span>
-            </a>
-          </div>
-        </section>
-
         <!-- FAQ Section -->
         <section class="section">
           <h2 class="section-title">Questions</h2>
@@ -409,6 +869,13 @@ const showLoginModal = ref(false)
           <RouterLink to="/impressum">Impressum</RouterLink>
         </div>
         <div class="footer-section">
+          <div class="footer-heading">Other Products</div>
+          <div class="footer-links">
+            <a href="https://www.drostecv.app" target="_blank" rel="noopener">DrosteCV</a>
+            <a href="https://www.stupidcorrelations.app" target="_blank" rel="noopener">Stupid Correlations</a>
+          </div>
+        </div>
+        <div class="footer-section">
           <div class="footer-heading">Alternatives</div>
           <div class="footer-links">
             <a href="https://buffer.com" target="_blank" rel="noopener">Buffer</a>
@@ -423,6 +890,11 @@ const showLoginModal = ref(false)
     </footer>
 
     <LoginModal :show="showLoginModal" @close="showLoginModal = false" />
+    <WaitingListModal
+      :show="showWaitingListModal"
+      :source="waitingListSource"
+      @close="showWaitingListModal = false"
+    />
   </div>
 </template>
 
@@ -525,6 +997,11 @@ const showLoginModal = ref(false)
 .btn-login:hover {
   border-color: rgba(148, 163, 184, 0.9);
   background: rgba(15, 23, 42, 0.9);
+}
+
+.btn-header {
+  padding: 8px 16px;
+  font-size: 13px;
 }
 
 .btn-primary {
@@ -864,6 +1341,307 @@ h1 {
   font-size: 12px;
 }
 
+.feature-card-with-image {
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-image {
+  margin-top: 10px;
+  width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* Platform Previews */
+.platform-previews {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  align-items: flex-end;
+  height: 90px;
+}
+
+.platform-preview {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #000;
+  height: 100%;
+}
+
+.platform-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* TikTok - 9:16 portrait */
+.tiktok-preview {
+  aspect-ratio: 9 / 16;
+}
+
+/* Instagram - 1:1 square */
+.instagram-preview {
+  aspect-ratio: 1 / 1;
+}
+
+/* YouTube - 16:9 landscape */
+.youtube-preview {
+  aspect-ratio: 16 / 9;
+}
+
+.platform-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.platform-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  font-size: 9px;
+  font-weight: 500;
+  padding: 12px 4px 3px;
+  text-align: center;
+}
+
+/* TikTok UI */
+.tiktok-ui {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.tiktok-side {
+  position: absolute;
+  right: 3px;
+  bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tiktok-icon {
+  width: 14px;
+  height: 14px;
+  color: #fff;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}
+
+.tiktok-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.tiktok-bottom {
+  padding: 3px 4px 16px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.6));
+}
+
+.tiktok-user {
+  font-size: 8px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.tiktok-desc {
+  font-size: 7px;
+  color: rgba(255,255,255,0.9);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Instagram UI */
+.instagram-ui {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.instagram-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: linear-gradient(rgba(0,0,0,0.4), transparent);
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.instagram-avatar {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+}
+
+.instagram-actions {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.4));
+  padding-bottom: 16px;
+}
+
+.instagram-icon {
+  width: 12px;
+  height: 12px;
+  color: #fff;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}
+
+.instagram-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* YouTube UI */
+.youtube-ui {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.youtube-play {
+  width: 24px;
+  height: 24px;
+  background: rgba(0,0,0,0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.youtube-play svg {
+  width: 12px;
+  height: 12px;
+  margin-left: 2px;
+}
+
+.youtube-progress {
+  position: absolute;
+  bottom: 18px;
+  left: 4px;
+  right: 4px;
+  height: 2px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 1px;
+}
+
+.youtube-progress-fill {
+  width: 35%;
+  height: 100%;
+  background: #ff0000;
+  border-radius: 1px;
+}
+
+.youtube-bottom {
+  position: absolute;
+  bottom: 2px;
+  left: 4px;
+  right: 4px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 7px;
+}
+
+.youtube-time {
+  color: rgba(255,255,255,0.9);
+}
+
+.youtube-shorts {
+  color: #ff0000;
+  font-weight: 600;
+}
+
+/* Compression Demo */
+.compression-demo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.compression-item {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  width: 80px;
+}
+
+.compression-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 6px;
+}
+
+.compression-size {
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.compression-size.original {
+  background: rgba(239, 68, 68, 0.9);
+  color: #fff;
+}
+
+.compression-size.compressed {
+  background: rgba(34, 197, 94, 0.9);
+  color: #fff;
+}
+
+.compression-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.compression-arrow > svg {
+  width: 18px;
+  height: 18px;
+}
+
+.compression-icon {
+  width: 14px;
+  height: 14px;
+  color: #22c55e;
+}
+
+.compression-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.compression-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: #22c55e;
+}
+
 /* How it works */
 .how-grid {
   display: grid;
@@ -996,37 +1774,305 @@ h1 {
 }
 
 /* Pricing */
-.pricing-box {
-  border-radius: 18px;
-  padding: 14px 14px 13px;
-  background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.3), rgba(15, 23, 42, 0.98));
-  border: 1px solid rgba(148, 163, 184, 0.7);
-  max-width: 440px;
+.pricing-toggle-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.pricing-toggle {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.pricing-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pricing-toggle-btn.active {
+  background: radial-gradient(circle at top left, #6366f1, #4f46e5);
+  color: #e5e7eb;
+}
+
+.pricing-save-badge {
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(22, 163, 74, 0.2);
+  color: #86efac;
+  border: 1px solid rgba(22, 163, 74, 0.4);
+}
+
+.pricing-loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.pricing-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(148, 163, 184, 0.3);
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.pricing-error {
+  text-align: center;
+  padding: 32px;
+  color: var(--muted);
   font-size: 13px;
 }
 
-.pricing-label {
+.pricing-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.pricing-card {
+  position: relative;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: linear-gradient(to bottom right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.96));
+  padding: 24px 20px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.pricing-card-featured {
+  border-color: rgba(99, 102, 241, 0.7);
+  background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.2), rgba(15, 23, 42, 0.98));
+}
+
+.pricing-trial-badge,
+.pricing-popular-badge {
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 14px;
+  border-radius: 999px;
   font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: #c7d2fe;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+}
+
+.pricing-trial-badge {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.pricing-popular-badge {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+}
+
+.pricing-card-header {
+  margin-bottom: 16px;
+}
+
+.pricing-card-name {
+  font-size: 17px;
+  font-weight: 600;
   margin-bottom: 4px;
 }
 
-.pricing-main {
-  font-size: 15px;
-  margin-bottom: 4px;
-}
-
-.pricing-sub {
+.pricing-card-desc {
   font-size: 12px;
   color: var(--muted);
-  margin-bottom: 8px;
+  line-height: 1.4;
 }
 
-.pricing-features {
-  margin-bottom: 8px;
+.pricing-card-price {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.pricing-amount {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.pricing-period {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.pricing-billed-note {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.pricing-card-limits {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 0;
+  margin-bottom: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.pricing-limit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.pricing-limit-value {
+  font-weight: 600;
+  min-width: 28px;
+  color: #e5e7eb;
+}
+
+.pricing-limit-label {
+  color: var(--muted);
+}
+
+.pricing-card-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.pricing-card-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   font-size: 12px;
+  color: var(--muted);
+}
+
+.pricing-check {
+  width: 16px;
+  height: 16px;
+  color: #22c55e;
+  flex-shrink: 0;
+  margin-top: 0px;
+}
+
+.pricing-cta {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+  padding: 10px 16px;
+  font-size: 13px;
+}
+
+/* Comparison Table */
+.comparison-wrapper {
+  margin-top: 8px;
+}
+
+.comparison-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.comparison-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  min-width: 500px;
+}
+
+.comparison-table th {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+  color: var(--muted);
+}
+
+.comparison-feature-col {
+  text-align: left !important;
+  width: 40%;
+}
+
+.comparison-plan-col {
+  width: 30%;
+}
+
+.comparison-pro-col {
+  background: rgba(79, 70, 229, 0.06);
+}
+
+.comparison-category-row td {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #a5b4fc;
+  padding: 14px 12px 6px;
+  border: none;
+}
+
+.comparison-row td {
+  padding: 7px 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.comparison-feature-cell {
+  color: var(--muted);
+}
+
+.comparison-value-cell {
+  text-align: center;
+}
+
+.comparison-check {
+  width: 16px;
+  height: 16px;
+  color: #22c55e;
+  display: inline-block;
+}
+
+.comparison-dash {
+  color: rgba(148, 163, 184, 0.4);
+  font-size: 14px;
+}
+
+.comparison-text {
+  font-weight: 600;
+  color: #e5e7eb;
 }
 
 /* FAQ */
@@ -1123,6 +2169,9 @@ h1 {
     grid-template-columns: minmax(0, 1fr);
   }
   .platform-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pricing-cards {
     grid-template-columns: minmax(0, 1fr);
   }
   .wrapper {

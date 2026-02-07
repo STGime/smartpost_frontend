@@ -27,7 +27,7 @@ export const paymentsService = {
     billingInterval: BillingInterval,
     successUrl: string,
     cancelUrl: string
-  ): Promise<{ sessionId: string; url: string }> {
+  ): Promise<{ url: string }> {
     const response = await api.post('/payments/checkout', {
       planType,
       billingInterval,
@@ -37,8 +37,8 @@ export const paymentsService = {
     return response.data
   },
 
-  async createPortalSession(returnUrl: string): Promise<{ url: string }> {
-    const response = await api.post('/payments/portal', { returnUrl })
+  async createPortalSession(): Promise<{ url: string }> {
+    const response = await api.post('/payments/portal')
     return response.data
   },
 

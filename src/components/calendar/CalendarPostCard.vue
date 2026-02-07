@@ -1,23 +1,17 @@
 <script setup lang="ts">
-import type { Post, SocialPlatform } from '@/types'
+import type { CalendarPost, SocialPlatform } from '@/types'
 import PlatformIcon from '@/components/PlatformIcon.vue'
 
 defineProps<{
-  post: Post
+  post: CalendarPost
 }>()
 
 defineEmits<{
-  click: [post: Post]
+  click: [post: CalendarPost]
 }>()
 
 const formatTime = (date: string) => {
   return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-}
-
-const getUniquePlatforms = (post: Post): SocialPlatform[] => {
-  const platforms = new Set<SocialPlatform>()
-  post.socialAccounts?.forEach((account) => platforms.add(account.platform))
-  return Array.from(platforms).slice(0, 3)
 }
 
 const getStatusClass = (status: string) => {
@@ -43,9 +37,9 @@ const getStatusClass = (status: string) => {
     <span class="post-time">{{ formatTime(post.scheduledAt || post.publishedAt || post.createdAt) }}</span>
     <span class="post-platforms">
       <PlatformIcon
-        v-for="platform in getUniquePlatforms(post)"
+        v-for="platform in post.platforms.slice(0, 3)"
         :key="platform"
-        :platform="platform"
+        :platform="platform as SocialPlatform"
         size="sm"
       />
     </span>
