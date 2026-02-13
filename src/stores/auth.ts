@@ -14,14 +14,77 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!user.value)
 
-  const setTokens = (accessToken: string, refreshToken: string) => {
+  // Background refresh timer
+  let refreshTimer: ReturnType<typeof setTimeout> | null = null
+
+  // Refresh token 5 minutes before expiry
+  const REFRESH_BEFORE_EXPIRY_MS = 5 * 60 * 1000
+
+  const setTokens = (accessToken: string, refreshToken: string, expiresAt?: number) => {
     localStorage.setItem('access_token', accessToken)
     localStorage.setItem('refresh_token', refreshToken)
+    if (expiresAt) {
+      localStorage.setItem('token_expires_at', expiresAt.toString())
+      scheduleTokenRefresh(expiresAt)
+    }
   }
 
   const clearTokens = () => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
+    localStorage.removeItem('token_expires_at')
+    clearRefreshTimer()
+  }
+
+  const clearRefreshTimer = () => {
+    if (refreshTimer) {
+      clearTimeout(refreshTimer)
+      refreshTimer = null
+    }
+  }
+
+  const scheduleTokenRefresh = (expiresAt: number) => {
+    clearRefreshTimer()
+
+    const nowMs = Date.now()
+    const expiresAtMs = expiresAt * 1000
+    const refreshAtMs = expiresAtMs - REFRESH_BEFORE_EXPIRY_MS
+
+    // If token expires in less than 5 minutes, refresh immediately
+    // Otherwise, schedule refresh for 5 minutes before expiry
+    const delayMs = Math.max(0, refreshAtMs - nowMs)
+
+    console.log(`[Auth] Token expires at ${new Date(expiresAtMs).toISOString()}, scheduling refresh in ${Math.round(delayMs / 1000 / 60)} minutes`)
+
+    refreshTimer = setTimeout(async () => {
+      console.log('[Auth] Background token refresh triggered')
+      await refreshTokenInBackground()
+    }, delayMs)
+  }
+
+  const parseExpiresAt = (expiresAt: string | number | undefined): number | undefined => {
+    if (!expiresAt) return undefined
+    if (typeof expiresAt === 'number') return expiresAt
+    const parsed = parseInt(expiresAt, 10)
+    return isNaN(parsed) ? undefined : parsed
+  }
+
+  const refreshTokenInBackground = async () => {
+    const refreshToken = localStorage.getItem('refresh_token')
+    if (!refreshToken) {
+      console.log('[Auth] No refresh token available for background refresh')
+      return
+    }
+
+    try {
+      const response = await authService.refreshToken(refreshToken)
+      setTokens(response.access_token, response.refresh_token, parseExpiresAt(response.expires_at))
+      console.log('[Auth] Background token refresh successful')
+    } catch (err) {
+      console.error('[Auth] Background token refresh failed:', err)
+      // Don't log out immediately - the reactive refresh in api.ts will handle it
+      // when the next API call fails
+    }
   }
 
   const requireReauth = () => {
@@ -50,7 +113,7 @@ export const useAuthStore = defineStore('auth', () => {
     // Try to refresh the token to get a fresh one
     try {
       const response = await authService.refreshToken(refreshToken)
-      setTokens(response.access_token, response.refresh_token)
+      setTokens(response.access_token, response.refresh_token, parseExpiresAt(response.expires_at))
       return response.access_token
     } catch {
       // Refresh failed, token is invalid
@@ -96,7 +159,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       // If email confirmation is required, tokens will be empty
       if (response.access_token) {
-        setTokens(response.access_token, response.refresh_token)
+        setTokens(response.access_token, response.refresh_token, parseExpiresAt(response.expires_at))
         connectSSE()
         // New users go to onboarding
         router.push({ name: 'onboarding' })
@@ -131,7 +194,7 @@ export const useAuthStore = defineStore('auth', () => {
       display_name: tokens.userName || undefined,
       created_at: new Date().toISOString(),
     }
-    setTokens(tokens.accessToken, tokens.refreshToken)
+    setTokens(tokens.accessToken, tokens.refreshToken, tokens.expiresAt)
     connectSSE()
     // Google signup/login goes to onboarding (guard will redirect if already completed)
     router.push({ name: 'onboarding' })
@@ -151,7 +214,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await authService.login(data)
       user.value = response.user
-      setTokens(response.access_token, response.refresh_token)
+      setTokens(response.access_token, response.refresh_token, parseExpiresAt(response.expires_at))
       connectSSE()
 
       // If reauthenticating or stayOnPage flag is set, stay on current page
@@ -193,6 +256,14 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = await authService.getCurrentUser()
       // Connect SSE on successful user fetch (page reload with valid token)
       connectSSE()
+      // Restore refresh timer if we have a stored expiration time
+      const storedExpiresAt = localStorage.getItem('token_expires_at')
+      if (storedExpiresAt) {
+        const expiresAt = parseInt(storedExpiresAt, 10)
+        if (!isNaN(expiresAt)) {
+          scheduleTokenRefresh(expiresAt)
+        }
+      }
     } catch {
       clearTokens()
       user.value = null
