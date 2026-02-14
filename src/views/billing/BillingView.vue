@@ -62,6 +62,9 @@ const getCurrencySymbol = (currency: string) => {
   return currency === 'eur' ? '€' : '$'
 }
 
+const isUnlimited = (value: number | null | undefined) => value == null || value >= 100000
+const formatLimit = (value: number | null | undefined) => isUnlimited(value) ? 'Unlimited*' : (value ?? 0)
+
 // Format the current plan display name
 const currentPlanDisplayName = computed(() => {
   const type = currentPlan.value?.plan?.type
@@ -137,14 +140,14 @@ const handleManageSubscription = async () => {
             Cancels at end of period
           </p>
           <div class="current-limits">
-            <span>{{ currentPlan.plan?.limits?.max_social_accounts }} accounts</span>
+            <span>{{ formatLimit(currentPlan.plan?.limits?.max_social_accounts) }} accounts</span>
             <span class="dot">·</span>
-            <span>{{ currentPlan.plan?.limits?.max_posts_per_month }} posts/mo</span>
+            <span>{{ formatLimit(currentPlan.plan?.limits?.max_posts_per_month) }} posts/mo</span>
           </div>
           <div class="current-usage">
-            <span>{{ currentPlan.usage?.connected_accounts }}/{{ currentPlan.plan?.limits?.max_social_accounts }} accounts used</span>
+            <span>{{ currentPlan.usage?.connected_accounts }}/{{ formatLimit(currentPlan.plan?.limits?.max_social_accounts) }} accounts used</span>
             <span class="dot">·</span>
-            <span>{{ currentPlan.usage?.posts_this_month }}/{{ currentPlan.plan?.limits?.max_posts_per_month }} posts this month</span>
+            <span>{{ currentPlan.usage?.posts_this_month }}/{{ formatLimit(currentPlan.plan?.limits?.max_posts_per_month) }} posts this month</span>
           </div>
         </div>
         <button v-if="subscription" @click="handleManageSubscription" class="btn-secondary">
@@ -206,13 +209,13 @@ const handleManageSubscription = async () => {
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
-              {{ plan.maxSocialAccounts }} social accounts
+              {{ formatLimit(plan.maxSocialAccounts) }} social accounts
             </li>
             <li>
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
-              {{ plan.maxPostsPerMonth }} posts/month
+              {{ formatLimit(plan.maxPostsPerMonth) }} posts/month
             </li>
             <li v-for="feature in getFilteredFeatures(plan)" :key="feature">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -237,6 +240,7 @@ const handleManageSubscription = async () => {
           </button>
         </div>
       </div>
+      <p class="pricing-footnote">* Unlimited is subject to fair use. Plans are designed for normal business usage.</p>
     </div>
   </div>
 </template>
@@ -427,6 +431,13 @@ const handleManageSubscription = async () => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 16px;
+}
+
+.pricing-footnote {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
 }
 
 .plan-card {

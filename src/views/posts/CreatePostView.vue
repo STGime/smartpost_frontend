@@ -206,6 +206,11 @@ const extractHashtagsFromCaption = () => {
   }
 }
 
+// Media items that are still processing (shown as placeholders)
+const processingMedia = computed(() => {
+  return mediaStore.items.filter(m => m.processing_status === 'processing')
+})
+
 // Filtered and sorted media
 const filteredMedia = computed(() => {
   // Exclude items that are still processing (they can't be used in posts yet)
@@ -741,13 +746,27 @@ const closePreviewModal = () => {
           <button type="button" @click="triggerFileInput" class="link-accent">Upload media</button>
         </div>
 
-        <div v-else-if="filteredMedia.length === 0" class="empty-inline">
+        <div v-else-if="filteredMedia.length === 0 && processingMedia.length === 0" class="empty-inline">
           <p>No media matches the current filters.</p>
           <button type="button" @click="mediaTypeFilter = 'all'; mediaSizeFilter = 'all'" class="link-accent">Clear filters</button>
         </div>
 
         <div v-else class="media-grid-container">
           <div class="media-grid">
+            <!-- Processing media items (shown first as placeholders) -->
+            <div
+              v-for="media in processingMedia"
+              :key="media.id"
+              class="media-item processing"
+            >
+              <img :src="media.thumbnail_url || '/placeholder.png'" alt="" />
+              <div class="processing-overlay">
+                <div class="processing-spinner"></div>
+                <span class="processing-text">Processing...</span>
+              </div>
+              <span class="media-type-badge">{{ media.type }}</span>
+            </div>
+            <!-- Ready media items -->
             <div
               v-for="media in filteredMedia"
               :key="media.id"
@@ -1231,6 +1250,47 @@ const closePreviewModal = () => {
 
 .media-type-badge.badge-pdf {
   background: rgba(239, 68, 68, 0.8);
+}
+
+/* Processing media items */
+.media-item.processing {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.media-item.processing img {
+  filter: blur(2px);
+}
+
+.processing-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.processing-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--accent-light);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.processing-text {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* Accounts Grid */

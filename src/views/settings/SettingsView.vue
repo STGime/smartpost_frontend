@@ -103,6 +103,8 @@ const handlePasswordChange = async () => {
   }
 }
 
+const isUnlimited = (value: number | null | undefined) => value == null || value >= 100000
+
 const canDeleteAccount = computed(() => deleteConfirmText.value === 'DELETE')
 
 const handleDeleteAccount = async () => {
@@ -303,11 +305,11 @@ const handleDeleteAccount = async () => {
           <div class="plan-limits">
             <div class="limit-item">
               <span class="limit-label">Posts/month</span>
-              <span class="limit-value">{{ userStore.plan?.usage?.posts_this_month ?? 0 }} / {{ userStore.plan?.plan?.limits?.max_posts_per_month ?? 0 }}</span>
+              <span class="limit-value">{{ isUnlimited(userStore.plan?.plan?.limits?.max_posts_per_month) ? 'Unlimited*' : `${userStore.plan?.usage?.posts_this_month ?? 0} / ${userStore.plan?.plan?.limits?.max_posts_per_month ?? 0}` }}</span>
             </div>
             <div class="limit-item">
               <span class="limit-label">Connected accounts</span>
-              <span class="limit-value">{{ userStore.plan?.usage?.connected_accounts ?? 0 }} / {{ userStore.plan?.plan?.limits?.max_social_accounts ?? 0 }}</span>
+              <span class="limit-value">{{ isUnlimited(userStore.plan?.plan?.limits?.max_social_accounts) ? `${userStore.plan?.usage?.connected_accounts ?? 0} / Unlimited` : `${userStore.plan?.usage?.connected_accounts ?? 0} / ${userStore.plan?.plan?.limits?.max_social_accounts ?? 0}` }}</span>
             </div>
           </div>
         </div>

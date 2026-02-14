@@ -43,6 +43,9 @@ const handleSelect = (planType: string) => {
   emit('select', planType, billingInterval.value)
 }
 
+const isUnlimited = (value: number | null | undefined) => value == null || value >= 100000
+const formatLimit = (value: number | null | undefined) => isUnlimited(value) ? 'Unlimited*' : (value ?? 0)
+
 const getFilteredFeatures = (plan: PricingPlan) => {
   const excludePatterns = [
     /social account/i,
@@ -110,15 +113,15 @@ const getFilteredFeatures = (plan: PricingPlan) => {
 
         <div class="plan-limits">
           <div class="limit-row">
-            <span class="limit-value">{{ starterPlan.maxSocialAccounts }}</span>
+            <span class="limit-value">{{ formatLimit(starterPlan.maxSocialAccounts) }}</span>
             <span class="limit-label">social accounts</span>
           </div>
           <div class="limit-row">
-            <span class="limit-value">{{ starterPlan.maxPostsPerMonth }}</span>
+            <span class="limit-value">{{ formatLimit(starterPlan.maxPostsPerMonth) }}</span>
             <span class="limit-label">posts / month</span>
           </div>
           <div class="limit-row">
-            <span class="limit-value">{{ starterPlan.maxScheduledPosts }}</span>
+            <span class="limit-value">{{ formatLimit(starterPlan.maxScheduledPosts) }}</span>
             <span class="limit-label">scheduled posts</span>
           </div>
         </div>
@@ -152,15 +155,15 @@ const getFilteredFeatures = (plan: PricingPlan) => {
 
         <div class="plan-limits">
           <div class="limit-row">
-            <span class="limit-value">{{ professionalPlan.maxSocialAccounts }}</span>
+            <span class="limit-value">{{ formatLimit(professionalPlan.maxSocialAccounts) }}</span>
             <span class="limit-label">social accounts</span>
           </div>
           <div class="limit-row">
-            <span class="limit-value">{{ professionalPlan.maxPostsPerMonth }}</span>
+            <span class="limit-value">{{ formatLimit(professionalPlan.maxPostsPerMonth) }}</span>
             <span class="limit-label">posts / month</span>
           </div>
           <div class="limit-row">
-            <span class="limit-value">{{ professionalPlan.maxScheduledPosts }}</span>
+            <span class="limit-value">{{ formatLimit(professionalPlan.maxScheduledPosts) }}</span>
             <span class="limit-label">scheduled posts</span>
           </div>
         </div>
@@ -179,12 +182,20 @@ const getFilteredFeatures = (plan: PricingPlan) => {
         </button>
       </div>
     </div>
+    <p class="pricing-footnote">* Unlimited is subject to fair use. Plans are designed for normal business usage.</p>
   </div>
 </template>
 
 <style scoped>
 .plan-selection {
   width: 100%;
+}
+
+.pricing-footnote {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
 }
 
 .step-header {

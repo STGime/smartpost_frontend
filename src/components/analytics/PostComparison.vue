@@ -7,6 +7,7 @@ const analyticsStore = useAnalyticsStore()
 
 const selectedPostIds = ref<string[]>([])
 const isComparing = ref(false)
+const compareError = ref<string | null>(null)
 
 const availablePosts = computed(() => analyticsStore.postsAnalytics)
 
@@ -17,6 +18,7 @@ const togglePost = (postId: string) => {
   } else if (selectedPostIds.value.length < 4) {
     selectedPostIds.value.push(postId)
   }
+  compareError.value = null
 }
 
 const canCompare = computed(() =>
@@ -26,10 +28,18 @@ const canCompare = computed(() =>
 const handleCompare = async () => {
   if (!canCompare.value) return
   isComparing.value = true
+  compareError.value = null
   try {
     await analyticsStore.fetchComparison(selectedPostIds.value)
-  } catch {
-    // Error handled in store
+  } catch (err: unknown) {
+    const e = err as { response?: { status?: number; data?: { error?: string; message?: string } } }
+    if (e.response?.status === 403) {
+      compareError.value = 'Post comparison requires a Professional plan.'
+    } else if (e.response?.status === 404) {
+      compareError.value = 'Selected posts not found. They may have been deleted.'
+    } else {
+      compareError.value = e.response?.data?.error || e.response?.data?.message || 'Failed to compare posts. Please try again.'
+    }
   } finally {
     isComparing.value = false
   }
@@ -38,6 +48,7 @@ const handleCompare = async () => {
 const clearComparison = () => {
   selectedPostIds.value = []
   analyticsStore.comparisonPosts = []
+  compareError.value = null
 }
 
 const formatNumber = (num: number): string => {
@@ -84,7 +95,8 @@ const isWinner = (postIndex: number, metric: typeof metrics[number]) => {
             </div>
             <PlatformIcon :platform="post.platform" size="xs" />
             <span class="post-select-caption">{{ post.caption || 'No caption' }}</span>
-            <span class="post-select-engagement">{{ formatNumber(post.totalEngagement) }}</span>
+            <span v-if="post.views > 0" class="post-select-views">{{ formatNumber(post.views) }} views</span>
+            <span class="post-select-engagement">{{ formatNumber(post.totalEngagement) }} eng.</span>
           </div>
         </div>
         <div class="selector-actions">
@@ -97,6 +109,9 @@ const isWinner = (postIndex: number, metric: typeof metrics[number]) => {
           </button>
           <span v-if="selectedPostIds.length < 2" class="selector-hint">Select at least 2 posts</span>
           <span v-else-if="selectedPostIds.length >= 4" class="selector-hint">Maximum 4 posts</span>
+        </div>
+        <div v-if="compareError" class="compare-error">
+          {{ compareError }}
         </div>
       </div>
 
@@ -225,6 +240,12 @@ const isWinner = (postIndex: number, metric: typeof metrics[number]) => {
   text-overflow: ellipsis;
 }
 
+.post-select-views {
+  font-size: 11px;
+  color: var(--accent-light);
+  flex-shrink: 0;
+}
+
 .post-select-engagement {
   font-size: 12px;
   color: var(--muted);
@@ -240,6 +261,15 @@ const isWinner = (postIndex: number, metric: typeof metrics[number]) => {
 .selector-hint {
   font-size: 12px;
   color: var(--muted);
+}
+
+.compare-error {
+  font-size: 13px;
+  color: #f87171;
+  padding: 8px 12px;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  border-radius: var(--radius-sm);
 }
 
 .btn-compare {

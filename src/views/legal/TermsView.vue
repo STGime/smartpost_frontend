@@ -2,7 +2,7 @@
 import { useHead } from '@unhead/vue'
 
 useHead({
-  title: 'Terms of Service',
+  title: 'Posta - Create once. Post everywhere. - Terms of Service',
   meta: [
     { name: 'description', content: 'Terms of Service for Posta – the social media scheduling and smart cropping platform for creators and teams.' },
   ],
@@ -34,12 +34,12 @@ const currentYear = new Date().getFullYear()
       </header>
 
       <main class="content">
-        <h1>Terms of Service</h1>
-        <p class="last-updated">Last updated: December 2024</p>
+        <h1>Posta &mdash; Create once. Post everywhere. &mdash; Terms of Service</h1>
+        <p class="last-updated">Last updated: February 2026</p>
 
         <p>
-          Welcome to Posta. These Terms of Service ("Terms") govern your access to and use of the Posta
-          platform, website, and services (collectively, the "Service") operated by Posta ("we", "us", or "our").
+          Welcome to Posta &mdash; Create once. Post everywhere. These Terms of Service ("Terms") govern your access to and use of the
+          Posta (available at getposta.app) platform, website, and services (collectively, the "Service") operated by Posta ("we", "us", or "our").
         </p>
         <p>
           By accessing or using our Service, you agree to be bound by these Terms. If you do not agree to

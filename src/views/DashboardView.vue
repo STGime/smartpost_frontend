@@ -10,6 +10,8 @@ const userStore = useUserStore()
 // Connected accounts - use actual count from social accounts store
 const connectedAccountsCount = computed(() => socialAccountsStore.accounts.length)
 
+const isUnlimited = (value: number | null | undefined) => value == null || value >= 100000
+
 // Accounts with issues (inactive, has error, or expired token)
 const accountsWithIssues = computed(() => {
   const now = new Date()
@@ -73,7 +75,7 @@ onMounted(async () => {
         <div class="stat-content">
           <p class="stat-label">Posts this month</p>
           <p class="stat-value">{{ userStore.plan?.usage?.posts_this_month || postsStore.total }}</p>
-          <p class="stat-sub">of {{ userStore.plan?.plan?.limits?.max_posts_per_month ?? 0 }}</p>
+          <p class="stat-sub">of {{ isUnlimited(userStore.plan?.plan?.limits?.max_posts_per_month) ? 'Unlimited*' : (userStore.plan?.plan?.limits?.max_posts_per_month ?? 0) }}</p>
         </div>
       </div>
 
@@ -86,7 +88,7 @@ onMounted(async () => {
         <div class="stat-content">
           <p class="stat-label">Connected accounts</p>
           <p class="stat-value">{{ connectedAccountsCount }}</p>
-          <p class="stat-sub">of {{ userStore.plan?.plan?.limits?.max_social_accounts ?? 0 }}</p>
+          <p class="stat-sub">of {{ isUnlimited(userStore.plan?.plan?.limits?.max_social_accounts) ? 'Unlimited*' : (userStore.plan?.plan?.limits?.max_social_accounts ?? 0) }}</p>
         </div>
       </div>
 

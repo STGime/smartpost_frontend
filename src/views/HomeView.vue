@@ -155,6 +155,9 @@ const formatPricingAmount = (plan: PricingPlan | null) => {
   return `${symbol}${Math.round(plan.priceCents / 100)}`
 }
 
+const isUnlimited = (value: number | null | undefined) => value == null || value >= 100000
+const formatLimit = (value: number | null | undefined) => isUnlimited(value) ? 'Unlimited*' : String(value ?? 0)
+
 interface ComparisonRow {
   feature: string
   starter: string | boolean
@@ -175,9 +178,9 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
     {
       name: 'Usage Limits',
       rows: [
-        { feature: 'Social accounts', starter: String(s.maxSocialAccounts), professional: String(p.maxSocialAccounts) },
-        { feature: 'Posts per month', starter: String(s.maxPostsPerMonth), professional: String(p.maxPostsPerMonth) },
-        { feature: 'Scheduled posts', starter: String(s.maxScheduledPosts), professional: String(p.maxScheduledPosts) },
+        { feature: 'Social accounts', starter: formatLimit(s.maxSocialAccounts), professional: formatLimit(p.maxSocialAccounts) },
+        { feature: 'Posts per month', starter: formatLimit(s.maxPostsPerMonth), professional: formatLimit(p.maxPostsPerMonth) },
+        { feature: 'Scheduled posts', starter: formatLimit(s.maxScheduledPosts), professional: formatLimit(p.maxScheduledPosts) },
       ],
     },
     {
@@ -581,15 +584,15 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               </p>
               <div class="pricing-card-limits">
                 <div class="pricing-limit-row">
-                  <span class="pricing-limit-value">{{ starterPlan.maxSocialAccounts }}</span>
+                  <span class="pricing-limit-value">{{ formatLimit(starterPlan.maxSocialAccounts) }}</span>
                   <span class="pricing-limit-label">social accounts</span>
                 </div>
                 <div class="pricing-limit-row">
-                  <span class="pricing-limit-value">{{ starterPlan.maxPostsPerMonth }}</span>
+                  <span class="pricing-limit-value">{{ formatLimit(starterPlan.maxPostsPerMonth) }}</span>
                   <span class="pricing-limit-label">posts / month</span>
                 </div>
                 <div class="pricing-limit-row">
-                  <span class="pricing-limit-value">{{ starterPlan.maxScheduledPosts }}</span>
+                  <span class="pricing-limit-value">{{ formatLimit(starterPlan.maxScheduledPosts) }}</span>
                   <span class="pricing-limit-label">scheduled posts</span>
                 </div>
               </div>
@@ -627,15 +630,15 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               </p>
               <div class="pricing-card-limits">
                 <div class="pricing-limit-row">
-                  <span class="pricing-limit-value">{{ professionalPlan.maxSocialAccounts }}</span>
+                  <span class="pricing-limit-value">{{ formatLimit(professionalPlan.maxSocialAccounts) }}</span>
                   <span class="pricing-limit-label">social accounts</span>
                 </div>
                 <div class="pricing-limit-row">
-                  <span class="pricing-limit-value">{{ professionalPlan.maxPostsPerMonth }}</span>
+                  <span class="pricing-limit-value">{{ formatLimit(professionalPlan.maxPostsPerMonth) }}</span>
                   <span class="pricing-limit-label">posts / month</span>
                 </div>
                 <div class="pricing-limit-row">
-                  <span class="pricing-limit-value">{{ professionalPlan.maxScheduledPosts }}</span>
+                  <span class="pricing-limit-value">{{ formatLimit(professionalPlan.maxScheduledPosts) }}</span>
                   <span class="pricing-limit-label">scheduled posts</span>
                 </div>
               </div>
@@ -697,6 +700,8 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               </table>
             </div>
           </div>
+
+          <p class="pricing-footnote">* Unlimited is subject to our <a href="/terms" class="pricing-footnote-link">fair use policy</a>. Plans are designed for normal business usage and are not intended for automated bulk operations or abuse.</p>
         </section>
 
         <!-- Platforms Section -->
@@ -2073,6 +2078,24 @@ h1 {
 .comparison-text {
   font-weight: 600;
   color: #e5e7eb;
+}
+
+.pricing-footnote {
+  margin-top: 24px;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.pricing-footnote-link {
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.pricing-footnote-link:hover {
+  color: var(--foreground);
 }
 
 /* FAQ */

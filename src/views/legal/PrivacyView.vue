@@ -2,7 +2,7 @@
 import { useHead } from '@unhead/vue'
 
 useHead({
-  title: 'Privacy Policy',
+  title: 'Posta - Create once. Post everywhere. - Privacy Policy',
   meta: [
     { name: 'description', content: 'Privacy Policy for Posta – learn how we collect, use, and protect your data on our social media scheduling platform.' },
   ],
@@ -34,13 +34,13 @@ const currentYear = new Date().getFullYear()
       </header>
 
       <main class="content">
-        <h1>Privacy Policy</h1>
-        <p class="last-updated">Last updated: December 2024</p>
+        <h1>Posta &mdash; Create once. Post everywhere. &mdash; Privacy Policy</h1>
+        <p class="last-updated">Last updated: February 2026</p>
 
         <p>
-          At Posta ("we", "us", or "our"), we are committed to protecting your privacy. This Privacy Policy
-          explains how we collect, use, disclose, and safeguard your information when you use our platform
-          and services (the "Service").
+          At Posta &mdash; Create once. Post everywhere. (available at getposta.app) ("we", "us", or "our"), we are committed to protecting
+          your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information
+          when you use our platform and services (the "Service").
         </p>
         <p>
           Please read this Privacy Policy carefully. By using the Service, you consent to the practices

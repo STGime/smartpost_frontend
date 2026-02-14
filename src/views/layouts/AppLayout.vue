@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { useAuthStore, useUserStore } from '@/stores'
 import LoginModal from '@/components/LoginModal.vue'
 import ExpiredPlanModal from '@/components/ExpiredPlanModal.vue'
+import FeedbackModal from '@/components/FeedbackModal.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -17,6 +18,7 @@ const isNavActive = computed(() => (itemPath: string) => {
   return route.path.startsWith(itemPath)
 })
 const isSidebarOpen = ref(false)
+const showFeedbackModal = ref(false)
 const currentYear = new Date().getFullYear()
 
 const showExpiredPlanModal = computed(() => {
@@ -176,6 +178,18 @@ onMounted(() => {
     />
 
     <ExpiredPlanModal :show="showExpiredPlanModal" />
+
+    <!-- Feedback FAB -->
+    <button class="feedback-fab" @click="showFeedbackModal = true" aria-label="Send feedback" title="Send feedback">
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+      </svg>
+    </button>
+
+    <FeedbackModal
+      :show="showFeedbackModal"
+      @close="showFeedbackModal = false"
+    />
   </div>
 </template>
 
@@ -484,5 +498,43 @@ onMounted(() => {
 
 .footer-links a:hover {
   color: var(--text);
+}
+
+/* Feedback FAB */
+.feedback-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 15;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.feedback-fab:hover {
+  border-color: var(--accent);
+  color: var(--text);
+  background: rgba(79, 70, 229, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 640px) {
+  .feedback-fab {
+    bottom: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+  }
 }
 </style>

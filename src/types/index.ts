@@ -39,9 +39,9 @@ export type PlanName = 'trial' | 'starter' | 'professional' | 'premium'
 export type PlanStatus = 'active' | 'cancelled' | 'expired' | 'grace_period'
 
 export interface PlanLimits {
-  max_posts_per_month: number
+  max_posts_per_month: number | null
   max_networks_per_post: number
-  max_social_accounts: number
+  max_social_accounts: number | null
 }
 
 export interface PlanUsage {
@@ -454,9 +454,9 @@ export interface PricingPlan {
   billingInterval: BillingInterval
   priceCents: number
   currency: string
-  maxPostsPerMonth: number
-  maxSocialAccounts: number
-  maxScheduledPosts: number
+  maxPostsPerMonth: number | null
+  maxSocialAccounts: number | null
+  maxScheduledPosts: number | null
   features: string[]
   lemonSqueezyVariantId: string
   lemonSqueezyProductId: string
