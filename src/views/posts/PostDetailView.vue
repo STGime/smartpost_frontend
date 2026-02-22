@@ -449,7 +449,7 @@ const useAsTemplate = () => {
       <!-- Actions -->
       <div class="actions-row">
         <RouterLink
-          v-if="post.status === 'draft'"
+          v-if="post.status === 'draft' || post.status === 'scheduled'"
           :to="`/app/posts/${post.id}/edit`"
           class="btn-secondary"
         >
