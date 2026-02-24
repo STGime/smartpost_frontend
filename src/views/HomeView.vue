@@ -8,24 +8,32 @@ import { isSignupEnabled } from '@/config/featureFlags'
 import { paymentsService } from '@/services'
 import type { WaitingListSource } from '@/services'
 import type { PricingPlan, BillingInterval } from '@/types'
+import { useScrollReveal } from '@/composables/useScrollReveal'
+
+const { setRef: whyRef, isVisible: whyVisible } = useScrollReveal()
+const { setRef: howRef, isVisible: howVisible } = useScrollReveal()
+const { setRef: showcaseRef, isVisible: showcaseVisible } = useScrollReveal()
+const { setRef: pricingRef, isVisible: pricingVisible } = useScrollReveal()
+const { setRef: platformsRef, isVisible: platformsVisible } = useScrollReveal()
+const { setRef: faqRef, isVisible: faqVisible } = useScrollReveal()
 
 useHead({
   title: 'Smart Social Media Posting for Creators & Teams',
   meta: [
-    { name: 'description', content: 'Posta lets you create once and publish everywhere. AI-powered smart cropping, face-aware framing, automatic compression and scheduling for TikTok, Instagram, YouTube Shorts and more.' },
+    { name: 'description', content: 'Posta lets you create once and publish everywhere. Dashboard, visual calendar, analytics and AI-powered smart cropping for TikTok, Instagram, YouTube Shorts and more.' },
     { name: 'keywords', content: 'social media scheduler, auto post, TikTok scheduling, Instagram scheduler, smart cropping, face detection, multi-platform posting, content creator tools, social media automation' },
     { name: 'robots', content: 'index, follow' },
     { property: 'og:type', content: 'website' },
     { property: 'og:url', content: 'https://getposta.app/' },
     { property: 'og:title', content: 'Posta – Smart Social Media Posting for Creators & Teams' },
-    { property: 'og:description', content: 'Create once, publish everywhere. AI-powered smart cropping, face-aware framing, and scheduling for TikTok, Instagram, YouTube Shorts and more.' },
+    { property: 'og:description', content: 'Create once, publish everywhere. Dashboard, visual calendar, analytics and AI-powered smart cropping for TikTok, Instagram, YouTube Shorts and more.' },
     { property: 'og:image', content: 'https://getposta.app/assets/posta_og_image.png' },
     { property: 'og:site_name', content: 'Posta' },
     { property: 'og:locale', content: 'en_US' },
     { name: 'twitter:card', content: 'summary_large_image' },
     { name: 'twitter:url', content: 'https://getposta.app/' },
     { name: 'twitter:title', content: 'Posta – Smart Social Media Posting for Creators & Teams' },
-    { name: 'twitter:description', content: 'Create once, publish everywhere. AI-powered smart cropping, face-aware framing, and scheduling for TikTok, Instagram, YouTube Shorts and more.' },
+    { name: 'twitter:description', content: 'Create once, publish everywhere. Dashboard, visual calendar, analytics and AI-powered smart cropping for TikTok, Instagram, YouTube Shorts and more.' },
     { name: 'twitter:image', content: 'https://getposta.app/assets/posta_og_image.png' },
   ],
   link: [
@@ -99,6 +107,25 @@ useHead({
             name: 'Schedule & ship',
             text: 'Approve the posts, set dates and times, and let Posta take care of the publishing calendar.',
           },
+        ],
+      }),
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: 'Posta',
+        applicationCategory: 'BusinessApplication',
+        operatingSystem: 'Web',
+        url: 'https://getposta.app/',
+        screenshot: [
+          'https://getposta.app/assets/images/ui/dashboard.png',
+          'https://getposta.app/assets/images/ui/calendar.png',
+          'https://getposta.app/assets/images/ui/analytics.png',
+          'https://getposta.app/assets/images/ui/accounts.png',
+          'https://getposta.app/assets/images/ui/posts.png',
+          'https://getposta.app/assets/images/ui/media.png',
         ],
       }),
     },
@@ -373,15 +400,15 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
         </section>
 
         <!-- Why Posta Section -->
-        <section class="section" id="features">
-          <h2 class="section-title">Why Posta?</h2>
-          <p class="section-sub">
+        <section :ref="whyRef" class="section" id="features">
+          <h2 :class="whyVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">Why Posta?</h2>
+          <p :class="whyVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
             Existing social tools are either too simple or too expensive. Posta focuses on what solo builders and lean
             teams actually need: smart media handling, simple workflows and predictable pricing.
           </p>
 
           <div class="feature-grid">
-            <div class="feature-card feature-card-with-image">
+            <div :class="whyVisible ? 'feature-card feature-card-with-image animate-fade-in-up stagger-2' : 'feature-card feature-card-with-image opacity-0'">
               <div class="feature-tag">Media intelligence</div>
               <div class="feature-title">Face detection & smart cropping</div>
               <div class="feature-body">
@@ -390,7 +417,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               </div>
               <img src="/assets/images/Smart crop.png" alt="Smart crop example" class="feature-image" />
             </div>
-            <div class="feature-card feature-card-with-image">
+            <div :class="whyVisible ? 'feature-card feature-card-with-image animate-fade-in-up stagger-3' : 'feature-card feature-card-with-image opacity-0'">
               <div class="feature-tag">Format once</div>
               <div class="feature-title">Auto layouts for every platform</div>
               <div class="feature-body">
@@ -452,7 +479,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
                 </div>
               </div>
             </div>
-            <div class="feature-card feature-card-with-image">
+            <div :class="whyVisible ? 'feature-card feature-card-with-image animate-fade-in-up stagger-4' : 'feature-card feature-card-with-image opacity-0'">
               <div class="feature-tag">Performance</div>
               <div class="feature-title">Smart compression engine</div>
               <div class="feature-body">
@@ -485,15 +512,15 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
         </section>
 
         <!-- How it Works Section -->
-        <section class="section" id="how">
-          <h2 class="section-title">How it works</h2>
-          <p class="section-sub">
+        <section :ref="howRef" class="section" id="how">
+          <h2 :class="howVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">How it works</h2>
+          <p :class="howVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
             Posta is designed to fit into your existing workflow. You bring your creative; Posta takes care of formats,
             variants and timing.
           </p>
 
           <div class="how-grid">
-            <div class="step-card">
+            <div :class="howVisible ? 'step-card animate-fade-in-up stagger-2' : 'step-card opacity-0'">
               <div class="step-num">Step 1</div>
               <div class="step-title">Drop in your source asset</div>
               <div class="step-body">
@@ -504,7 +531,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
                 <span class="pill">Images & short video</span>
               </div>
             </div>
-            <div class="step-card">
+            <div :class="howVisible ? 'step-card animate-fade-in-up stagger-3' : 'step-card opacity-0'">
               <div class="step-num">Step 2</div>
               <div class="step-title">Pick platforms & variants</div>
               <div class="step-body">
@@ -516,7 +543,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
                 <span class="pill">YouTube Shorts</span>
               </div>
             </div>
-            <div class="step-card">
+            <div :class="howVisible ? 'step-card animate-fade-in-up stagger-4' : 'step-card opacity-0'">
               <div class="step-num">Step 3</div>
               <div class="step-title">Schedule & ship</div>
               <div class="step-body">
@@ -530,10 +557,104 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
           </div>
         </section>
 
+        <!-- Product Showcase Section -->
+        <section :ref="showcaseRef" class="section" id="showcase">
+          <h2 :class="showcaseVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">See Posta in action</h2>
+          <p :class="showcaseVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
+            A clean, focused interface designed for speed. Here's what you'll be working with every day.
+          </p>
+
+          <div class="showcase-list">
+            <div :class="showcaseVisible ? 'showcase-item animate-fade-in-up stagger-2' : 'showcase-item opacity-0'">
+              <div class="showcase-image-wrapper">
+                <img src="/assets/images/ui/dashboard.png" alt="Posta dashboard showing scheduled posts and account health" loading="lazy" class="showcase-image" />
+              </div>
+              <div class="showcase-text">
+                <h3 class="showcase-heading">Your command center</h3>
+                <p class="showcase-desc">
+                  Overview of scheduled posts, account health and your upcoming queue – all in one place. Know exactly what's going out and when.
+                </p>
+              </div>
+            </div>
+
+            <div :class="showcaseVisible ? 'showcase-item showcase-item-reverse animate-fade-in-up stagger-3' : 'showcase-item showcase-item-reverse opacity-0'">
+              <div class="showcase-image-wrapper">
+                <img src="/assets/images/ui/calendar.png" alt="Visual content calendar with drag-and-drop scheduling" loading="lazy" class="showcase-image" />
+              </div>
+              <div class="showcase-text">
+                <h3 class="showcase-heading">Visual content calendar</h3>
+                <p class="showcase-desc">
+                  See your week or month at a glance and schedule posts right from the calendar. Plan your content rhythm without spreadsheets.
+                </p>
+              </div>
+            </div>
+
+            <div :class="showcaseVisible ? 'showcase-item animate-fade-in-up stagger-4' : 'showcase-item opacity-0'">
+              <div class="showcase-image-wrapper">
+                <img src="/assets/images/ui/analytics.png" alt="Analytics dashboard tracking engagement and growth" loading="lazy" class="showcase-image" />
+              </div>
+              <div class="showcase-text">
+                <h3 class="showcase-heading">Know what works</h3>
+                <p class="showcase-desc">
+                  Track engagement, reach and growth across all your platforms. Spot trends and double down on what your audience responds to.
+                </p>
+              </div>
+            </div>
+
+            <div :class="showcaseVisible ? 'showcase-item showcase-item-reverse animate-fade-in-up stagger-5' : 'showcase-item showcase-item-reverse opacity-0'">
+              <div class="showcase-image-wrapper">
+                <img src="/assets/images/ui/accounts.png" alt="Connected social accounts management view" loading="lazy" class="showcase-image" />
+              </div>
+              <div class="showcase-text">
+                <h3 class="showcase-heading">All accounts, one place</h3>
+                <p class="showcase-desc">
+                  Connect and manage all your social profiles from a single dashboard. No more juggling between apps.
+                </p>
+              </div>
+            </div>
+
+            <div :class="showcaseVisible ? 'showcase-item animate-fade-in-up stagger-6' : 'showcase-item opacity-0'">
+              <div class="showcase-image-wrapper">
+                <img src="/assets/images/ui/posts.png" alt="Post management view with status tracking" loading="lazy" class="showcase-image" />
+              </div>
+              <div class="showcase-text">
+                <h3 class="showcase-heading">Track every post</h3>
+                <p class="showcase-desc">
+                  See all your posts in one feed — drafts, scheduled and published. Filter by platform, status or date to find exactly what you need.
+                </p>
+              </div>
+            </div>
+
+            <div :class="showcaseVisible ? 'showcase-item showcase-item-reverse animate-fade-in-up stagger-7' : 'showcase-item showcase-item-reverse opacity-0'">
+              <div class="showcase-image-wrapper">
+                <img src="/assets/images/ui/media.png" alt="Media library with smart processing" loading="lazy" class="showcase-image" />
+              </div>
+              <div class="showcase-text">
+                <h3 class="showcase-heading">Your media library</h3>
+                <p class="showcase-desc">
+                  Every image and video you upload lives in one organized library. Smart compression and face-aware cropping happen automatically.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div :class="showcaseVisible ? 'showcase-cta animate-fade-in-up' : 'showcase-cta opacity-0'">
+            <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary">
+              <span>Start your free trial</span>
+              <span class="arrow">→</span>
+            </RouterLink>
+            <button v-else class="btn-primary" @click="openWaitingList('showcase')">
+              <span>Start posting smarter</span>
+              <span class="arrow">→</span>
+            </button>
+            <a href="#pricing" class="btn-ghost">See pricing</a>
+          </div>
+        </section>
+
         <!-- Pricing Section -->
-        <section class="section" id="pricing">
-          <h2 class="section-title">Simple, predictable pricing</h2>
-          <p class="section-sub">
+        <section :ref="pricingRef" class="section" id="pricing">
+          <h2 :class="pricingVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">Simple, predictable pricing</h2>
+          <p :class="pricingVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
             No bloated dashboards, no agency-level pricing. Pick a plan that fits your workflow and scale when you need to.
           </p>
 
@@ -705,9 +826,9 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
         </section>
 
         <!-- Platforms Section -->
-        <section class="section" id="platforms">
-          <h2 class="section-title">Supported platforms & formats</h2>
-          <p class="section-sub">
+        <section :ref="platformsRef" class="section" id="platforms">
+          <h2 :class="platformsVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">Supported platforms & formats</h2>
+          <p :class="platformsVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
             Posta automatically optimizes your content for each platform's requirements. One upload, perfect exports for every destination.
           </p>
 
@@ -827,8 +948,8 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
         </section>
 
         <!-- FAQ Section -->
-        <section class="section">
-          <h2 class="section-title">Questions</h2>
+        <section :ref="faqRef" class="section">
+          <h2 :class="faqVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">Questions</h2>
           <div class="faq-grid">
             <div class="faq-item">
               <div class="faq-q">Who is Posta for?</div>
@@ -866,7 +987,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
     <!-- Footer -->
     <footer class="footer">
       <div class="footer-inner">
-        <div>© {{ currentYear }} Posta. All rights reserved.</div>
+        <div>© {{ currentYear }} Posta. Operated by Stefan Gimeson. All rights reserved.</div>
         <div class="footer-links">
           <a href="mailto:hello@getposta.app">Contact</a>
           <RouterLink to="/terms">Terms of Service</RouterLink>
@@ -2168,6 +2289,101 @@ h1 {
   letter-spacing: 0.1em;
 }
 
+/* Scroll Animations */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out both;
+}
+
+.opacity-0 {
+  opacity: 0;
+}
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+.stagger-6 { animation-delay: 0.6s; }
+.stagger-7 { animation-delay: 0.7s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .opacity-0 {
+    opacity: 1;
+  }
+}
+
+/* Product Showcase */
+.showcase-list {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  margin-bottom: 32px;
+}
+
+.showcase-item {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 28px;
+  align-items: center;
+}
+
+.showcase-item-reverse {
+  direction: rtl;
+}
+
+.showcase-item-reverse > * {
+  direction: ltr;
+}
+
+.showcase-image-wrapper {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.showcase-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.showcase-heading {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.showcase-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.showcase-cta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Responsive */
 @media (max-width: 860px) {
   .hero {
@@ -2199,6 +2415,14 @@ h1 {
   }
   .wrapper {
     padding-inline: 16px;
+  }
+  .showcase-item,
+  .showcase-item-reverse {
+    grid-template-columns: minmax(0, 1fr);
+    direction: ltr;
+  }
+  .showcase-cta {
+    flex-direction: column;
   }
 }
 </style>

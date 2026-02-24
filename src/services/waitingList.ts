@@ -1,6 +1,6 @@
 import api from './api'
 
-export type WaitingListSource = 'hero' | 'header' | 'pricing' | 'seo-scheduler' | 'seo-instagram' | 'seo-tiktok' | 'seo-autopost' | 'seo-tools'
+export type WaitingListSource = 'hero' | 'header' | 'pricing' | 'showcase' | 'seo-scheduler' | 'seo-instagram' | 'seo-tiktok' | 'seo-autopost' | 'seo-tools'
 
 interface JoinWaitingListResponse {
   success: boolean
