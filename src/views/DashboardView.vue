@@ -16,11 +16,9 @@ const isUnlimited = (value: number | null | undefined) => value == null || value
 const accountsWithIssues = computed(() => {
   const now = new Date()
   return socialAccountsStore.accounts.filter(account => {
-    // Check if inactive
+    // Check if inactive (covers connection errors and revoked tokens)
     if (!account.isActive) return true
-    // Check if has connection error
-    if (account.connectionError) return true
-    // Check if token is expired
+    // Check if token is expired (active account but token needs refresh)
     if (account.tokenExpiresAt && new Date(account.tokenExpiresAt) < now) return true
     return false
   })

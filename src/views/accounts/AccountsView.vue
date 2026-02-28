@@ -42,9 +42,14 @@ const handleDelete = (account: SocialAccount) => {
 const confirmDisconnect = async () => {
   if (!pendingDeleteAccount.value) return
   isDeleting.value = true
-  await socialAccountsStore.deleteAccount(pendingDeleteAccount.value.id)
-  isDeleting.value = false
-  closeModal()
+  try {
+    await socialAccountsStore.deleteAccount(pendingDeleteAccount.value.id)
+    closeModal()
+  } catch {
+    // Error is set in store, will be displayed to user
+  } finally {
+    isDeleting.value = false
+  }
 }
 
 const closeModal = () => {
@@ -66,6 +71,10 @@ const closeModal = () => {
         </svg>
         Connect Account
       </RouterLink>
+    </div>
+
+    <div v-if="socialAccountsStore.error" class="error-banner">
+      {{ socialAccountsStore.error }}
     </div>
 
     <div v-if="socialAccountsStore.isLoading" class="loading-state">
@@ -179,6 +188,15 @@ const closeModal = () => {
 }
 
 /* Loading State */
+.error-banner {
+  background: var(--error-soft);
+  color: var(--error);
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
 .loading-state {
   display: flex;
   justify-content: center;

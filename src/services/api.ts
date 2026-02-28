@@ -13,6 +13,41 @@ const api: AxiosInstance = axios.create({
 // Refresh token proactively if it expires within this many seconds
 const TOKEN_REFRESH_THRESHOLD_SECONDS = 300 // 5 minutes
 
+// Shared refresh lock to prevent concurrent refresh attempts across the app.
+// Supabase uses refresh token rotation, so concurrent refreshes with the same
+// token will cause one to fail (the token is invalidated after first use).
+let activeRefreshPromise: Promise<{ access_token: string; refresh_token: string; expires_at: number } | null> | null = null
+
+/**
+ * Perform a token refresh with deduplication.
+ * If a refresh is already in-flight, returns the same promise.
+ */
+export const performTokenRefresh = async (): Promise<{ access_token: string; refresh_token: string; expires_at: number } | null> => {
+  if (activeRefreshPromise) return activeRefreshPromise
+
+  const refreshToken = localStorage.getItem('refresh_token')
+  if (!refreshToken) return null
+
+  activeRefreshPromise = axios.post(`${API_BASE_URL}/auth/refresh`, {
+    refresh_token: refreshToken,
+  }).then((response) => {
+    const { access_token, refresh_token: newRefreshToken, expires_at } = response.data
+    localStorage.setItem('access_token', access_token)
+    localStorage.setItem('refresh_token', newRefreshToken)
+    if (expires_at) {
+      localStorage.setItem('token_expires_at', expires_at.toString())
+    }
+    return { access_token, refresh_token: newRefreshToken, expires_at }
+  }).catch((error) => {
+    console.error('[API] Token refresh failed:', error)
+    return null
+  }).finally(() => {
+    activeRefreshPromise = null
+  })
+
+  return activeRefreshPromise
+}
+
 // Track proactive refresh to prevent duplicate refreshes
 let isProactivelyRefreshing = false
 
@@ -35,27 +70,14 @@ const isTokenExpiringSoon = (): boolean => {
 const proactiveRefresh = async (): Promise<string | null> => {
   if (isProactivelyRefreshing) return localStorage.getItem('access_token')
 
-  const refreshToken = localStorage.getItem('refresh_token')
-  if (!refreshToken) return null
-
   isProactivelyRefreshing = true
 
   try {
-    const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-      refresh_token: refreshToken,
-    })
-
-    const { access_token, refresh_token: newRefreshToken, expires_at } = response.data
-    localStorage.setItem('access_token', access_token)
-    localStorage.setItem('refresh_token', newRefreshToken)
-    if (expires_at) {
-      localStorage.setItem('token_expires_at', expires_at.toString())
+    const result = await performTokenRefresh()
+    if (result) {
+      console.log('[API] Token proactively refreshed')
+      return result.access_token
     }
-
-    console.log('[API] Token proactively refreshed')
-    return access_token
-  } catch (error) {
-    console.error('[API] Proactive token refresh failed:', error)
     return null
   } finally {
     isProactivelyRefreshing = false
@@ -153,16 +175,13 @@ api.interceptors.response.use(
       isRefreshing = true
 
       try {
-        const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-          refresh_token: refreshToken,
-        })
+        const result = await performTokenRefresh()
+        if (!result) {
+          throw new Error('Token refresh returned null')
+        }
 
-        const { access_token, refresh_token: newRefreshToken } = response.data
-        localStorage.setItem('access_token', access_token)
-        localStorage.setItem('refresh_token', newRefreshToken)
-
-        originalRequest.headers.Authorization = `Bearer ${access_token}`
-        processQueue(null, access_token)
+        originalRequest.headers.Authorization = `Bearer ${result.access_token}`
+        processQueue(null, result.access_token)
         return api(originalRequest)
       } catch (refreshError) {
         processQueue(refreshError as Error, null)

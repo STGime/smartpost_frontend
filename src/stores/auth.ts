@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { authService, postSSEService, setSessionExpiredHandler } from '@/services'
+import { authService, postSSEService, setSessionExpiredHandler, performTokenRefresh } from '@/services'
 import type { User, LoginRequest, SignupRequest } from '@/types'
 import router from '@/router'
 import { usePostsStore } from './posts'
@@ -77,9 +77,16 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     try {
-      const response = await authService.refreshToken(refreshToken)
-      setTokens(response.access_token, response.refresh_token, parseExpiresAt(response.expires_at))
-      console.log('[Auth] Background token refresh successful')
+      // Use the shared performTokenRefresh to avoid race conditions with
+      // proactive refresh in api.ts (Supabase invalidates refresh tokens after use)
+      const result = await performTokenRefresh()
+      if (result) {
+        // Re-schedule the next refresh with the new expiry
+        scheduleTokenRefresh(result.expires_at)
+        console.log('[Auth] Background token refresh successful')
+      } else {
+        console.error('[Auth] Background token refresh returned null')
+      }
     } catch (err) {
       console.error('[Auth] Background token refresh failed:', err)
       // Don't log out immediately - the reactive refresh in api.ts will handle it
@@ -128,12 +135,6 @@ export const useAuthStore = defineStore('auth', () => {
 
       // Set up token provider for SSE reconnections
       postSSEService.setTokenProvider(getValidToken)
-
-      // Set up auth error handler to trigger reauth modal
-      postSSEService.setAuthErrorHandler(() => {
-        console.log('[Auth] SSE auth error, requiring reauth')
-        requireReauth()
-      })
 
       postSSEService.connect(token)
       // Subscribe posts store to SSE events

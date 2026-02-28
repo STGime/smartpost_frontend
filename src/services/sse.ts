@@ -30,11 +30,10 @@ class PostSSEService {
   private eventSource: EventSource | null = null
   private listeners: Map<SSEEventType, Set<SSEEventCallback<unknown>>> = new Map()
   private reconnectAttempts = 0
-  private maxReconnectAttempts = 5
-  private reconnectDelay = 1000
+  private maxReconnectAttempts = 10
+  private reconnectDelay = 2000
   private isManuallyDisconnected = false
   private tokenProvider: (() => Promise<string | null>) | null = null
-  private onAuthError: (() => void) | null = null
 
   /**
    * Set the token provider function that returns a fresh token
@@ -43,12 +42,6 @@ class PostSSEService {
     this.tokenProvider = provider
   }
 
-  /**
-   * Set the callback for authentication errors (e.g., redirect to login)
-   */
-  setAuthErrorHandler(handler: () => void): void {
-    this.onAuthError = handler
-  }
 
   /**
    * Connect to the SSE endpoint
@@ -86,8 +79,8 @@ class PostSSEService {
               if (freshToken) {
                 this.connect(freshToken)
               } else {
-                console.log('[SSE] No valid token available, stopping reconnection')
-                this.handleAuthError()
+                console.log('[SSE] No valid token available, stopping SSE reconnection')
+                // Don't trigger auth error - let the API interceptor handle real auth failures
               }
             } else {
               // Fallback: reconnect with original token
@@ -95,8 +88,9 @@ class PostSSEService {
             }
           }, delay)
         } else if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-          console.log('[SSE] Max reconnection attempts reached')
-          this.handleAuthError()
+          console.log('[SSE] Max reconnection attempts reached, giving up on SSE')
+          // Don't trigger auth error - SSE failures are not auth failures.
+          // The API interceptor handles real 401s independently.
         }
       }
     }
@@ -170,15 +164,6 @@ class PostSSEService {
     }
   }
 
-  /**
-   * Handle authentication errors by calling the registered handler
-   */
-  private handleAuthError(): void {
-    console.log('[SSE] Authentication error, triggering auth error handler')
-    if (this.onAuthError) {
-      this.onAuthError()
-    }
-  }
 }
 
 // Export singleton instance

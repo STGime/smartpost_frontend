@@ -14,11 +14,22 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: PinterestConfiguration]
+  'validation-change': [valid: boolean, errors: string[]]
 }>()
 
 const boards = ref<PinterestBoard[]>([])
 const isLoadingBoards = ref(false)
 const boardsError = ref<string | null>(null)
+const touched = ref(false)
+
+const isValid = computed(() => !!config.value.board_id)
+const validationErrors = computed(() =>
+  isValid.value ? [] : ['Pinterest requires a board selection']
+)
+
+watch([isValid, validationErrors], ([valid, errors]) => {
+  emit('validation-change', valid, errors)
+}, { immediate: true })
 
 const config = computed({
   get: () => props.modelValue,
@@ -167,15 +178,18 @@ onMounted(() => {
         <template v-else>
           <select
             class="form-input form-select"
+            :class="{ 'field-error': touched && !isValid }"
             :value="config.board_id || ''"
-            @change="updateField('board_id', ($event.target as HTMLSelectElement).value || undefined)"
+            @change="updateField('board_id', ($event.target as HTMLSelectElement).value || undefined); touched = true"
+            @blur="touched = true"
           >
             <option value="">Select a board...</option>
             <option v-for="board in boards" :key="board.id" :value="board.id">
               {{ board.name }}
             </option>
           </select>
-          <span class="field-hint">Required - Select the board where this Pin will be saved</span>
+          <span v-if="touched && !isValid" class="field-error-text">Please select a board for your Pin</span>
+          <span v-else class="field-hint">Required - Select the board where this Pin will be saved</span>
         </template>
       </div>
 
@@ -339,6 +353,16 @@ onMounted(() => {
 
 .retry-btn:hover {
   background: rgba(255, 255, 255, 0.15);
+}
+
+.field-error {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3);
+}
+
+.field-error-text {
+  font-size: 11px;
+  color: #ef4444;
 }
 
 /* Preview */

@@ -1,4 +1,4 @@
-export { default as api, setSessionExpiredHandler } from './api'
+export { default as api, setSessionExpiredHandler, performTokenRefresh } from './api'
 export { authService } from './auth'
 export { userService } from './user'
 export { mediaService } from './media'

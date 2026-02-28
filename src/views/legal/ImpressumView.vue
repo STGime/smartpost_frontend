@@ -24,8 +24,8 @@ useHead({
         <h2>Angaben gemäß § 5 TMG</h2>
         <address>
           Stefan Gimeson<br />
-          Postfach 37 03 29<br />
-          14133 Berlin<br />
+          Finckensteinallee 154A<br />
+          12205 Berlin<br />
           Deutschland
         </address>
       </div>
@@ -33,7 +33,7 @@ useHead({
       <div class="section">
         <h2>Kontakt</h2>
         <p>
-          Telefon: <a href="tel:+493040783108" class="contact-link">+49 30 40783108</a><br />
+          Telefon: <a href="tel:+491795179354" class="contact-link">+49 179 5179354</a><br />
           E-Mail: <a href="mailto:hello@getposta.app" class="contact-link">hello@getposta.app</a>
         </p>
       </div>
@@ -42,8 +42,8 @@ useHead({
         <h2>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
         <address>
           Stefan Gimeson<br />
-          Postfach 37 03 29<br />
-          14133 Berlin
+          Finckensteinallee 154A<br />
+          12205 Berlin
         </address>
       </div>
 

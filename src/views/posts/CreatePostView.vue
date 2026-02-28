@@ -126,6 +126,22 @@ const tiktokValidation = computed(() => {
   return { valid: true, message: null }
 })
 
+// Validation for Pinterest posts - board is required
+const pinterestValidation = computed(() => {
+  const hasPinterest = selectedPlatforms.value.includes('pinterest')
+  if (!hasPinterest) return { valid: true, message: null }
+
+  const pinterestConfig = platformConfigurations.value.pinterest
+  if (!pinterestConfig?.board_id) {
+    return {
+      valid: false,
+      message: 'Pinterest requires you to select a board for your Pin'
+    }
+  }
+
+  return { valid: true, message: null }
+})
+
 // Platform validation errors (from config panels)
 const platformValidationErrors = ref<Record<string, string[]>>({})
 
@@ -155,6 +171,10 @@ const formValidation = computed(() => {
 
   if (!tiktokValidation.value.valid && tiktokValidation.value.message) {
     errors.push(tiktokValidation.value.message)
+  }
+
+  if (!pinterestValidation.value.valid && pinterestValidation.value.message) {
+    errors.push(pinterestValidation.value.message)
   }
 
   // Add platform validation errors (excluding ones already shown inline)

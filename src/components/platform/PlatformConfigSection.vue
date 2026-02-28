@@ -227,6 +227,7 @@ const getPlatformName = (platform: SocialPlatform) => {
             :hashtags="hashtags"
             :account="getAccountForPlatform('pinterest')"
             @update:model-value="updatePlatformConfig('pinterest', $event)"
+            @validation-change="(valid, errors) => handleValidationChange('pinterest', valid, errors)"
           />
 
           <!-- Bluesky -->

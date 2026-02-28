@@ -1,5 +1,8 @@
+import axios from 'axios'
 import api from './api'
 import type { AuthResponse, LoginRequest, SignupRequest, User } from '@/types'
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1'
 
 export const authService = {
   async signup(data: SignupRequest): Promise<AuthResponse> {
@@ -17,7 +20,10 @@ export const authService = {
   },
 
   async refreshToken(refreshToken: string): Promise<{ access_token: string; refresh_token: string; expires_at: string }> {
-    const response = await api.post('/auth/refresh', { refresh_token: refreshToken })
+    // Use raw axios to avoid triggering the api interceptors, which can cause
+    // a race condition with proactiveRefresh (both try to use the same refresh
+    // token, but Supabase's refresh token rotation invalidates it after first use)
+    const response = await axios.post(`${API_BASE_URL}/auth/refresh`, { refresh_token: refreshToken })
     return response.data
   },
 

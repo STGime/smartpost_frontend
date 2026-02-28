@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, reactive, watch } from 'vue'
 import { useAnalyticsStore } from '@/stores'
 import type { AnalyticsPeriod, AnalyticsMetric } from '@/types'
 import PlatformIcon from '@/components/PlatformIcon.vue'
@@ -114,6 +114,12 @@ const handleCustomDateRange = (range: { startDate: string; endDate: string }) =>
 
 // Whether we're showing custom period
 const isCustomPeriod = computed(() => analyticsStore.selectedPeriod === 'custom')
+
+// Track posts with broken thumbnail images
+const brokenThumbnails = reactive(new Set<string>())
+const onThumbError = (postId: string) => {
+  brokenThumbnails.add(postId)
+}
 </script>
 
 <template>
@@ -507,11 +513,14 @@ const isCustomPeriod = computed(() => analyticsStore.selectedPeriod === 'custom'
                 class="top-post-item top-post-no-link"
               >
                 <span class="top-post-rank">{{ index + 1 }}</span>
-                <div v-if="post.thumbnailUrl" class="top-post-thumb">
-                  <img :src="post.thumbnailUrl" alt="" />
-                </div>
-                <div v-else class="top-post-thumb top-post-thumb-empty">
-                  <PlatformIcon :platform="post.platform" size="sm" />
+                <div class="top-post-thumb" :class="{ 'top-post-thumb-empty': !post.thumbnailUrl || brokenThumbnails.has(post.postId) }">
+                  <img
+                    v-if="post.thumbnailUrl && !brokenThumbnails.has(post.postId)"
+                    :src="post.thumbnailUrl"
+                    alt=""
+                    @error="onThumbError(post.postId)"
+                  />
+                  <PlatformIcon v-else :platform="post.platform" size="sm" />
                 </div>
                 <div class="top-post-content">
                   <p class="top-post-caption">{{ post.caption || 'No caption' }}</p>
@@ -533,11 +542,14 @@ const isCustomPeriod = computed(() => analyticsStore.selectedPeriod === 'custom'
                 class="top-post-item"
               >
                 <span class="top-post-rank">{{ index + 1 }}</span>
-                <div v-if="post.thumbnailUrl" class="top-post-thumb">
-                  <img :src="post.thumbnailUrl" alt="" />
-                </div>
-                <div v-else class="top-post-thumb top-post-thumb-empty">
-                  <PlatformIcon :platform="post.platform" size="sm" />
+                <div class="top-post-thumb" :class="{ 'top-post-thumb-empty': !post.thumbnailUrl || brokenThumbnails.has(post.postId) }">
+                  <img
+                    v-if="post.thumbnailUrl && !brokenThumbnails.has(post.postId)"
+                    :src="post.thumbnailUrl"
+                    alt=""
+                    @error="onThumbError(post.postId)"
+                  />
+                  <PlatformIcon v-else :platform="post.platform" size="sm" />
                 </div>
                 <div class="top-post-content">
                   <p class="top-post-caption">{{ post.caption || 'No caption' }}</p>
