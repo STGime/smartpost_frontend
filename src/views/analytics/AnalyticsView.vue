@@ -942,6 +942,7 @@ const onThumbError = (postId: string) => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-end;
   height: 100%;
   min-width: 20px;
 }

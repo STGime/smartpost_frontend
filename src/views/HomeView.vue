@@ -1030,6 +1030,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
   display: flex;
   flex-direction: column;
   background: radial-gradient(circle at top, #111827 0, #020617 45%, #000 100%);
+  overflow-x: hidden;
 }
 
 .wrapper {
@@ -2423,6 +2424,14 @@ h1 {
   }
   .showcase-cta {
     flex-direction: column;
+  }
+  .comparison-table {
+    min-width: 0;
+    font-size: 11px;
+  }
+  .comparison-table th,
+  .comparison-table td {
+    padding: 6px 6px;
   }
 }
 </style>
