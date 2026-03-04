@@ -20,10 +20,8 @@ const platformLabels: Record<string, string> = {
 
 // Get user's engagement rate for a specific platform, falling back to global rate
 const getUserRate = (platform: string): number => {
-  if (props.platformEngagementRates && platform in props.platformEngagementRates) {
-    return props.platformEngagementRates[platform]
-  }
-  return props.userEngagementRate
+  const rate = props.platformEngagementRates?.[platform]
+  return rate ?? props.userEngagementRate
 }
 </script>
 
