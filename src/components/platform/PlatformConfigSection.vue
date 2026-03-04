@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, nextTick } from 'vue'
 import type { SocialAccount, PlatformConfigurations, SocialPlatform, MediaListItem } from '@/types'
 import TikTokConfigPanel from './TikTokConfigPanel.vue'
 import InstagramConfigPanel from './InstagramConfigPanel.vue'
@@ -10,6 +10,7 @@ import LinkedInConfigPanel from './LinkedInConfigPanel.vue'
 import PinterestConfigPanel from './PinterestConfigPanel.vue'
 import BlueskyConfigPanel from './BlueskyConfigPanel.vue'
 import ThreadsConfigPanel from './ThreadsConfigPanel.vue'
+import PlatformIcon from '@/components/PlatformIcon.vue'
 
 const props = defineProps<{
   selectedAccounts: SocialAccount[]
@@ -58,11 +59,38 @@ const configurablePlatforms = computed(() => {
   return selectedPlatforms.value.filter(hasConfigOptions)
 })
 
-const togglePanel = (platform: SocialPlatform) => {
+// Refs for accordion content elements
+const contentRefs = ref<Record<string, HTMLElement | null>>({})
+
+const setContentRef = (platform: SocialPlatform, el: HTMLElement | null) => {
+  contentRefs.value[platform] = el
+}
+
+const togglePanel = async (platform: SocialPlatform) => {
+  const el = contentRefs.value[platform]
+  if (!el) return
+
   if (expandedPanels.value.has(platform)) {
+    // Collapse: set explicit height first, then animate to 0
+    el.style.height = el.scrollHeight + 'px'
+    el.offsetHeight // force reflow
+    el.style.height = '0px'
     expandedPanels.value.delete(platform)
   } else {
+    // Expand: add to set, measure content, animate
     expandedPanels.value.add(platform)
+    await nextTick()
+    el.style.height = '0px'
+    el.offsetHeight // force reflow
+    el.style.height = el.scrollHeight + 'px'
+    // After transition, remove fixed height so content can resize
+    const onEnd = () => {
+      if (expandedPanels.value.has(platform)) {
+        el.style.height = 'auto'
+      }
+      el.removeEventListener('transitionend', onEnd)
+    }
+    el.addEventListener('transitionend', onEnd)
   }
   // Force reactivity
   expandedPanels.value = new Set(expandedPanels.value)
@@ -134,7 +162,7 @@ const getPlatformName = (platform: SocialPlatform) => {
           @click="togglePanel(platform)"
           :style="{ '--platform-color': getPlatformColor(platform) }"
         >
-          <span class="platform-dot" :style="{ background: getPlatformColor(platform) }"></span>
+          <PlatformIcon :platform="platform" size="xs" />
           <span class="platform-name">{{ getPlatformName(platform) }}</span>
           <svg
             class="chevron"
@@ -149,7 +177,7 @@ const getPlatformName = (platform: SocialPlatform) => {
 
         <div
           class="accordion-content"
-          :class="{ expanded: expandedPanels.has(platform) }"
+          :ref="(el: any) => setContentRef(platform, el as HTMLElement)"
         >
           <!-- TikTok -->
           <TikTokConfigPanel
@@ -330,10 +358,7 @@ const getPlatformName = (platform: SocialPlatform) => {
   background: rgba(15, 23, 42, 0.8);
 }
 
-.platform-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+.accordion-header :deep(.platform-icon) {
   flex-shrink: 0;
 }
 
@@ -356,15 +381,9 @@ const getPlatformName = (platform: SocialPlatform) => {
 }
 
 .accordion-content {
-  max-height: 0;
+  height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease-out, overflow 0s 0.3s;
-}
-
-.accordion-content.expanded {
-  max-height: 2000px;
-  overflow: visible;
-  transition: max-height 0.3s ease-out, overflow 0s 0s;
+  transition: height 0.25s ease-out;
 }
 
 .accordion-content > :deep(.config-panel) {
