@@ -417,6 +417,7 @@ export interface PostMedia {
 
 export interface PostSocialAccount {
   id: string
+  accountId?: string
   platform: SocialPlatform
   username: string
   displayName?: string

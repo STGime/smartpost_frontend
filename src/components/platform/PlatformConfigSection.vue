@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, nextTick } from 'vue'
+import { computed, ref } from 'vue'
 import type { SocialAccount, PlatformConfigurations, SocialPlatform, MediaListItem } from '@/types'
 import TikTokConfigPanel from './TikTokConfigPanel.vue'
 import InstagramConfigPanel from './InstagramConfigPanel.vue'
@@ -59,38 +59,11 @@ const configurablePlatforms = computed(() => {
   return selectedPlatforms.value.filter(hasConfigOptions)
 })
 
-// Refs for accordion content elements
-const contentRefs = ref<Record<string, HTMLElement | null>>({})
-
-const setContentRef = (platform: SocialPlatform, el: HTMLElement | null) => {
-  contentRefs.value[platform] = el
-}
-
-const togglePanel = async (platform: SocialPlatform) => {
-  const el = contentRefs.value[platform]
-  if (!el) return
-
+const togglePanel = (platform: SocialPlatform) => {
   if (expandedPanels.value.has(platform)) {
-    // Collapse: set explicit height first, then animate to 0
-    el.style.height = el.scrollHeight + 'px'
-    el.offsetHeight // force reflow
-    el.style.height = '0px'
     expandedPanels.value.delete(platform)
   } else {
-    // Expand: add to set, measure content, animate
     expandedPanels.value.add(platform)
-    await nextTick()
-    el.style.height = '0px'
-    el.offsetHeight // force reflow
-    el.style.height = el.scrollHeight + 'px'
-    // After transition, remove fixed height so content can resize
-    const onEnd = () => {
-      if (expandedPanels.value.has(platform)) {
-        el.style.height = 'auto'
-      }
-      el.removeEventListener('transitionend', onEnd)
-    }
-    el.addEventListener('transitionend', onEnd)
   }
   // Force reactivity
   expandedPanels.value = new Set(expandedPanels.value)
@@ -176,8 +149,8 @@ const getPlatformName = (platform: SocialPlatform) => {
         </button>
 
         <div
+          v-show="expandedPanels.has(platform)"
           class="accordion-content"
-          :ref="(el: any) => setContentRef(platform, el as HTMLElement)"
         >
           <!-- TikTok -->
           <TikTokConfigPanel
@@ -378,12 +351,6 @@ const getPlatformName = (platform: SocialPlatform) => {
 
 .chevron.expanded {
   transform: rotate(180deg);
-}
-
-.accordion-content {
-  height: 0;
-  overflow: hidden;
-  transition: height 0.25s ease-out;
 }
 
 .accordion-content > :deep(.config-panel) {

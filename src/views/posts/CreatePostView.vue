@@ -288,12 +288,14 @@ onMounted(async () => {
         }
 
         // Copy social accounts - only those that still exist and are active
+        // Use accountId (real social account ID) with fallback to id (may be join table ID)
         const validAccountIds: string[] = []
         if (post.socialAccounts) {
           for (const account of post.socialAccounts) {
-            const exists = availableAccounts.value.find(a => a.id === account.id)
+            const realId = account.accountId || account.id
+            const exists = availableAccounts.value.find(a => a.id === realId)
             if (exists) {
-              validAccountIds.push(account.id)
+              validAccountIds.push(realId)
             }
           }
         }
@@ -332,12 +334,14 @@ onMounted(async () => {
     }
 
     // Copy social accounts - only those that still exist and are active
+    // Use accountId (real social account ID) with fallback to id (may be join table ID)
     const validAccountIds: string[] = []
     if (template.socialAccounts) {
       for (const account of template.socialAccounts) {
-        const exists = availableAccounts.value.find(a => a.id === account.id)
+        const realId = account.accountId || account.id
+        const exists = availableAccounts.value.find(a => a.id === realId)
         if (exists) {
-          validAccountIds.push(account.id)
+          validAccountIds.push(realId)
         }
       }
     }
@@ -559,7 +563,7 @@ const closePreviewModal = () => {
           </span>
         </div>
 
-        <div v-if="socialAccountsStore.isLoading" class="loading-state-sm">
+        <div v-if="socialAccountsStore.isLoading && availableAccounts.length === 0" class="loading-state-sm">
           <div class="spinner"></div>
         </div>
 

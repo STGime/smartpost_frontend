@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import type { PinterestConfiguration, MediaListItem, SocialAccount, PinterestBoard } from '@/types'
 import { socialAccountsService } from '@/services/socialAccounts'
 import PinterestPostPreview from './previews/PinterestPostPreview.vue'
@@ -17,20 +17,6 @@ const emit = defineEmits<{
   'validation-change': [valid: boolean, errors: string[]]
 }>()
 
-const boards = ref<PinterestBoard[]>([])
-const isLoadingBoards = ref(false)
-const boardsError = ref<string | null>(null)
-const touched = ref(false)
-
-const isValid = computed(() => !!config.value.board_id)
-const validationErrors = computed(() =>
-  isValid.value ? [] : ['Pinterest requires a board selection']
-)
-
-watch([isValid, validationErrors], ([valid, errors]) => {
-  emit('validation-change', valid, errors)
-}, { immediate: true })
-
 const config = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value)
@@ -43,12 +29,17 @@ const updateField = <K extends keyof PinterestConfiguration>(
   emit('update:modelValue', { ...props.modelValue, [field]: value })
 }
 
+const boards = ref<PinterestBoard[]>([])
+const isLoadingBoards = ref(false)
+const boardsError = ref<string | null>(null)
+const touched = ref(false)
+
+const isValid = computed(() => !!config.value.board_id)
+
 const fetchBoards = async () => {
   if (!props.account?.id) return
-
   isLoadingBoards.value = true
   boardsError.value = null
-
   try {
     const response = await socialAccountsService.getPinterestBoards(props.account.id)
     boards.value = response.boards
@@ -60,11 +51,22 @@ const fetchBoards = async () => {
   }
 }
 
-watch(() => props.account?.id, (newId) => {
-  if (newId) {
+onMounted(() => {
+  if (props.account?.id) {
     fetchBoards()
   }
-}, { immediate: true })
+  emit('validation-change', isValid.value, isValid.value ? [] : ['Pinterest requires a board selection'])
+})
+
+watch(isValid, (valid) => {
+  emit('validation-change', valid, valid ? [] : ['Pinterest requires a board selection'])
+})
+
+watch(() => props.account?.id, (newId, oldId) => {
+  if (newId && newId !== oldId) {
+    fetchBoards()
+  }
+})
 </script>
 
 <template>
@@ -129,7 +131,7 @@ watch(() => props.account?.id, (newId) => {
         <span class="field-hint">{{ (config.alt_text || '').length }}/500 characters</span>
       </div>
 
-      <!-- Custom Caption/Description -->
+      <!-- Pin Description -->
       <div class="config-field">
         <label class="field-label">
           Pin Description
@@ -167,7 +169,7 @@ watch(() => props.account?.id, (newId) => {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <span>{{ boardsError }}</span>
-          <button @click="fetchBoards" class="retry-btn">Retry</button>
+          <button type="button" @click="fetchBoards" class="retry-btn">Retry</button>
         </div>
         <template v-else>
           <select
