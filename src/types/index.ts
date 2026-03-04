@@ -542,6 +542,7 @@ export interface PostAnalyticsSummary {
   reach: number
   totalEngagement: number
   lastUpdated: string
+  deletedOnPlatform?: boolean
 }
 
 export interface PostAnalyticsDetail extends PostAnalyticsSummary {

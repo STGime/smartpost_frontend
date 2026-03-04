@@ -102,6 +102,17 @@ const engagementRate = computed(() => {
   return ((engagement / overview.totalImpressions) * 100).toFixed(2)
 })
 
+// Calculate per-platform engagement rates for benchmarks comparison
+const platformEngagementRates = computed(() => {
+  const overview = analyticsStore.overview
+  if (!overview?.byPlatform) return {}
+  const rates: Record<string, number> = {}
+  for (const p of overview.byPlatform) {
+    rates[p.platform] = p.engagementRate
+  }
+  return rates
+})
+
 // Handle custom date range
 const handleCustomDateRange = (range: { startDate: string; endDate: string }) => {
   analyticsStore.setFilters({
@@ -482,6 +493,7 @@ const onThumbError = (postId: string) => {
           v-else
           :benchmarks="analyticsStore.benchmarks?.benchmarks ?? []"
           :user-engagement-rate="parseFloat(engagementRate)"
+          :platform-engagement-rates="platformEngagementRates"
         />
       </div>
 
@@ -527,6 +539,7 @@ const onThumbError = (postId: string) => {
                   <div class="top-post-meta">
                     <PlatformIcon :platform="post.platform" size="xs" />
                     <span>{{ formatNumber(post.totalEngagement) }} engagement</span>
+                    <span v-if="post.deletedOnPlatform" class="deleted-badge">Deleted</span>
                   </div>
                 </div>
                 <span class="top-post-upgrade-hint">Starter</span>
@@ -556,6 +569,7 @@ const onThumbError = (postId: string) => {
                   <div class="top-post-meta">
                     <PlatformIcon :platform="post.platform" size="xs" />
                     <span>{{ formatNumber(post.totalEngagement) }} engagement</span>
+                    <span v-if="post.deletedOnPlatform" class="deleted-badge">Deleted</span>
                   </div>
                 </div>
               </RouterLink>
@@ -1150,6 +1164,15 @@ const onThumbError = (postId: string) => {
   background: var(--accent-soft);
   border-radius: var(--radius-sm);
   color: var(--accent-light);
+  flex-shrink: 0;
+}
+
+.deleted-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  background: rgba(239, 68, 68, 0.15);
+  border-radius: var(--radius-sm);
+  color: #fca5a5;
   flex-shrink: 0;
 }
 

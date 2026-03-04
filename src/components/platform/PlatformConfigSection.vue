@@ -358,11 +358,13 @@ const getPlatformName = (platform: SocialPlatform) => {
 .accordion-content {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease-out;
+  transition: max-height 0.3s ease-out, overflow 0s 0.3s;
 }
 
 .accordion-content.expanded {
   max-height: 2000px;
+  overflow: visible;
+  transition: max-height 0.3s ease-out, overflow 0s 0s;
 }
 
 .accordion-content > :deep(.config-panel) {

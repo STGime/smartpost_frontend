@@ -140,6 +140,8 @@ export const analyticsService = {
   async getBestTimes(params?: PlatformFilterParams): Promise<BestTimesResponse> {
     const queryParams: Record<string, string> = {}
     if (params?.platforms?.length) queryParams.platforms = params.platforms.join(',')
+    // Pass user's local timezone so backend buckets by local time
+    queryParams.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
     const response = await api.get<BestTimesResponse>('/analytics/best-times', { params: queryParams })
     return response.data

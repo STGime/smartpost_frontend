@@ -16,9 +16,15 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Background refresh timer
   let refreshTimer: ReturnType<typeof setTimeout> | null = null
+  // Periodic safety-net interval (catches missed setTimeout)
+  let refreshInterval: ReturnType<typeof setInterval> | null = null
+  // Visibility change handler reference for cleanup
+  let visibilityHandler: (() => void) | null = null
 
   // Refresh token 5 minutes before expiry
   const REFRESH_BEFORE_EXPIRY_MS = 5 * 60 * 1000
+  // Periodic check interval
+  const PERIODIC_CHECK_MS = 60 * 1000
 
   const setTokens = (accessToken: string, refreshToken: string, expiresAt?: number) => {
     localStorage.setItem('access_token', accessToken)
@@ -27,6 +33,8 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('token_expires_at', expiresAt.toString())
       scheduleTokenRefresh(expiresAt)
     }
+    startPeriodicCheck()
+    startVisibilityListener()
   }
 
   const clearTokens = () => {
@@ -34,12 +42,71 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('refresh_token')
     localStorage.removeItem('token_expires_at')
     clearRefreshTimer()
+    stopPeriodicCheck()
+    stopVisibilityListener()
   }
 
   const clearRefreshTimer = () => {
     if (refreshTimer) {
       clearTimeout(refreshTimer)
       refreshTimer = null
+    }
+  }
+
+  const isTokenExpiringSoon = (): boolean => {
+    const storedExpiresAt = localStorage.getItem('token_expires_at')
+    if (!storedExpiresAt) return false
+    const expiresAtMs = parseInt(storedExpiresAt, 10) * 1000
+    return (expiresAtMs - Date.now()) < REFRESH_BEFORE_EXPIRY_MS
+  }
+
+  const startPeriodicCheck = () => {
+    if (refreshInterval) return
+    refreshInterval = setInterval(() => {
+      if (isTokenExpiringSoon() && localStorage.getItem('refresh_token')) {
+        console.log('[Auth] Periodic check: token expiring soon, refreshing')
+        refreshTokenInBackground()
+      }
+    }, PERIODIC_CHECK_MS)
+  }
+
+  const stopPeriodicCheck = () => {
+    if (refreshInterval) {
+      clearInterval(refreshInterval)
+      refreshInterval = null
+    }
+  }
+
+  const checkTokenOnVisibilityChange = () => {
+    if (document.visibilityState !== 'visible') return
+    if (!localStorage.getItem('refresh_token')) return
+
+    console.log('[Auth] Tab became visible, checking token')
+    if (isTokenExpiringSoon()) {
+      console.log('[Auth] Token expiring soon after wake/tab switch, refreshing')
+      refreshTokenInBackground()
+    } else {
+      // Re-schedule the timer — it may have been killed during sleep
+      const storedExpiresAt = localStorage.getItem('token_expires_at')
+      if (storedExpiresAt) {
+        const expiresAt = parseInt(storedExpiresAt, 10)
+        if (!isNaN(expiresAt)) {
+          scheduleTokenRefresh(expiresAt)
+        }
+      }
+    }
+  }
+
+  const startVisibilityListener = () => {
+    if (visibilityHandler) return
+    visibilityHandler = checkTokenOnVisibilityChange
+    document.addEventListener('visibilitychange', visibilityHandler)
+  }
+
+  const stopVisibilityListener = () => {
+    if (visibilityHandler) {
+      document.removeEventListener('visibilitychange', visibilityHandler)
+      visibilityHandler = null
     }
   }
 
@@ -69,6 +136,8 @@ export const useAuthStore = defineStore('auth', () => {
     return isNaN(parsed) ? undefined : parsed
   }
 
+  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
   const refreshTokenInBackground = async () => {
     const refreshToken = localStorage.getItem('refresh_token')
     if (!refreshToken) {
@@ -77,20 +146,34 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     try {
-      // Use the shared performTokenRefresh to avoid race conditions with
-      // proactive refresh in api.ts (Supabase invalidates refresh tokens after use)
       const result = await performTokenRefresh()
       if (result) {
-        // Re-schedule the next refresh with the new expiry
         scheduleTokenRefresh(result.expires_at)
         console.log('[Auth] Background token refresh successful')
-      } else {
-        console.error('[Auth] Background token refresh returned null')
+        return
       }
+      throw new Error('Token refresh returned null')
     } catch (err) {
-      console.error('[Auth] Background token refresh failed:', err)
-      // Don't log out immediately - the reactive refresh in api.ts will handle it
-      // when the next API call fails
+      console.warn('[Auth] Background token refresh failed, retrying in 5s:', err)
+      // Retry once after 5 seconds
+      await delay(5000)
+      try {
+        const result = await performTokenRefresh()
+        if (result) {
+          scheduleTokenRefresh(result.expires_at)
+          console.log('[Auth] Background token refresh succeeded on retry')
+          return
+        }
+        throw new Error('Token refresh returned null on retry')
+      } catch (retryErr) {
+        // Schedule another attempt in 30 seconds instead of giving up
+        console.warn('[Auth] Background refresh retry failed, scheduling another attempt in 30s:', retryErr)
+        clearRefreshTimer()
+        refreshTimer = setTimeout(() => {
+          console.log('[Auth] Deferred background refresh attempt')
+          refreshTokenInBackground()
+        }, 30000)
+      }
     }
   }
 
@@ -257,7 +340,7 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = await authService.getCurrentUser()
       // Connect SSE on successful user fetch (page reload with valid token)
       connectSSE()
-      // Restore refresh timer if we have a stored expiration time
+      // Restore refresh timer and safety nets on page reload
       const storedExpiresAt = localStorage.getItem('token_expires_at')
       if (storedExpiresAt) {
         const expiresAt = parseInt(storedExpiresAt, 10)
@@ -265,6 +348,8 @@ export const useAuthStore = defineStore('auth', () => {
           scheduleTokenRefresh(expiresAt)
         }
       }
+      startPeriodicCheck()
+      startVisibilityListener()
     } catch {
       clearTokens()
       user.value = null

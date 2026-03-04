@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { PinterestConfiguration, MediaListItem, SocialAccount, PinterestBoard } from '@/types'
 import { socialAccountsService } from '@/services/socialAccounts'
 import PinterestPostPreview from './previews/PinterestPostPreview.vue'
@@ -65,12 +65,6 @@ watch(() => props.account?.id, (newId) => {
     fetchBoards()
   }
 }, { immediate: true })
-
-onMounted(() => {
-  if (props.account?.id) {
-    fetchBoards()
-  }
-})
 </script>
 
 <template>

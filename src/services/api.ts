@@ -184,9 +184,21 @@ api.interceptors.response.use(
         processQueue(null, result.access_token)
         return api(originalRequest)
       } catch (refreshError) {
-        processQueue(refreshError as Error, null)
-        handleSessionExpired()
-        return Promise.reject(refreshError)
+        // Retry once after 2s — handles brief network unavailability after wake
+        try {
+          await new Promise(resolve => setTimeout(resolve, 2000))
+          const retryResult = await performTokenRefresh()
+          if (!retryResult) {
+            throw new Error('Token refresh returned null on retry')
+          }
+          originalRequest.headers.Authorization = `Bearer ${retryResult.access_token}`
+          processQueue(null, retryResult.access_token)
+          return api(originalRequest)
+        } catch {
+          processQueue(refreshError as Error, null)
+          handleSessionExpired()
+          return Promise.reject(refreshError)
+        }
       } finally {
         isRefreshing = false
       }

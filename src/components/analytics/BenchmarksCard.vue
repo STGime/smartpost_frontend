@@ -1,21 +1,29 @@
 <script setup lang="ts">
 import type { BenchmarkData } from '@/types'
 
-defineProps<{
+const props = defineProps<{
   benchmarks: BenchmarkData[]
   userEngagementRate: number
+  platformEngagementRates?: Record<string, number>
 }>()
 
 const platformLabels: Record<string, string> = {
   instagram: 'Instagram',
   tiktok: 'TikTok',
   youtube: 'YouTube',
-  x: 'X (Twitter)',
   facebook: 'Facebook',
   linkedin: 'LinkedIn',
   pinterest: 'Pinterest',
   threads: 'Threads',
   bluesky: 'Bluesky',
+}
+
+// Get user's engagement rate for a specific platform, falling back to global rate
+const getUserRate = (platform: string): number => {
+  if (props.platformEngagementRates && platform in props.platformEngagementRates) {
+    return props.platformEngagementRates[platform]
+  }
+  return props.userEngagementRate
 }
 </script>
 
@@ -59,27 +67,27 @@ const platformLabels: Record<string, string> = {
               <div class="benchmark-bar-track">
                 <div
                   class="benchmark-bar benchmark-bar-user"
-                  :style="{ width: `${Math.min(userEngagementRate / Math.max(benchmark.avgEngagementRate, userEngagementRate) * 100, 100)}%` }"
+                  :style="{ width: `${Math.min(getUserRate(benchmark.platform) / Math.max(benchmark.avgEngagementRate, getUserRate(benchmark.platform)) * 100, 100)}%` }"
                 ></div>
               </div>
-              <span class="benchmark-bar-value">{{ userEngagementRate.toFixed(2) }}%</span>
+              <span class="benchmark-bar-value">{{ getUserRate(benchmark.platform).toFixed(2) }}%</span>
             </div>
           </div>
           <div class="benchmark-indicator">
-            <template v-if="userEngagementRate > benchmark.avgEngagementRate">
+            <template v-if="getUserRate(benchmark.platform) > benchmark.avgEngagementRate">
               <span class="indicator-up">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
                 </svg>
-                {{ ((userEngagementRate - benchmark.avgEngagementRate) / benchmark.avgEngagementRate * 100).toFixed(0) }}% above average
+                {{ ((getUserRate(benchmark.platform) - benchmark.avgEngagementRate) / benchmark.avgEngagementRate * 100).toFixed(0) }}% above average
               </span>
             </template>
-            <template v-else-if="userEngagementRate < benchmark.avgEngagementRate">
+            <template v-else-if="getUserRate(benchmark.platform) < benchmark.avgEngagementRate">
               <span class="indicator-down">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
-                {{ ((benchmark.avgEngagementRate - userEngagementRate) / benchmark.avgEngagementRate * 100).toFixed(0) }}% below average
+                {{ ((benchmark.avgEngagementRate - getUserRate(benchmark.platform)) / benchmark.avgEngagementRate * 100).toFixed(0) }}% below average
               </span>
             </template>
             <template v-else>

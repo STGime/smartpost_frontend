@@ -13,6 +13,7 @@ import { useScrollReveal } from '@/composables/useScrollReveal'
 const { setRef: whyRef, isVisible: whyVisible } = useScrollReveal()
 const { setRef: howRef, isVisible: howVisible } = useScrollReveal()
 const { setRef: showcaseRef, isVisible: showcaseVisible } = useScrollReveal()
+const { setRef: skillRef, isVisible: skillVisible } = useScrollReveal()
 const { setRef: pricingRef, isVisible: pricingVisible } = useScrollReveal()
 const { setRef: platformsRef, isVisible: platformsVisible } = useScrollReveal()
 const { setRef: faqRef, isVisible: faqVisible } = useScrollReveal()
@@ -219,7 +220,6 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
         { feature: 'Facebook', starter: true, professional: true },
         { feature: 'LinkedIn', starter: true, professional: true },
         { feature: 'Pinterest', starter: true, professional: true },
-        { feature: 'X (Twitter)', starter: true, professional: true },
         { feature: 'Bluesky', starter: true, professional: true },
         { feature: 'Threads', starter: true, professional: true },
       ],
@@ -648,6 +648,76 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               <span class="arrow">→</span>
             </button>
             <a href="#pricing" class="btn-ghost">See pricing</a>
+          </div>
+        </section>
+
+        <!-- Posta Skill Section -->
+        <section :ref="skillRef" class="section" id="skill">
+          <h2 :class="skillVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">Post from your terminal</h2>
+          <p :class="skillVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
+            Posta has a Claude Code skill that turns your IDE into a social media command center. Create, schedule and publish — without ever leaving your editor.
+          </p>
+
+          <div :class="skillVisible ? 'skill-terminal animate-fade-in-up stagger-2' : 'skill-terminal opacity-0'">
+            <div class="skill-terminal-header">
+              <div class="skill-terminal-dots">
+                <span class="skill-dot skill-dot-red"></span>
+                <span class="skill-dot skill-dot-yellow"></span>
+                <span class="skill-dot skill-dot-green"></span>
+              </div>
+              <span class="skill-terminal-title">claude</span>
+            </div>
+            <div class="skill-terminal-body">
+              <div class="skill-line skill-line-prompt"><span class="skill-prompt-icon">&gt;</span> Show my connected accounts</div>
+              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> 8 active accounts: Instagram, TikTok, LinkedIn, YouTube, Facebook, Pinterest, Bluesky, Threads</div>
+              <div class="skill-line skill-line-spacer"></div>
+              <div class="skill-line skill-line-prompt"><span class="skill-prompt-icon">&gt;</span> Generate an image and schedule a LinkedIn post for 3pm</div>
+              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Image generated with AI</div>
+              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Draft created — "I posted this from VS Code..."</div>
+              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Scheduled for today at 15:00 CET</div>
+              <div class="skill-line skill-line-spacer"></div>
+              <div class="skill-line skill-line-prompt"><span class="skill-prompt-icon">&gt;</span> How did my last 5 posts perform?</div>
+              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Avg. engagement: 4.2% · Best: LinkedIn carousel (8.1%) · Trend: ↑ 12% vs. prior week</div>
+            </div>
+          </div>
+
+          <div :class="skillVisible ? 'skill-features animate-fade-in-up stagger-3' : 'skill-features opacity-0'">
+            <div class="skill-feature-card">
+              <div class="skill-feature-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              </div>
+              <div class="skill-feature-title">AI content generation</div>
+              <div class="skill-feature-body">Generate images and captions without leaving your editor. AI handles the creative work while you stay in flow.</div>
+            </div>
+            <div class="skill-feature-card">
+              <div class="skill-feature-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>
+              </div>
+              <div class="skill-feature-title">Schedule & publish</div>
+              <div class="skill-feature-body">Create, schedule and post across 8 platforms from the terminal. One prompt replaces an entire dashboard session.</div>
+            </div>
+            <div class="skill-feature-card">
+              <div class="skill-feature-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+              <div class="skill-feature-title">Analytics at a glance</div>
+              <div class="skill-feature-body">Check engagement, best times and trends with a single prompt. No dashboards, no tab-switching — just answers.</div>
+            </div>
+          </div>
+
+          <div :class="skillVisible ? 'skill-cta animate-fade-in-up stagger-4' : 'skill-cta opacity-0'">
+            <a href="https://github.com/STGime/posta-skill" target="_blank" rel="noopener noreferrer" class="btn-ghost">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+              <span>View on GitHub</span>
+            </a>
+            <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary">
+              <span>Start posting smarter</span>
+              <span class="arrow">→</span>
+            </RouterLink>
+            <button v-else class="btn-primary" @click="openWaitingList('skill')">
+              <span>Start posting smarter</span>
+              <span class="arrow">→</span>
+            </button>
           </div>
         </section>
 
@@ -1862,7 +1932,6 @@ h1 {
 .platform-icon.instagram { color: #E4405F; }
 .platform-icon.tiktok { color: #ffffff; }
 .platform-icon.youtube { color: #FF0000; }
-.platform-icon.twitter { color: #ffffff; }
 .platform-icon.linkedin { color: #0A66C2; }
 .platform-icon.facebook { color: #1877F2; }
 .platform-icon.bluesky { color: #0085ff; }
@@ -2385,6 +2454,117 @@ h1 {
   justify-content: center;
 }
 
+/* Skill Section */
+.skill-terminal {
+  max-width: 720px;
+  margin: 0 auto 32px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: #0d1117;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(99, 102, 241, 0.08), 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.skill-terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.skill-terminal-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.skill-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.skill-dot-red { background: #ff5f57; }
+.skill-dot-yellow { background: #febc2e; }
+.skill-dot-green { background: #28c840; }
+
+.skill-terminal-title {
+  font-size: 11px;
+  color: rgba(148, 163, 184, 0.6);
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+}
+
+.skill-terminal-body {
+  padding: 16px 18px 20px;
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.skill-line-spacer {
+  height: 12px;
+}
+
+.skill-line-prompt {
+  color: #e6edf3;
+}
+
+.skill-prompt-icon {
+  color: #a5b4fc;
+  margin-right: 6px;
+  font-weight: 600;
+}
+
+.skill-line-response {
+  color: rgba(148, 163, 184, 0.8);
+}
+
+.skill-check {
+  color: #34d399;
+  margin-right: 6px;
+  font-weight: 700;
+}
+
+.skill-features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  max-width: 720px;
+  margin: 0 auto 32px;
+}
+
+.skill-feature-card {
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: linear-gradient(to bottom right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.96));
+  padding: 16px;
+}
+
+.skill-feature-icon {
+  color: #a5b4fc;
+  margin-bottom: 10px;
+}
+
+.skill-feature-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.skill-feature-body {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.skill-cta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Responsive */
 @media (max-width: 860px) {
   .hero {
@@ -2405,8 +2585,16 @@ h1 {
 @media (max-width: 720px) {
   .feature-grid,
   .how-grid,
-  .faq-grid {
+  .faq-grid,
+  .skill-features {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .skill-terminal-body {
+    font-size: 11px;
+    padding: 12px 12px 16px;
+  }
+  .skill-cta {
+    flex-direction: column;
   }
   .platform-grid {
     grid-template-columns: minmax(0, 1fr);
