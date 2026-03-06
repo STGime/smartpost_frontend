@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { usePostsStore } from '@/stores'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import PlatformIcon from '@/components/PlatformIcon.vue'
+import type { PostStatus } from '@/types'
 
 const postsStore = usePostsStore()
 
@@ -11,6 +12,39 @@ const postToDelete = ref<string | null>(null)
 const isLoadingMore = ref(false)
 
 const pageSize = 12
+
+const statusTabs: { label: string; value: PostStatus | null }[] = [
+  { label: 'All', value: null },
+  { label: 'Draft', value: 'draft' },
+  { label: 'Scheduled', value: 'scheduled' },
+  { label: 'Posted', value: 'posted' },
+  { label: 'Failed', value: 'failed' },
+]
+
+const sortOptions = [
+  { label: 'Newest first', sortBy: 'created_at' as const, sortOrder: 'desc' as const },
+  { label: 'Oldest first', sortBy: 'created_at' as const, sortOrder: 'asc' as const },
+  { label: 'Scheduled date', sortBy: 'scheduled_at' as const, sortOrder: 'asc' as const },
+  { label: 'Recently updated', sortBy: 'updated_at' as const, sortOrder: 'desc' as const },
+]
+
+const currentSortIndex = computed(() => {
+  return sortOptions.findIndex(
+    (o) => o.sortBy === postsStore.sortBy && o.sortOrder === postsStore.sortOrder
+  )
+})
+
+const onSortChange = (e: Event) => {
+  const idx = Number((e.target as HTMLSelectElement).value)
+  const opt = sortOptions[idx]
+  if (opt) {
+    postsStore.setSort(opt.sortBy, opt.sortOrder, pageSize)
+  }
+}
+
+const onFilterChange = (status: PostStatus | null) => {
+  postsStore.setStatusFilter(status, pageSize)
+}
 
 const loadMore = async () => {
   isLoadingMore.value = true
@@ -64,8 +98,40 @@ const cancelDelete = () => {
       </RouterLink>
     </div>
 
+    <div class="filter-sort-bar">
+      <div class="status-tabs">
+        <button
+          v-for="tab in statusTabs"
+          :key="tab.label"
+          :class="['tab-btn', { active: postsStore.statusFilter === tab.value }]"
+          @click="onFilterChange(tab.value)"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
+      <select
+        class="sort-select"
+        :value="currentSortIndex"
+        @change="onSortChange"
+      >
+        <option v-for="(opt, i) in sortOptions" :key="i" :value="i">
+          {{ opt.label }}
+        </option>
+      </select>
+    </div>
+
     <div v-if="postsStore.isLoading && postsStore.posts.length === 0" class="loading-state">
       <div class="spinner"></div>
+    </div>
+
+    <div v-else-if="!postsStore.isLoading && postsStore.posts.length === 0 && postsStore.statusFilter" class="empty-state card">
+      <div class="empty-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+        </svg>
+      </div>
+      <p class="empty-title">No {{ postsStore.statusFilter }} posts</p>
+      <p class="empty-sub">There are no posts matching this filter</p>
     </div>
 
     <div v-else-if="!postsStore.isLoading && postsStore.posts.length === 0" class="empty-state card">
@@ -195,6 +261,65 @@ const cancelDelete = () => {
 .btn-icon {
   width: 18px;
   height: 18px;
+}
+
+/* Filter & Sort Bar */
+.filter-sort-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.status-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+}
+
+.tab-btn.active {
+  background: var(--accent-soft);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #a5b4fc;
+}
+
+.sort-select {
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+  min-width: 150px;
+}
+
+.sort-select:hover {
+  border-color: var(--border-hover);
+}
+
+.sort-select:focus {
+  border-color: rgba(99, 102, 241, 0.4);
 }
 
 /* Loading State */

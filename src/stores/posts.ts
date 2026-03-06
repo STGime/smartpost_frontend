@@ -3,6 +3,8 @@ import { ref, computed } from 'vue'
 import { postsService, postSSEService, type PostStatusUpdateEvent, type PostResultUpdateEvent } from '@/services'
 import type { Post, PostStatus, CreatePostRequest, UpdatePostRequest } from '@/types'
 
+type SortField = 'created_at' | 'scheduled_at' | 'published_at' | 'status' | 'updated_at'
+
 export const usePostsStore = defineStore('posts', () => {
   const posts = ref<Post[]>([])
   const currentPost = ref<Post | null>(null)
@@ -11,6 +13,9 @@ export const usePostsStore = defineStore('posts', () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const sseSubscribed = ref(false)
+  const statusFilter = ref<PostStatus | null>(null)
+  const sortBy = ref<SortField>('created_at')
+  const sortOrder = ref<'asc' | 'desc'>('desc')
 
   const hasMore = computed(() => posts.value.length < total.value)
 
@@ -35,7 +40,13 @@ export const usePostsStore = defineStore('posts', () => {
     isLoading.value = true
     error.value = null
     try {
-      const response = await postsService.listPosts(params)
+      const mergedParams = {
+        ...params,
+        sortBy: sortBy.value,
+        sortOrder: sortOrder.value,
+        ...(statusFilter.value ? { status: statusFilter.value } : {}),
+      }
+      const response = await postsService.listPosts(mergedParams)
       if (params?.offset && params.offset > 0) {
         posts.value = [...posts.value, ...response.items]
       } else {
@@ -49,6 +60,21 @@ export const usePostsStore = defineStore('posts', () => {
     } finally {
       isLoading.value = false
     }
+  }
+
+  const setStatusFilter = async (status: PostStatus | null, pageSize = 12) => {
+    statusFilter.value = status
+    posts.value = []
+    total.value = 0
+    await fetchPosts({ limit: pageSize, offset: 0 })
+  }
+
+  const setSort = async (field: SortField, order: 'asc' | 'desc', pageSize = 12) => {
+    sortBy.value = field
+    sortOrder.value = order
+    posts.value = []
+    total.value = 0
+    await fetchPosts({ limit: pageSize, offset: 0 })
   }
 
   const fetchPostById = async (postId: string) => {
@@ -270,10 +296,15 @@ export const usePostsStore = defineStore('posts', () => {
     isLoading,
     error,
     hasMore,
+    statusFilter,
+    sortBy,
+    sortOrder,
     draftPosts,
     scheduledPosts,
     publishedPosts,
     fetchPosts,
+    setStatusFilter,
+    setSort,
     fetchPostById,
     createPost,
     updatePost,

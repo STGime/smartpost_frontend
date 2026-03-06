@@ -13,6 +13,8 @@ interface ListPostsParams {
   offset?: number
   status?: PostStatus
   isDraft?: boolean
+  sortBy?: 'created_at' | 'scheduled_at' | 'published_at' | 'status' | 'updated_at'
+  sortOrder?: 'asc' | 'desc'
 }
 
 export const postsService = {
