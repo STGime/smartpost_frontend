@@ -125,6 +125,7 @@ export const analyticsService = {
     message: string
     refreshedCount: number
     failedCount: number
+    failureDetails?: Record<string, { count: number; accountIds: string[] }>
     nextRefreshAt?: string
   }> {
     const response = await api.post<{
@@ -132,8 +133,29 @@ export const analyticsService = {
       message: string
       refreshedCount: number
       failedCount: number
+      failureDetails?: Record<string, { count: number; accountIds: string[] }>
       nextRefreshAt?: string
     }>('/analytics/refresh-all')
+    return response.data
+  },
+
+  async getHealth(): Promise<{
+    lastDataDate: string | null
+    isStale: boolean
+    staleDays: number | null
+    accounts: Array<{
+      id: string
+      platform: string
+      username: string
+      isActive: boolean
+      connectionError: string | null
+      tokenRefreshFailures: number
+      lastFetchStatus: string | null
+      lastFetchError: string | null
+      lastFetchAt: string | null
+    }>
+  }> {
+    const response = await api.get('/analytics/health')
     return response.data
   },
 

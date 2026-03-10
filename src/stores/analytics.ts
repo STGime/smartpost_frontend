@@ -31,6 +31,24 @@ export const useAnalyticsStore = defineStore('analytics', () => {
   const accountsNeedingUpgrade = ref<AccountNeedingUpgrade[]>([])
   const scopeStatusLoaded = ref(false)
 
+  // Health state
+  const healthData = ref<{
+    lastDataDate: string | null
+    isStale: boolean
+    staleDays: number | null
+    accounts: Array<{
+      id: string
+      platform: string
+      username: string
+      isActive: boolean
+      connectionError: string | null
+      tokenRefreshFailures: number
+      lastFetchStatus: string | null
+      lastFetchError: string | null
+      lastFetchAt: string | null
+    }>
+  } | null>(null)
+
   // Tiered analytics state
   const capabilities = ref<AnalyticsCapabilities | null>(null)
   const bestTimes = ref<{ heatmap: BestTimeSlot[] } | null>(null)
@@ -260,6 +278,14 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     dateRange.value = { start: null, end: null }
   }
 
+  const fetchHealth = async () => {
+    try {
+      healthData.value = await analyticsService.getHealth()
+    } catch (err) {
+      console.error('Failed to fetch health:', err)
+    }
+  }
+
   const fetchScopeStatus = async () => {
     try {
       const response = await analyticsService.getScopeStatus()
@@ -329,7 +355,26 @@ export const useAnalyticsStore = defineStore('analytics', () => {
 
     try {
       const result = await analyticsService.refreshAll()
-      refreshMessage.value = result.message
+
+      // Build descriptive message with failure details
+      if (result.failedCount > 0 && result.failureDetails) {
+        const details: string[] = []
+        const needsReconnect = (result.failureDetails['no_token']?.count || 0) +
+          (result.failureDetails['inactive_account']?.count || 0)
+        const rateLimited = result.failureDetails['rate_limited']?.count || 0
+        const missingScopes = result.failureDetails['missing_scopes']?.count || 0
+
+        if (needsReconnect > 0) details.push(`${needsReconnect} need reconnection`)
+        if (rateLimited > 0) details.push(`${rateLimited} rate limited`)
+        if (missingScopes > 0) details.push(`${missingScopes} missing permissions`)
+
+        const total = result.refreshedCount + result.failedCount
+        refreshMessage.value = `Refreshed ${result.refreshedCount} of ${total} posts.` +
+          (details.length > 0 ? ` ${details.join(', ')}.` : '')
+      } else {
+        refreshMessage.value = result.message
+      }
+
       lastRefreshAt.value = new Date()
       nextRefreshAt.value = result.nextRefreshAt ? new Date(result.nextRefreshAt) : null
       localStorage.setItem('analytics_last_refresh', lastRefreshAt.value.toISOString())
@@ -456,6 +501,7 @@ export const useAnalyticsStore = defineStore('analytics', () => {
       fetchPostsAnalytics(),
       fetchTrends(),
       fetchScopeStatus(),
+      fetchHealth(),
     ]
     if (features.value.bestTimes) promises.push(fetchBestTimes())
     if (features.value.contentTypes) promises.push(fetchContentTypes())
@@ -466,6 +512,15 @@ export const useAnalyticsStore = defineStore('analytics', () => {
 
   // Computed for upgrade banner
   const needsUpgrade = computed(() => accountsNeedingUpgrade.value.length > 0)
+
+  // Stale data computed
+  const isStale = computed(() => healthData.value?.isStale ?? false)
+  const staleDays = computed(() => healthData.value?.staleDays ?? null)
+  const problemAccounts = computed(() =>
+    (healthData.value?.accounts ?? []).filter(
+      a => !a.isActive || a.connectionError || a.lastFetchStatus === 'failed' || a.lastFetchStatus === 'rate_limited'
+    )
+  )
 
   return {
     // State
@@ -493,6 +548,12 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     selectedGroupBy,
     selectedPlatforms,
     dateRange,
+
+    // Health state
+    healthData,
+    isStale,
+    staleDays,
+    problemAccounts,
 
     // Computed
     hasMore,
@@ -527,6 +588,7 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     clearFilters,
     fetchAll,
     fetchScopeStatus,
+    fetchHealth,
     initiateUpgrade,
     dismissUpgradeBanner,
     refreshAllAnalytics,

@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
-import { usePostsStore, useMediaStore, useSocialAccountsStore, useUserStore } from '@/stores'
+import { onMounted, computed, ref } from 'vue'
+import { useMediaStore, useSocialAccountsStore, useUserStore } from '@/stores'
+import { postsService } from '@/services'
+import type { Post } from '@/types'
 
-const postsStore = usePostsStore()
 const mediaStore = useMediaStore()
 const socialAccountsStore = useSocialAccountsStore()
 const userStore = useUserStore()
+
+const scheduledCount = ref(0)
+const postsThisMonth = ref(0)
+const recentPosts = ref<Post[]>([])
 
 // Connected accounts - use actual count from social accounts store
 const connectedAccountsCount = computed(() => socialAccountsStore.accounts.length)
@@ -26,12 +31,18 @@ const accountsWithIssues = computed(() => {
 
 onMounted(async () => {
   // Fetch all data in parallel
-  await Promise.all([
-    postsStore.fetchPosts({ limit: 5 }),
+  // Use postsService directly for recent posts to avoid picking up status filter from Posts tab
+  const [recentPostsResponse, scheduledResponse, totalPostsResponse] = await Promise.all([
+    postsService.listPosts({ limit: 5 }),
+    postsService.listPosts({ status: 'scheduled', limit: 1 }),
+    postsService.listPosts({ limit: 1 }),
     mediaStore.fetchMedia({ limit: 5 }),
     socialAccountsStore.fetchAccounts(),
     userStore.fetchPlan()
   ])
+  recentPosts.value = recentPostsResponse.items
+  scheduledCount.value = scheduledResponse.total
+  postsThisMonth.value = userStore.plan?.usage?.posts_this_month || totalPostsResponse.total
 })
 </script>
 
@@ -72,7 +83,7 @@ onMounted(async () => {
         </div>
         <div class="stat-content">
           <p class="stat-label">Posts this month</p>
-          <p class="stat-value">{{ userStore.plan?.usage?.posts_this_month || postsStore.total }}</p>
+          <p class="stat-value">{{ postsThisMonth }}</p>
           <p class="stat-sub">of {{ isUnlimited(userStore.plan?.plan?.limits?.max_posts_per_month) ? 'Unlimited*' : (userStore.plan?.plan?.limits?.max_posts_per_month ?? 0) }}</p>
         </div>
       </div>
@@ -98,7 +109,7 @@ onMounted(async () => {
         </div>
         <div class="stat-content">
           <p class="stat-label">Scheduled posts</p>
-          <p class="stat-value">{{ postsStore.posts.filter(p => p.status === 'scheduled').length }}</p>
+          <p class="stat-value">{{ scheduledCount }}</p>
         </div>
       </div>
 
@@ -123,18 +134,18 @@ onMounted(async () => {
       </div>
 
       <div class="card-body">
-        <div v-if="postsStore.isLoading" class="loading-state">
+        <div v-if="recentPosts.length === 0 && !userStore.plan" class="loading-state">
           <div class="spinner"></div>
         </div>
 
-        <div v-else-if="postsStore.posts.length === 0" class="empty-state">
+        <div v-else-if="recentPosts.length === 0" class="empty-state">
           <p>No posts yet</p>
           <RouterLink to="/app/posts/new" class="link-accent">Create your first post</RouterLink>
         </div>
 
         <div v-else class="posts-list">
           <RouterLink
-            v-for="post in postsStore.posts"
+            v-for="post in recentPosts"
             :key="post.id"
             :to="`/app/posts/${post.id}`"
             class="post-item"

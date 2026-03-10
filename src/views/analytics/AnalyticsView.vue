@@ -228,6 +228,38 @@ const onThumbError = (postId: string) => {
       </div>
     </div>
 
+    <!-- Stale data warning -->
+    <div v-if="analyticsStore.isStale && analyticsStore.staleDays !== null" class="stale-banner">
+      <div class="stale-content">
+        <div class="stale-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div class="stale-text">
+          <h3>Analytics data is {{ analyticsStore.staleDays }} day{{ analyticsStore.staleDays !== 1 ? 's' : '' }} old</h3>
+          <p v-if="analyticsStore.problemAccounts.length > 0">
+            Some accounts may need reconnection to resume data collection.
+          </p>
+          <p v-else>
+            Data collection may be delayed. Try refreshing.
+          </p>
+          <div v-if="analyticsStore.problemAccounts.length > 0" class="stale-accounts">
+            <div
+              v-for="account in analyticsStore.problemAccounts"
+              :key="account.id"
+              class="stale-account"
+            >
+              <PlatformIcon :platform="account.platform" size="xs" />
+              <span class="stale-account-name">@{{ account.username || account.platform }}</span>
+              <span class="stale-account-error">{{ account.connectionError || account.lastFetchError || 'Inactive' }}</span>
+              <RouterLink to="/app/settings" class="btn-reconnect">Reconnect</RouterLink>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Loading state -->
     <div v-if="analyticsStore.isLoading && !analyticsStore.overview" class="loading-state">
       <div class="spinner"></div>
@@ -1282,5 +1314,100 @@ const onThumbError = (postId: string) => {
 .btn-dismiss svg {
   width: 16px;
   height: 16px;
+}
+
+/* Stale data banner */
+.stale-banner {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(234, 88, 12, 0.08));
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.stale-content {
+  display: flex;
+  gap: 14px;
+}
+
+.stale-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(245, 158, 11, 0.2);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fbbf24;
+  flex-shrink: 0;
+}
+
+.stale-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.stale-text {
+  flex: 1;
+}
+
+.stale-text h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #fbbf24;
+}
+
+.stale-text > p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.stale-accounts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stale-account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.stale-account-name {
+  font-weight: 500;
+  min-width: 0;
+}
+
+.stale-account-error {
+  flex: 1;
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-reconnect {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--radius-sm);
+  color: #fbbf24;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.btn-reconnect:hover {
+  background: rgba(245, 158, 11, 0.3);
 }
 </style>
