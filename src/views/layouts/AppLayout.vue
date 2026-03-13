@@ -19,7 +19,16 @@ const isNavActive = computed(() => (itemPath: string) => {
 })
 const isSidebarOpen = ref(false)
 const showFeedbackModal = ref(false)
+const trialBannerDismissed = ref(false)
 const currentYear = new Date().getFullYear()
+
+const trialDaysRemaining = computed(() => userStore.plan?.plan?.days_remaining ?? null)
+
+const showTrialBanner = computed(() => {
+  if (trialBannerDismissed.value) return false
+  if (userStore.plan?.plan?.type !== 'trial') return false
+  return trialDaysRemaining.value !== null && trialDaysRemaining.value <= 3
+})
 
 const showExpiredPlanModal = computed(() => {
   const planData = userStore.plan?.plan
@@ -120,7 +129,7 @@ onMounted(() => {
                 {{ userStore.profile?.display_name || userStore.profile?.email || 'User' }}
               </p>
               <p class="user-plan">
-                {{ userStore.plan?.plan?.type === 'trial' ? 'Starter' : (userStore.plan?.plan?.type || 'Free') }} plan
+                {{ userStore.plan?.plan?.type === 'trial' ? 'Free trial' : (userStore.plan?.plan?.type || 'Free') + ' plan' }}
               </p>
               <p v-if="userStore.plan?.plan?.type === 'trial' && userStore.plan?.plan?.days_remaining != null" class="trial-days">
                 {{ userStore.plan.plan.days_remaining }} day{{ userStore.plan.plan.days_remaining === 1 ? '' : 's' }} left
@@ -151,6 +160,14 @@ onMounted(() => {
           Create Post
         </RouterLink>
       </header>
+
+      <!-- Trial expiry banner -->
+      <div v-if="showTrialBanner" class="trial-banner">
+        <span>Your free trial ends in {{ trialDaysRemaining }} day{{ trialDaysRemaining === 1 ? '' : 's' }}. <RouterLink to="/app/billing" class="trial-banner-link">Upgrade now</RouterLink> to keep your accounts connected.</span>
+        <button @click="trialBannerDismissed = true" class="trial-banner-close" aria-label="Dismiss">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
 
       <!-- Page content -->
       <main class="main-content">
@@ -444,6 +461,46 @@ onMounted(() => {
 
 .topbar-spacer {
   flex: 1;
+}
+
+/* Trial banner */
+.trial-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(251, 191, 36, 0.12);
+  border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+  font-size: 13px;
+  color: #fbbf24;
+}
+
+.trial-banner-link {
+  color: #fbbf24;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.trial-banner-link:hover {
+  color: #fde68a;
+}
+
+.trial-banner-close {
+  background: none;
+  border: none;
+  color: #fbbf24;
+  cursor: pointer;
+  padding: 2px;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+  display: flex;
+  align-items: center;
+}
+
+.trial-banner-close:hover {
+  opacity: 1;
 }
 
 /* Main content */
