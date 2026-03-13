@@ -2,7 +2,9 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore, useAuthStore } from '@/stores'
-import { userService } from '@/services'
+import { userService, authService } from '@/services'
+import ConfirmModal from '@/components/ConfirmModal.vue'
+import type { ApiToken } from '@/types'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -23,6 +25,19 @@ const isChangingPassword = ref(false)
 const passwordSuccess = ref(false)
 const passwordError = ref<string | null>(null)
 
+// API Tokens state
+const tokens = ref<ApiToken[]>([])
+const isLoadingTokens = ref(false)
+const tokenError = ref<string | null>(null)
+const showCreateToken = ref(false)
+const newTokenName = ref('CLI Token')
+const isCreatingToken = ref(false)
+const createdToken = ref<string | null>(null)
+const copiedToken = ref(false)
+const showRevokeModal = ref(false)
+const tokenToRevoke = ref<ApiToken | null>(null)
+const isRevoking = ref(false)
+
 // Delete account state
 const showDeleteConfirm = ref(false)
 const deleteConfirmText = ref('')
@@ -39,10 +54,90 @@ const canSubmitPassword = computed(() =>
   isPasswordValid.value
 )
 
+const fetchTokens = async () => {
+  isLoadingTokens.value = true
+  tokenError.value = null
+  try {
+    const data = await authService.listTokens()
+    tokens.value = data.tokens
+  } catch {
+    tokenError.value = 'Failed to load API tokens'
+  } finally {
+    isLoadingTokens.value = false
+  }
+}
+
+const handleCreateToken = async () => {
+  if (!newTokenName.value.trim()) return
+  isCreatingToken.value = true
+  tokenError.value = null
+  try {
+    const data = await authService.createToken(newTokenName.value.trim())
+    createdToken.value = data.token
+    showCreateToken.value = false
+    await fetchTokens()
+  } catch {
+    tokenError.value = 'Failed to create token'
+  } finally {
+    isCreatingToken.value = false
+  }
+}
+
+const copyToken = async () => {
+  if (!createdToken.value) return
+  await navigator.clipboard.writeText(createdToken.value)
+  copiedToken.value = true
+  setTimeout(() => copiedToken.value = false, 2000)
+}
+
+const dismissCreatedToken = () => {
+  createdToken.value = null
+  copiedToken.value = false
+}
+
+const confirmRevokeToken = (token: ApiToken) => {
+  tokenToRevoke.value = token
+  showRevokeModal.value = true
+}
+
+const handleRevokeToken = async () => {
+  if (!tokenToRevoke.value) return
+  isRevoking.value = true
+  tokenError.value = null
+  try {
+    await authService.revokeToken(tokenToRevoke.value.id)
+    showRevokeModal.value = false
+    tokenToRevoke.value = null
+    await fetchTokens()
+  } catch {
+    tokenError.value = 'Failed to revoke token'
+  } finally {
+    isRevoking.value = false
+  }
+}
+
+const formatDate = (dateStr: string) => {
+  return new Date(dateStr).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+const formatRelativeTime = (dateStr: string | null) => {
+  if (!dateStr) return 'Never'
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const minutes = Math.floor(diff / 60000)
+  if (minutes < 1) return 'Just now'
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `${days}d ago`
+  return formatDate(dateStr)
+}
+
 onMounted(async () => {
   await Promise.all([
     userStore.fetchProfile(),
-    userStore.fetchPlan()
+    userStore.fetchPlan(),
+    fetchTokens()
   ])
   displayName.value = userStore.profile?.display_name || ''
 })
@@ -279,6 +374,88 @@ const handleDeleteAccount = async () => {
       </form>
     </div>
 
+    <!-- API Tokens Section -->
+    <div class="settings-section card">
+      <div class="section-header">
+        <div class="section-icon section-icon-tokens">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+          </svg>
+        </div>
+        <div>
+          <h2>API Tokens</h2>
+          <p>Manage tokens for CLI and API access</p>
+        </div>
+      </div>
+
+      <div class="settings-form">
+        <div v-if="tokenError" class="alert-error">
+          {{ tokenError }}
+        </div>
+
+        <!-- Token reveal (after creation) -->
+        <div v-if="createdToken" class="token-reveal">
+          <p class="token-reveal-warning">Copy this token now — you won't be able to see it again.</p>
+          <div class="token-reveal-box">
+            <code class="token-value">{{ createdToken }}</code>
+            <button type="button" @click="copyToken" class="btn-secondary btn-sm">
+              {{ copiedToken ? 'Copied!' : 'Copy' }}
+            </button>
+          </div>
+          <button type="button" @click="dismissCreatedToken" class="btn-primary btn-sm">Done</button>
+        </div>
+
+        <!-- Token list -->
+        <div v-if="isLoadingTokens" class="token-empty">Loading tokens...</div>
+        <div v-else-if="tokens.length === 0 && !createdToken" class="token-empty">No API tokens yet</div>
+        <div v-else class="token-list">
+          <div v-for="token in tokens" :key="token.id" class="token-row">
+            <div class="token-info">
+              <span class="token-name">{{ token.name }}</span>
+              <span class="token-meta">Created {{ formatDate(token.created_at) }} · Last used {{ formatRelativeTime(token.last_used_at) }}</span>
+            </div>
+            <button type="button" @click="confirmRevokeToken(token)" class="btn-secondary btn-sm">Revoke</button>
+          </div>
+        </div>
+
+        <!-- Create token flow -->
+        <div v-if="showCreateToken" class="token-create-form">
+          <div class="form-group">
+            <label class="form-label">Token Name</label>
+            <input
+              v-model="newTokenName"
+              type="text"
+              class="form-input"
+              placeholder="e.g. CLI Token"
+              @keyup.enter="handleCreateToken"
+            />
+          </div>
+          <div class="input-actions">
+            <button type="button" @click="handleCreateToken" :disabled="isCreatingToken || !newTokenName.trim()" class="btn-primary btn-sm">
+              {{ isCreatingToken ? 'Creating...' : 'Create' }}
+            </button>
+            <button type="button" @click="showCreateToken = false" :disabled="isCreatingToken" class="btn-secondary btn-sm">
+              Cancel
+            </button>
+          </div>
+        </div>
+        <button v-else-if="!createdToken" type="button" @click="showCreateToken = true; newTokenName = 'CLI Token'" class="btn-secondary">
+          Create Token
+        </button>
+      </div>
+    </div>
+
+    <!-- Revoke Token Modal -->
+    <ConfirmModal
+      :show="showRevokeModal"
+      title="Revoke API Token"
+      :message="`Are you sure you want to revoke the token '${tokenToRevoke?.name}'? Any integrations using this token will stop working immediately.`"
+      confirm-text="Revoke"
+      variant="danger"
+      @confirm="handleRevokeToken"
+      @cancel="showRevokeModal = false; tokenToRevoke = null"
+    />
+
     <!-- Plan Section -->
     <div class="settings-section card">
       <div class="section-header">
@@ -445,6 +622,11 @@ const handleDeleteAccount = async () => {
   height: 20px;
 }
 
+.section-icon-tokens {
+  background: rgba(34, 211, 238, 0.15);
+  color: #22d3ee;
+}
+
 .section-icon-security {
   background: rgba(251, 191, 36, 0.15);
   color: #fbbf24;
@@ -545,6 +727,88 @@ const handleDeleteAccount = async () => {
 
 .btn-link:hover {
   text-decoration: underline;
+}
+
+/* API Tokens */
+.token-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.token-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(31, 41, 55, 0.5);
+}
+
+.token-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.token-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.token-meta {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.token-empty {
+  font-size: 13px;
+  color: var(--muted);
+  padding: 8px 0;
+}
+
+.token-create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.token-reveal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: rgba(34, 211, 238, 0.08);
+  border: 1px solid rgba(34, 211, 238, 0.2);
+}
+
+.token-reveal-warning {
+  font-size: 13px;
+  color: #22d3ee;
+  font-weight: 500;
+  margin: 0;
+}
+
+.token-reveal-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.token-value {
+  flex: 1;
+  font-family: monospace;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: rgba(15, 23, 42, 0.6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: break-all;
 }
 
 /* Plan Info */

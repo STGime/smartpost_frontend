@@ -1,10 +1,15 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { CalendarPost, SocialPlatform } from '@/types'
 import PlatformIcon from '@/components/PlatformIcon.vue'
 
-defineProps<{
+const props = defineProps<{
   post: CalendarPost
 }>()
+
+const visiblePlatforms = computed(() => props.post.platforms.slice(0, 3))
+const extraPlatforms = computed(() => props.post.platforms.slice(3))
+const extraCount = computed(() => extraPlatforms.value.length)
 
 defineEmits<{
   click: [post: CalendarPost]
@@ -37,11 +42,20 @@ const getStatusClass = (status: string) => {
     <span class="post-time">{{ formatTime(post.scheduledAt || post.publishedAt || post.createdAt) }}</span>
     <span class="post-platforms">
       <PlatformIcon
-        v-for="platform in post.platforms.slice(0, 3)"
+        v-for="platform in visiblePlatforms"
         :key="platform"
         :platform="platform as SocialPlatform"
         size="sm"
       />
+      <span v-if="extraCount > 0" class="extra-count">+{{ extraCount }}</span>
+      <span v-if="extraCount > 0" class="extra-platforms">
+        <PlatformIcon
+          v-for="platform in extraPlatforms"
+          :key="platform"
+          :platform="platform as SocialPlatform"
+          size="sm"
+        />
+      </span>
     </span>
   </button>
 </template>
@@ -108,5 +122,29 @@ const getStatusClass = (status: string) => {
   align-items: center;
   gap: 2px;
   margin-left: auto;
+}
+
+.extra-count {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 1px 3px;
+  line-height: 1;
+}
+
+.extra-platforms {
+  display: none;
+  align-items: center;
+  gap: 2px;
+}
+
+.calendar-post-card:hover .extra-count {
+  display: none;
+}
+
+.calendar-post-card:hover .extra-platforms {
+  display: flex;
 }
 </style>

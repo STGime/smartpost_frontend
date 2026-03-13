@@ -283,7 +283,6 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
           </div>
         </div>
         <div class="header-actions">
-          <span class="beta-tag">Private beta</span>
           <template v-if="!isAuthenticated">
             <button class="btn-login" @click="showLoginModal = true">
               Log in
@@ -1165,17 +1164,6 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.beta-tag {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--muted);
-  padding: 4px 9px;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  background: rgba(15, 23, 42, 0.7);
 }
 
 .btn-login {

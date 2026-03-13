@@ -1,6 +1,6 @@
 import axios from 'axios'
 import api from './api'
-import type { AuthResponse, LoginRequest, SignupRequest, User } from '@/types'
+import type { AuthResponse, LoginRequest, SignupRequest, User, ApiToken } from '@/types'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1'
 
@@ -48,5 +48,19 @@ export const authService = {
   async getCurrentUser(): Promise<User> {
     const response = await api.get<User>('/auth/me')
     return response.data
+  },
+
+  async createToken(name: string): Promise<{ id: string; token: string; name: string }> {
+    const response = await api.post<{ id: string; token: string; name: string }>('/auth/tokens', { name })
+    return response.data
+  },
+
+  async listTokens(): Promise<{ tokens: ApiToken[] }> {
+    const response = await api.get<{ tokens: ApiToken[] }>('/auth/tokens')
+    return response.data
+  },
+
+  async revokeToken(id: string): Promise<void> {
+    await api.delete(`/auth/tokens/${id}`)
   },
 }

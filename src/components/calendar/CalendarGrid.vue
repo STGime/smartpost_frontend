@@ -14,7 +14,7 @@ const emit = defineEmits<{
   'show-all': [date: Date]
 }>()
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 interface CalendarDay {
   day: number
@@ -29,9 +29,9 @@ const calendarDays = computed((): CalendarDay[] => {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  // First day of the month
+  // First day of the month (Monday = 0, Sunday = 6)
   const firstDay = new Date(props.year, props.month, 1)
-  const firstDayOfWeek = firstDay.getDay()
+  const firstDayOfWeek = (firstDay.getDay() + 6) % 7
 
   // Last day of the month
   const lastDay = new Date(props.year, props.month + 1, 0)

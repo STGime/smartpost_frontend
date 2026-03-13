@@ -97,7 +97,7 @@ const handleKeydown = (e: KeyboardEvent) => {
           <template v-else>
             <div class="auth-header">
               <h2>Join the waiting list</h2>
-              <p>We're in private beta. Leave your email and we'll reach out when there's a spot for you.</p>
+              <p>Leave your email and we'll reach out when there's a spot for you.</p>
             </div>
 
             <form @submit.prevent="handleSubmit" class="auth-form">

@@ -30,9 +30,9 @@ const currentMonthName = computed(() => MONTH_NAMES[currentMonth.value])
 
 // Calculate date range for the visible calendar (includes partial weeks from prev/next months)
 const getCalendarDateRange = () => {
-  // First day of the month
+  // First day of the month (Monday = 0, Sunday = 6)
   const firstDay = new Date(currentYear.value, currentMonth.value, 1)
-  const firstDayOfWeek = firstDay.getDay()
+  const firstDayOfWeek = (firstDay.getDay() + 6) % 7
 
   // Start from the first visible day (may be in previous month)
   const startDate = new Date(currentYear.value, currentMonth.value, 1 - firstDayOfWeek)
@@ -247,7 +247,7 @@ const selectedDatePosts = computed(() => {
 
 <style scoped>
 .calendar-page {
-  max-width: 1200px;
+  max-width: 100%;
 }
 
 .page-header {

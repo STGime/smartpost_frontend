@@ -34,6 +34,14 @@ export interface AuthResponse extends AuthTokens {
   message?: string
 }
 
+// API Token types
+export interface ApiToken {
+  id: string
+  name: string
+  last_used_at: string | null
+  created_at: string
+}
+
 // Plan types
 export type PlanName = 'trial' | 'starter' | 'professional' | 'premium'
 export type PlanStatus = 'active' | 'cancelled' | 'expired' | 'grace_period'
