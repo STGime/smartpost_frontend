@@ -330,11 +330,11 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
             </div>
 
             <div class="hero-actions">
-              <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary">
-                <span>Start free trial</span>
+              <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary btn-primary-hero">
+                <span>Start your 14-day free trial</span>
                 <span class="arrow">→</span>
               </RouterLink>
-              <button v-else class="btn-primary" @click="openWaitingList('hero')">
+              <button v-else class="btn-primary btn-primary-hero" @click="openWaitingList('hero')">
                 <span>Join waiting list</span>
                 <span class="arrow">→</span>
               </button>
@@ -343,7 +343,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               </a>
             </div>
             <p class="small-note">
-              Built for indie creators, small teams and lean marketing setups.
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 4px; opacity: 0.7;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>No credit card required · 14-day free trial · Cancel anytime
             </p>
           </div>
 
@@ -639,7 +639,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
 
           <div :class="showcaseVisible ? 'showcase-cta animate-fade-in-up' : 'showcase-cta opacity-0'">
             <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary">
-              <span>Start your free trial</span>
+              <span>Start your 14-day free trial</span>
               <span class="arrow">→</span>
             </RouterLink>
             <button v-else class="btn-primary" @click="openWaitingList('showcase')">
@@ -647,6 +647,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               <span class="arrow">→</span>
             </button>
             <a href="#pricing" class="btn-ghost">See pricing</a>
+            <p class="cta-trust-note">No credit card required</p>
           </div>
         </section>
 
@@ -710,11 +711,11 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               <span>View on GitHub</span>
             </a>
             <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary">
-              <span>Start posting smarter</span>
+              <span>Try free for 14 days</span>
               <span class="arrow">→</span>
             </RouterLink>
             <button v-else class="btn-primary" @click="openWaitingList('skill')">
-              <span>Start posting smarter</span>
+              <span>Try free for 14 days</span>
               <span class="arrow">→</span>
             </button>
           </div>
@@ -795,18 +796,20 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
                 </li>
               </ul>
               <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary pricing-cta">
-                Start free trial
+                Start 14-day free trial
                 <span class="arrow">→</span>
               </RouterLink>
               <button v-else class="btn-ghost pricing-cta" @click="openWaitingList('pricing')">
                 Join waiting list
                 <span class="arrow">→</span>
               </button>
+              <p class="cta-trust-note">No credit card required</p>
             </div>
 
             <!-- Professional -->
             <div v-if="professionalPlan" class="pricing-card pricing-card-featured">
               <div class="pricing-popular-badge">Most Popular</div>
+              <div class="pricing-trial-badge pricing-trial-badge-right">14 days free</div>
               <div class="pricing-card-header">
                 <h3 class="pricing-card-name">Professional</h3>
                 <p class="pricing-card-desc">For teams and serious creators who need advanced features and higher limits.</p>
@@ -841,13 +844,14 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
                 </li>
               </ul>
               <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary pricing-cta">
-                Start free trial
+                Start 14-day free trial
                 <span class="arrow">→</span>
               </RouterLink>
               <button v-else class="btn-primary pricing-cta" @click="openWaitingList('pricing')">
                 Join waiting list
                 <span class="arrow">→</span>
               </button>
+              <p class="cta-trust-note">No credit card required</p>
             </div>
           </div>
 
@@ -1203,6 +1207,63 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
   align-items: center;
   gap: 8px;
   text-decoration: none;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.8), 0 0 20px rgba(99, 102, 241, 0.4);
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.12) 40%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.12) 60%,
+    transparent 100%
+  );
+  animation: shimmer 4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { left: -100%; }
+  50%, 80% { left: 100%; }
+}
+
+.btn-primary-hero {
+  padding: 13px 26px;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  animation: hero-glow 3s ease-in-out infinite;
+}
+
+@keyframes hero-glow {
+  0%, 100% { box-shadow: 0 24px 80px rgba(15, 23, 42, 0.8), 0 0 15px rgba(99, 102, 241, 0.3); }
+  50% { box-shadow: 0 24px 80px rgba(15, 23, 42, 0.8), 0 0 30px rgba(99, 102, 241, 0.5), 0 0 60px rgba(99, 102, 241, 0.2); }
+}
+
+.btn-primary-hero:hover {
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.8), 0 0 30px rgba(99, 102, 241, 0.5), 0 0 60px rgba(99, 102, 241, 0.2);
+}
+
+.cta-trust-note {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 4px;
+  flex-basis: 100%;
+  text-align: center;
 }
 
 .btn-primary.btn-sm {
@@ -1222,6 +1283,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
   align-items: center;
   gap: 8px;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .arrow {
@@ -1318,8 +1380,9 @@ h1 {
 }
 
 .small-note {
-  font-size: 11px;
-  color: var(--muted);
+  font-size: 13px;
+  color: #94a3b8;
+  letter-spacing: 0.01em;
 }
 
 /* Card */
@@ -2072,6 +2135,12 @@ h1 {
   background: linear-gradient(135deg, #8b5cf6, #6366f1);
 }
 
+.pricing-trial-badge-right {
+  left: auto;
+  right: 16px;
+  transform: none;
+}
+
 .pricing-card-header {
   margin-bottom: 16px;
 }
@@ -2384,6 +2453,15 @@ h1 {
   .opacity-0 {
     opacity: 1;
   }
+  .btn-primary::after {
+    animation: none;
+  }
+  .btn-primary-hero {
+    animation: none;
+  }
+  .btn-primary:hover {
+    transform: none;
+  }
 }
 
 /* Product Showcase */
@@ -2437,6 +2515,7 @@ h1 {
 
 .showcase-cta {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   align-items: center;
   justify-content: center;
