@@ -32,14 +32,16 @@ onMounted(() => {
   const expiresAt = params.get('expires_at')
 
   // Support both formats: backend-provided (user_id, user_email) and Supabase direct (JWT)
-  let userId = params.get('user_id')
-  let userEmail = params.get('user_email')
-  let userName = params.get('user_name') || ''
+  let userId: string | null = params.get('user_id')
+  let userEmail: string | null = params.get('user_email')
+  let userName: string = params.get('user_name') || ''
 
   // If user info not in params, decode from JWT access token (Supabase direct flow)
   if (accessToken && (!userId || !userEmail)) {
     try {
-      const payload = JSON.parse(atob(accessToken.split('.')[1]))
+      const parts = accessToken.split('.')
+      if (parts.length < 2) throw new Error('Invalid JWT')
+      const payload = JSON.parse(atob(parts[1]!))
       userId = payload.sub || null
       userEmail = payload.email || null
       userName = payload.user_metadata?.full_name || payload.user_metadata?.name || ''
@@ -59,8 +61,8 @@ onMounted(() => {
     accessToken,
     refreshToken,
     expiresAt: parseInt(expiresAt || '0', 10),
-    userId,
-    userEmail,
+    userId: userId as string,
+    userEmail: userEmail as string,
     userName,
   })
 
