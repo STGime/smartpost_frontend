@@ -49,6 +49,11 @@ const routes: RouteRecordRaw[] = [
     name: 'social-media-tools',
     component: () => import('@/views/seo/SocialMediaToolsView.vue'),
   },
+  {
+    path: '/cli-social-media-posting',
+    name: 'cli-social-media-posting',
+    component: () => import('@/views/seo/CliPostingView.vue'),
+  },
 
   {
     path: '/login',

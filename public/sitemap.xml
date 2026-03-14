@@ -37,6 +37,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://getposta.app/cli-social-media-posting</loc>
+    <lastmod>2026-03-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://getposta.app/terms</loc>
     <lastmod>2024-12-10</lastmod>
     <changefreq>monthly</changefreq>

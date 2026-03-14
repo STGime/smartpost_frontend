@@ -10,6 +10,7 @@ const ROUTES = [
   '/tiktok-scheduler',
   '/auto-post-social-media',
   '/social-media-tools',
+  '/cli-social-media-posting',
   '/terms',
   '/privacy',
   '/impressum',

@@ -21,20 +21,20 @@ const { setRef: faqRef, isVisible: faqVisible } = useScrollReveal()
 useHead({
   title: 'Smart Social Media Posting for Creators & Teams',
   meta: [
-    { name: 'description', content: 'Posta lets you create once and publish everywhere. Dashboard, visual calendar, analytics and AI-powered smart cropping for TikTok, Instagram, YouTube Shorts and more.' },
-    { name: 'keywords', content: 'social media scheduler, auto post, TikTok scheduling, Instagram scheduler, smart cropping, face detection, multi-platform posting, content creator tools, social media automation' },
+    { name: 'description', content: 'Posta lets you create once and publish everywhere. Dashboard, visual calendar, analytics, AI-powered smart cropping and CLI posting for TikTok, Instagram, YouTube Shorts and more.' },
+    { name: 'keywords', content: 'social media scheduler, auto post, TikTok scheduling, Instagram scheduler, smart cropping, face detection, multi-platform posting, content creator tools, social media automation, cli social media posting, post from terminal, claude code social media, developer social media tools, IDE social media posting' },
     { name: 'robots', content: 'index, follow' },
     { property: 'og:type', content: 'website' },
     { property: 'og:url', content: 'https://getposta.app/' },
     { property: 'og:title', content: 'Posta – Smart Social Media Posting for Creators & Teams' },
-    { property: 'og:description', content: 'Create once, publish everywhere. Dashboard, visual calendar, analytics and AI-powered smart cropping for TikTok, Instagram, YouTube Shorts and more.' },
+    { property: 'og:description', content: 'Create once, publish everywhere. Dashboard, visual calendar, analytics, AI-powered smart cropping and CLI posting for TikTok, Instagram, YouTube Shorts and more.' },
     { property: 'og:image', content: 'https://getposta.app/assets/posta_og_image.png' },
     { property: 'og:site_name', content: 'Posta' },
     { property: 'og:locale', content: 'en_US' },
     { name: 'twitter:card', content: 'summary_large_image' },
     { name: 'twitter:url', content: 'https://getposta.app/' },
     { name: 'twitter:title', content: 'Posta – Smart Social Media Posting for Creators & Teams' },
-    { name: 'twitter:description', content: 'Create once, publish everywhere. Dashboard, visual calendar, analytics and AI-powered smart cropping for TikTok, Instagram, YouTube Shorts and more.' },
+    { name: 'twitter:description', content: 'Create once, publish everywhere. Dashboard, visual calendar, analytics, AI-powered smart cropping and CLI posting for TikTok, Instagram, YouTube Shorts and more.' },
     { name: 'twitter:image', content: 'https://getposta.app/assets/posta_og_image.png' },
   ],
   link: [
@@ -79,6 +79,14 @@ useHead({
               text: 'Yes. Early users help shape integrations, workflow and pricing. Tell us how you work and what your current stack looks like when you request access.',
             },
           },
+          {
+            '@type': 'Question',
+            name: 'Can I post to social media from the terminal or IDE?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes. Posta has a Claude Code skill that lets you create, schedule and publish social media posts directly from your terminal or IDE using natural language commands.',
+            },
+          },
         ],
       }),
     },
@@ -120,6 +128,15 @@ useHead({
         applicationCategory: 'BusinessApplication',
         operatingSystem: 'Web',
         url: 'https://getposta.app/',
+        featureList: [
+          'Multi-platform social media scheduling',
+          'Face-aware smart cropping',
+          'AI-powered image and video generation',
+          'CLI posting via Claude Code skill',
+          'Terminal and IDE integration',
+          'Visual content calendar',
+          'Analytics dashboard',
+        ],
         screenshot: [
           'https://getposta.app/assets/images/ui/dashboard.png',
           'https://getposta.app/assets/images/ui/calendar.png',
@@ -1050,6 +1067,13 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               <div class="faq-a">
                 Yes. Early users help shape integrations, workflow and pricing. Tell us how you work and what your
                 current stack looks like when you request access.
+              </div>
+            </div>
+            <div class="faq-item">
+              <div class="faq-q">Can I post to social media from the terminal or IDE?</div>
+              <div class="faq-a">
+                Yes. Posta has a <RouterLink to="/cli-social-media-posting">Claude Code skill</RouterLink> that lets you create, schedule and publish
+                social media posts directly from your terminal or IDE using natural language commands.
               </div>
             </div>
           </div>
