@@ -30,9 +30,23 @@ onMounted(() => {
   const accessToken = params.get('access_token')
   const refreshToken = params.get('refresh_token')
   const expiresAt = params.get('expires_at')
-  const userId = params.get('user_id')
-  const userEmail = params.get('user_email')
-  const userName = params.get('user_name')
+
+  // Support both formats: backend-provided (user_id, user_email) and Supabase direct (JWT)
+  let userId = params.get('user_id')
+  let userEmail = params.get('user_email')
+  let userName = params.get('user_name') || ''
+
+  // If user info not in params, decode from JWT access token (Supabase direct flow)
+  if (accessToken && (!userId || !userEmail)) {
+    try {
+      const payload = JSON.parse(atob(accessToken.split('.')[1]))
+      userId = payload.sub || null
+      userEmail = payload.email || null
+      userName = payload.user_metadata?.full_name || payload.user_metadata?.name || ''
+    } catch {
+      // JWT decode failed
+    }
+  }
 
   if (!accessToken || !refreshToken || !userId || !userEmail) {
     error.value = 'Invalid authentication data'
@@ -47,7 +61,7 @@ onMounted(() => {
     expiresAt: parseInt(expiresAt || '0', 10),
     userId,
     userEmail,
-    userName: userName || '',
+    userName,
   })
 
   // Clear the hash from URL for security
