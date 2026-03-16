@@ -107,19 +107,18 @@ const selectedPlatforms = computed(() => {
   return [...new Set(platforms)]
 })
 
-// Validation for TikTok direct posts - privacy level is required
+// Validation for TikTok posts - privacy level is always required
 const tiktokValidation = computed(() => {
   const hasTikTok = selectedPlatforms.value.includes('tiktok')
   if (!hasTikTok) return { valid: true, message: null }
 
   const tiktokConfig = platformConfigurations.value.tiktok
-  const isDraft = tiktokConfig?.draft === true
 
-  // Privacy level only required for direct posts, not drafts
-  if (!isDraft && !tiktokConfig?.privacyLevel) {
+  // Privacy level required for all TikTok posts (including drafts that will be scheduled)
+  if (!tiktokConfig?.privacyLevel) {
     return {
       valid: false,
-      message: 'TikTok requires you to select who can view your video for direct posts'
+      message: 'TikTok requires you to select who can view your video'
     }
   }
 
