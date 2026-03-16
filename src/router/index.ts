@@ -145,6 +145,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/settings/SettingsView.vue'),
       },
       {
+        path: 'settings/webhooks',
+        name: 'webhooks',
+        component: () => import('@/views/settings/WebhooksView.vue'),
+      },
+      {
         path: 'billing',
         name: 'billing',
         component: () => import('@/views/billing/BillingView.vue'),

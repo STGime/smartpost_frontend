@@ -675,6 +675,47 @@ export interface PostComparisonResponse {
   posts: PostAnalyticsDetail[]
 }
 
+// Webhook types
+export type WebhookEventType =
+  | 'post.scheduled'
+  | 'post.processing'
+  | 'post.published'
+  | 'post.partially_published'
+  | 'post.failed'
+  | 'post.result.success'
+  | 'post.result.failed'
+
+export type WebhookDeliveryStatus = 'pending' | 'success' | 'failed' | 'retrying'
+
+export interface WebhookEndpoint {
+  id: string
+  url: string
+  description: string | null
+  secret?: string
+  events: string[]
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  recent_deliveries?: WebhookDelivery[]
+}
+
+export interface WebhookDelivery {
+  id: string
+  webhook_endpoint_id: string
+  event: string
+  payload: Record<string, unknown>
+  response_status: number | null
+  response_body: string | null
+  response_time_ms: number | null
+  attempt: number
+  max_attempts: number
+  status: WebhookDeliveryStatus
+  error_message: string | null
+  delivered_at: string | null
+  next_retry_at: string | null
+  created_at: string
+}
+
 // Platform specifications
 export interface PlatformSpecification {
   platform: string

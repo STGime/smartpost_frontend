@@ -456,6 +456,28 @@ const handleDeleteAccount = async () => {
       @cancel="showRevokeModal = false; tokenToRevoke = null"
     />
 
+    <!-- Webhooks Section -->
+    <div class="settings-section card">
+      <div class="section-header">
+        <div class="section-icon section-icon-webhooks">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+          </svg>
+        </div>
+        <div>
+          <h2>Webhooks</h2>
+          <p>Get notified when posts are published or fail</p>
+        </div>
+      </div>
+
+      <div class="webhook-link-content">
+        <p class="webhook-description">Configure outbound webhooks to integrate Posta with your own systems — CI/CD pipelines, Slack bots, analytics dashboards, and more.</p>
+        <RouterLink to="/app/settings/webhooks" class="btn-secondary">
+          Manage Webhooks
+        </RouterLink>
+      </div>
+    </div>
+
     <!-- Plan Section -->
     <div class="settings-section card">
       <div class="section-header">
@@ -630,6 +652,23 @@ const handleDeleteAccount = async () => {
 .section-icon-security {
   background: rgba(251, 191, 36, 0.15);
   color: #fbbf24;
+}
+
+.section-icon-webhooks {
+  background: rgba(168, 85, 247, 0.15);
+  color: #a855f7;
+}
+
+.webhook-link-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.webhook-description {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
 }
 
 .section-icon-plan {

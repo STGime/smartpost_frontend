@@ -14,6 +14,7 @@ const { setRef: whyRef, isVisible: whyVisible } = useScrollReveal()
 const { setRef: howRef, isVisible: howVisible } = useScrollReveal()
 const { setRef: showcaseRef, isVisible: showcaseVisible } = useScrollReveal()
 const { setRef: skillRef, isVisible: skillVisible } = useScrollReveal()
+const { setRef: openclawRef, isVisible: openclawVisible } = useScrollReveal()
 const { setRef: pricingRef, isVisible: pricingVisible } = useScrollReveal()
 const { setRef: platformsRef, isVisible: platformsVisible } = useScrollReveal()
 const { setRef: faqRef, isVisible: faqVisible } = useScrollReveal()
@@ -344,6 +345,9 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               <div class="chip">
                 Creator-friendly pricing
               </div>
+              <div class="chip">
+                Full REST API & agent support
+              </div>
             </div>
 
             <div class="hero-actions">
@@ -573,6 +577,151 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
           </div>
         </section>
 
+        <!-- Posta Skill Section -->
+        <section :ref="skillRef" class="section" id="skill">
+          <h2 :class="skillVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">Post from your terminal</h2>
+          <p :class="skillVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
+            Posta has a Claude Code skill that turns your IDE into a social media command center. Create, schedule and publish — without ever leaving your editor.
+          </p>
+
+          <div :class="skillVisible ? 'skill-terminal animate-fade-in-up stagger-2' : 'skill-terminal opacity-0'">
+            <div class="skill-terminal-header">
+              <div class="skill-terminal-dots">
+                <span class="skill-dot skill-dot-red"></span>
+                <span class="skill-dot skill-dot-yellow"></span>
+                <span class="skill-dot skill-dot-green"></span>
+              </div>
+              <span class="skill-terminal-title">claude</span>
+            </div>
+            <div class="skill-terminal-body">
+              <div class="skill-line skill-line-prompt"><span class="skill-prompt-icon">&gt;</span> Show my connected accounts</div>
+              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> 8 active accounts: Instagram, TikTok, LinkedIn, YouTube, Facebook, Pinterest, Bluesky, Threads</div>
+              <div class="skill-line skill-line-spacer"></div>
+              <div class="skill-line skill-line-prompt"><span class="skill-prompt-icon">&gt;</span> Generate an image and schedule a LinkedIn post for 3pm</div>
+              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Image generated with AI</div>
+              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Draft created — "I posted this from VS Code..."</div>
+              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Scheduled for today at 15:00 CET</div>
+              <div class="skill-line skill-line-spacer"></div>
+              <div class="skill-line skill-line-prompt"><span class="skill-prompt-icon">&gt;</span> How did my last 5 posts perform?</div>
+              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Avg. engagement: 4.2% · Best: LinkedIn carousel (8.1%) · Trend: ↑ 12% vs. prior week</div>
+            </div>
+          </div>
+
+          <div :class="skillVisible ? 'skill-features animate-fade-in-up stagger-3' : 'skill-features opacity-0'">
+            <div class="skill-feature-card">
+              <div class="skill-feature-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              </div>
+              <div class="skill-feature-title">AI content generation</div>
+              <div class="skill-feature-body">Generate images and captions without leaving your editor. AI handles the creative work while you stay in flow.</div>
+            </div>
+            <div class="skill-feature-card">
+              <div class="skill-feature-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>
+              </div>
+              <div class="skill-feature-title">Schedule & publish</div>
+              <div class="skill-feature-body">Create, schedule and post across 8 platforms from the terminal. One prompt replaces an entire dashboard session.</div>
+            </div>
+            <div class="skill-feature-card">
+              <div class="skill-feature-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+              <div class="skill-feature-title">Analytics at a glance</div>
+              <div class="skill-feature-body">Check engagement, best times and trends with a single prompt. No dashboards, no tab-switching — just answers.</div>
+            </div>
+          </div>
+
+          <div :class="skillVisible ? 'skill-cta animate-fade-in-up stagger-4' : 'skill-cta opacity-0'">
+            <a href="https://github.com/STGime/posta-skill" target="_blank" rel="noopener noreferrer" class="btn-ghost">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+              <span>View on GitHub</span>
+            </a>
+            <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary">
+              <span>Try free for 14 days</span>
+              <span class="arrow">→</span>
+            </RouterLink>
+            <button v-else class="btn-primary" @click="openWaitingList('skill')">
+              <span>Try free for 14 days</span>
+              <span class="arrow">→</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- OpenClaw & API Section -->
+        <section :ref="openclawRef" class="section" id="api">
+          <h2 :class="openclawVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">Built for agents & automation</h2>
+          <p :class="openclawVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
+            Posta is API-first. Build integrations, automate workflows, and let AI agents manage your social media — programmatically.
+          </p>
+
+          <div :class="openclawVisible ? 'api-cards animate-fade-in-up stagger-2' : 'api-cards opacity-0'">
+            <a href="https://clawhub.ai/STGime/posta" target="_blank" rel="noopener noreferrer" class="api-card api-card-openclaw">
+              <div class="api-card-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+              </div>
+              <div class="api-card-content">
+                <div class="api-card-label">OpenClaw</div>
+                <div class="api-card-title">Posta on ClawHub</div>
+                <div class="api-card-body">Use Posta as an MCP tool from any AI agent — Claude, Cursor, Windsurf, or your own. One-click install, zero config.</div>
+              </div>
+              <span class="api-card-arrow">→</span>
+            </a>
+
+            <a href="https://api.getposta.app/docs" target="_blank" rel="noopener noreferrer" class="api-card api-card-docs">
+              <div class="api-card-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              </div>
+              <div class="api-card-content">
+                <div class="api-card-label">REST API</div>
+                <div class="api-card-title">API documentation</div>
+                <div class="api-card-body">Full REST API with token auth, webhooks, and OpenAPI spec. Create posts, manage accounts, and track analytics from your own code.</div>
+              </div>
+              <span class="api-card-arrow">→</span>
+            </a>
+          </div>
+
+          <div :class="openclawVisible ? 'api-features animate-fade-in-up stagger-3' : 'api-features opacity-0'">
+            <div class="api-feature">
+              <div class="api-feature-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+              </div>
+              <div class="api-feature-text">
+                <strong>Outbound webhooks</strong>
+                <span>Get notified when posts publish, fail, or change status</span>
+              </div>
+            </div>
+            <div class="api-feature">
+              <div class="api-feature-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <div class="api-feature-text">
+                <strong>Token authentication</strong>
+                <span>Secure API tokens with granular scoping</span>
+              </div>
+            </div>
+            <div class="api-feature">
+              <div class="api-feature-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              </div>
+              <div class="api-feature-text">
+                <strong>OpenAPI spec</strong>
+                <span>Auto-generate clients in any language</span>
+              </div>
+            </div>
+          </div>
+
+          <div :class="openclawVisible ? 'api-cta animate-fade-in-up stagger-4' : 'api-cta opacity-0'">
+            <a href="https://api.getposta.app/docs" target="_blank" rel="noopener noreferrer" class="btn-primary">
+              <span>Explore API docs</span>
+              <span class="arrow">→</span>
+            </a>
+            <a href="https://clawhub.ai/STGime/posta" target="_blank" rel="noopener noreferrer" class="btn-ghost">
+              <span>Install on ClawHub</span>
+              <span class="arrow">→</span>
+            </a>
+          </div>
+        </section>
+
         <!-- Product Showcase Section -->
         <section :ref="showcaseRef" class="section" id="showcase">
           <h2 :class="showcaseVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">See Posta in action</h2>
@@ -665,76 +814,6 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
             </button>
             <a href="#pricing" class="btn-ghost">See pricing</a>
             <p class="cta-trust-note">No credit card required</p>
-          </div>
-        </section>
-
-        <!-- Posta Skill Section -->
-        <section :ref="skillRef" class="section" id="skill">
-          <h2 :class="skillVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">Post from your terminal</h2>
-          <p :class="skillVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
-            Posta has a Claude Code skill that turns your IDE into a social media command center. Create, schedule and publish — without ever leaving your editor.
-          </p>
-
-          <div :class="skillVisible ? 'skill-terminal animate-fade-in-up stagger-2' : 'skill-terminal opacity-0'">
-            <div class="skill-terminal-header">
-              <div class="skill-terminal-dots">
-                <span class="skill-dot skill-dot-red"></span>
-                <span class="skill-dot skill-dot-yellow"></span>
-                <span class="skill-dot skill-dot-green"></span>
-              </div>
-              <span class="skill-terminal-title">claude</span>
-            </div>
-            <div class="skill-terminal-body">
-              <div class="skill-line skill-line-prompt"><span class="skill-prompt-icon">&gt;</span> Show my connected accounts</div>
-              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> 8 active accounts: Instagram, TikTok, LinkedIn, YouTube, Facebook, Pinterest, Bluesky, Threads</div>
-              <div class="skill-line skill-line-spacer"></div>
-              <div class="skill-line skill-line-prompt"><span class="skill-prompt-icon">&gt;</span> Generate an image and schedule a LinkedIn post for 3pm</div>
-              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Image generated with AI</div>
-              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Draft created — "I posted this from VS Code..."</div>
-              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Scheduled for today at 15:00 CET</div>
-              <div class="skill-line skill-line-spacer"></div>
-              <div class="skill-line skill-line-prompt"><span class="skill-prompt-icon">&gt;</span> How did my last 5 posts perform?</div>
-              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Avg. engagement: 4.2% · Best: LinkedIn carousel (8.1%) · Trend: ↑ 12% vs. prior week</div>
-            </div>
-          </div>
-
-          <div :class="skillVisible ? 'skill-features animate-fade-in-up stagger-3' : 'skill-features opacity-0'">
-            <div class="skill-feature-card">
-              <div class="skill-feature-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-              </div>
-              <div class="skill-feature-title">AI content generation</div>
-              <div class="skill-feature-body">Generate images and captions without leaving your editor. AI handles the creative work while you stay in flow.</div>
-            </div>
-            <div class="skill-feature-card">
-              <div class="skill-feature-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>
-              </div>
-              <div class="skill-feature-title">Schedule & publish</div>
-              <div class="skill-feature-body">Create, schedule and post across 8 platforms from the terminal. One prompt replaces an entire dashboard session.</div>
-            </div>
-            <div class="skill-feature-card">
-              <div class="skill-feature-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              </div>
-              <div class="skill-feature-title">Analytics at a glance</div>
-              <div class="skill-feature-body">Check engagement, best times and trends with a single prompt. No dashboards, no tab-switching — just answers.</div>
-            </div>
-          </div>
-
-          <div :class="skillVisible ? 'skill-cta animate-fade-in-up stagger-4' : 'skill-cta opacity-0'">
-            <a href="https://github.com/STGime/posta-skill" target="_blank" rel="noopener noreferrer" class="btn-ghost">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-              <span>View on GitHub</span>
-            </a>
-            <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary">
-              <span>Try free for 14 days</span>
-              <span class="arrow">→</span>
-            </RouterLink>
-            <button v-else class="btn-primary" @click="openWaitingList('skill')">
-              <span>Try free for 14 days</span>
-              <span class="arrow">→</span>
-            </button>
           </div>
         </section>
 
@@ -1567,13 +1646,15 @@ h1 {
 }
 
 .section-title {
-  font-size: 17px;
-  font-weight: 600;
-  margin-bottom: 10px;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: 12px;
 }
 
 .section-sub {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--muted);
   max-width: 620px;
   margin-bottom: 18px;
@@ -2656,6 +2737,126 @@ h1 {
   justify-content: center;
 }
 
+/* OpenClaw & API Section */
+.api-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  max-width: 720px;
+  margin: 0 auto 32px;
+}
+
+.api-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: linear-gradient(to bottom right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.96));
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  position: relative;
+}
+
+.api-card:hover {
+  border-color: rgba(165, 180, 252, 0.4);
+  box-shadow: 0 0 24px rgba(99, 102, 241, 0.12);
+  transform: translateY(-2px);
+}
+
+.api-card-icon {
+  color: #a5b4fc;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.api-card-openclaw .api-card-icon { color: #34d399; }
+
+.api-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.api-card-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #a5b4fc;
+  margin-bottom: 4px;
+}
+
+.api-card-openclaw .api-card-label { color: #34d399; }
+
+.api-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.api-card-body {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.api-card-arrow {
+  color: var(--muted);
+  font-size: 18px;
+  flex-shrink: 0;
+  align-self: center;
+  transition: transform 0.2s;
+}
+
+.api-card:hover .api-card-arrow {
+  transform: translateX(4px);
+}
+
+.api-features {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 720px;
+  margin: 0 auto 32px;
+}
+
+.api-feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.api-feature-icon {
+  color: #a5b4fc;
+  flex-shrink: 0;
+}
+
+.api-feature-text {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.api-feature-text strong {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 1px;
+}
+
+.api-feature-text span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.api-cta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Responsive */
 @media (max-width: 860px) {
   .hero {
@@ -2684,8 +2885,18 @@ h1 {
     font-size: 11px;
     padding: 12px 12px 16px;
   }
-  .skill-cta {
+  .skill-cta,
+  .api-cta {
     flex-direction: column;
+  }
+  .api-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .api-features {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding-inline: 16px;
   }
   .platform-grid {
     grid-template-columns: minmax(0, 1fr);
