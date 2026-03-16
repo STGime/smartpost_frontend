@@ -18,6 +18,7 @@ const isRescheduling = ref(false)
 const showDeleteModal = ref(false)
 const showCancelModal = ref(false)
 const showPublishModal = ref(false)
+const showMoveToDraftModal = ref(false)
 
 // TikTok policy consent for publish modal
 const tiktokPolicyConsent = ref(false)
@@ -98,6 +99,11 @@ const openCancelModal = () => {
 const confirmCancelSchedule = async () => {
   await postsStore.cancelScheduledPost(postId)
   showCancelModal.value = false
+}
+
+const confirmMoveToDraft = async () => {
+  await postsStore.cancelScheduledPost(postId)
+  showMoveToDraftModal.value = false
 }
 
 const startRescheduling = () => {
@@ -470,6 +476,17 @@ const useAsTemplate = () => {
           {{ postsStore.isLoading ? 'Publishing...' : 'Publish Now' }}
         </button>
         <button
+          v-if="post.status === 'scheduled'"
+          @click="showMoveToDraftModal = true"
+          :disabled="postsStore.isLoading"
+          class="btn-secondary"
+        >
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="btn-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+          </svg>
+          Move to Draft
+        </button>
+        <button
           @click="useAsTemplate"
           class="btn-secondary"
         >
@@ -512,6 +529,17 @@ const useAsTemplate = () => {
       variant="danger"
       @confirm="confirmDelete"
       @cancel="showDeleteModal = false"
+    />
+
+    <!-- Move to Draft Confirmation Modal -->
+    <ConfirmModal
+      :show="showMoveToDraftModal"
+      title="Move to Draft"
+      message="This will unschedule the post and move it back to draft status. You can reschedule it later."
+      confirm-text="Move to Draft"
+      cancel-text="Keep Scheduled"
+      @confirm="confirmMoveToDraft"
+      @cancel="showMoveToDraftModal = false"
     />
 
     <!-- Cancel Schedule Confirmation Modal -->
