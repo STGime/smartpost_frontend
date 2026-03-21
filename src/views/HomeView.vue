@@ -667,6 +667,18 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               <span class="api-card-arrow">→</span>
             </a>
 
+            <a href="https://www.npmjs.com/package/n8n-nodes-posta" target="_blank" rel="noopener noreferrer" class="api-card api-card-n8n">
+              <div class="api-card-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              </div>
+              <div class="api-card-content">
+                <div class="api-card-label">n8n</div>
+                <div class="api-card-title">n8n community node</div>
+                <div class="api-card-body">Drag-and-drop Posta into any n8n workflow. Create posts, upload media, and check analytics — no code required.</div>
+              </div>
+              <span class="api-card-arrow">→</span>
+            </a>
+
             <a href="https://api.getposta.app/docs" target="_blank" rel="noopener noreferrer" class="api-card api-card-docs">
               <div class="api-card-icon">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -2740,9 +2752,9 @@ h1 {
 /* OpenClaw & API Section */
 .api-cards {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
-  max-width: 720px;
+  max-width: 960px;
   margin: 0 auto 32px;
 }
 
@@ -2773,6 +2785,8 @@ h1 {
 }
 
 .api-card-openclaw .api-card-icon { color: #34d399; }
+.api-card-n8n .api-card-icon { color: #ff6d5a; }
+.api-card-n8n .api-card-label { color: #ff6d5a; }
 
 .api-card-content {
   flex: 1;
