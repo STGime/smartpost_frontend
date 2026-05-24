@@ -399,7 +399,9 @@ const handleSubmit = async () => {
         caption: caption.value,
         hashtags: hashtags.value,
         mediaIds: selectedMediaIds.value,
-        socialAccountIds: selectedAccountIds.value,
+        // SocialAccount.id is still a string on the frontend (separate refactor);
+        // coerce to number to match the API's numeric id contract.
+        socialAccountIds: selectedAccountIds.value.map(Number),
         platformConfigurations: Object.keys(platformConfigurations.value).length > 0
           ? platformConfigurations.value
           : undefined,
@@ -411,7 +413,9 @@ const handleSubmit = async () => {
         caption: caption.value,
         hashtags: hashtags.value,
         mediaIds: selectedMediaIds.value,
-        socialAccountIds: selectedAccountIds.value,
+        // SocialAccount.id is still a string on the frontend (separate refactor);
+        // coerce to number to match the API's numeric id contract.
+        socialAccountIds: selectedAccountIds.value.map(Number),
         isDraft: true,
         platformConfigurations: Object.keys(platformConfigurations.value).length > 0
           ? platformConfigurations.value

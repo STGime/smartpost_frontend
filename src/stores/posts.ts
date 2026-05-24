@@ -241,7 +241,7 @@ export const usePostsStore = defineStore('posts', () => {
     // Update result in current post
     if (currentPost.value?.id === data.postId && currentPost.value.results) {
       const resultIndex = currentPost.value.results.findIndex(
-        (r) => String(r.socialAccountId) === String(data.socialAccountId)
+        (r) => r.socialAccountId === data.socialAccountId
       )
       if (resultIndex !== -1) {
         const result = currentPost.value.results[resultIndex]

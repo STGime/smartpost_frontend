@@ -382,7 +382,7 @@ export interface PlatformConfigurations {
 }
 
 export interface PostResult {
-  socialAccountId: string
+  socialAccountId: number
   platform: SocialPlatform
   status: 'pending' | 'processing' | 'success' | 'failed'
   platformPostId?: string | null
@@ -436,7 +436,7 @@ export interface CreatePostRequest {
   caption?: string
   hashtags?: string[]
   mediaIds: string[]
-  socialAccountIds: string[]
+  socialAccountIds: number[]
   scheduledAt?: string
   isDraft?: boolean
   processingEnabled?: boolean
@@ -447,7 +447,7 @@ export interface UpdatePostRequest {
   caption?: string
   hashtags?: string[]
   mediaIds?: string[]
-  socialAccountIds?: string[]
+  socialAccountIds?: number[]
   scheduledAt?: string | null
   isDraft?: boolean
   processingEnabled?: boolean
