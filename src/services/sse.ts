@@ -13,7 +13,7 @@ export interface PostStatusUpdateEvent {
 
 export interface PostResultUpdateEvent {
   postId: string
-  socialAccountId: string
+  socialAccountId: number
   platform: string
   status: 'pending' | 'processing' | 'success' | 'failed'
   platformPostId: string | null
