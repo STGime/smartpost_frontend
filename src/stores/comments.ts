@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { reactive, ref } from 'vue'
 import { commentsService, type ListCommentsParams } from '@/services'
 import type { PostComment } from '@/types'
+import { usePostsStore } from './posts'
 
 interface PostCommentsState {
   items: PostComment[]
@@ -114,6 +115,10 @@ export const useCommentsStore = defineStore('comments', () => {
       state.items = state.items.map((c) =>
         c.isOwnReply ? c : { ...c, isRead: true },
       )
+      // Zero the unread badge on the parent Post so the "N new" pill on the
+      // posts list and the badge on the detail tab clear immediately, without
+      // waiting for a refetch.
+      usePostsStore().clearUnreadCommentCount(postId)
       return markedCount
     } catch (err) {
       lastMarkReadError.value = readError(err)
