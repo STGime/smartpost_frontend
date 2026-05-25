@@ -408,8 +408,28 @@ export interface Post {
   socialAccounts: PostSocialAccount[]
   platformConfigurations?: PlatformConfigurations
   results?: PostResult[]
+  unreadCommentCount?: number
   createdAt: string
   updatedAt: string
+}
+
+export type CommentPlatform = 'linkedin' | 'tiktok'
+
+export interface PostComment {
+  id: string
+  postResultId: string
+  socialAccountId: number | null
+  platform: CommentPlatform
+  platformCommentId: string
+  parentCommentId: string | null
+  authorPlatformId: string | null
+  authorName: string | null
+  authorAvatarUrl: string | null
+  text: string
+  isOwnReply: boolean
+  isRead: boolean
+  platformCreatedAt: string | null
+  createdAt: string
 }
 
 export interface PostMedia {

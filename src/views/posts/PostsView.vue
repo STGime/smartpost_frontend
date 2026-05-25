@@ -201,6 +201,13 @@ const cancelDelete = () => {
             <span v-else class="no-accounts">No accounts</span>
             <span class="meta-dot"></span>
             <span>{{ new Date(post.scheduledAt || post.publishedAt || post.createdAt).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' }) }}</span>
+            <span
+              v-if="(post.unreadCommentCount ?? 0) > 0"
+              class="unread-pill"
+              :title="`${post.unreadCommentCount} unread comment${post.unreadCommentCount === 1 ? '' : 's'}`"
+            >
+              {{ post.unreadCommentCount }} new
+            </span>
           </div>
         </div>
       </RouterLink>
@@ -538,6 +545,16 @@ const cancelDelete = () => {
   gap: 8px;
   font-size: 12px;
   color: var(--muted);
+}
+
+.unread-pill {
+  margin-left: auto;
+  background: var(--accent-soft);
+  color: var(--accent-light);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .meta-dot {

@@ -5,6 +5,9 @@ import { usePostsStore } from '@/stores'
 import PlatformIcon from '@/components/PlatformIcon.vue'
 import DateTimePicker from '@/components/DateTimePicker.vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
+import CommentsTab from '@/components/comments/CommentsTab.vue'
+
+type DetailTab = 'details' | 'comments'
 
 const route = useRoute()
 const router = useRouter()
@@ -13,6 +16,9 @@ const postsStore = usePostsStore()
 const postId = route.params.id as string
 const scheduledAt = ref<string | null>(null)
 const isRescheduling = ref(false)
+
+// Tabs
+const activeTab = ref<DetailTab>('details')
 
 // Modal state
 const showDeleteModal = ref(false)
@@ -150,6 +156,37 @@ const useAsTemplate = () => {
     </div>
 
     <div v-else-if="post" class="post-content">
+      <!-- Tabs -->
+      <div class="tab-strip" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          :aria-selected="activeTab === 'details'"
+          class="tab-button"
+          :class="{ active: activeTab === 'details' }"
+          @click="activeTab = 'details'"
+        >
+          Details
+        </button>
+        <button
+          type="button"
+          role="tab"
+          :aria-selected="activeTab === 'comments'"
+          class="tab-button"
+          :class="{ active: activeTab === 'comments' }"
+          @click="activeTab = 'comments'"
+        >
+          Comments
+          <span
+            v-if="(post.unreadCommentCount ?? 0) > 0 && activeTab !== 'comments'"
+            class="tab-badge"
+          >{{ post.unreadCommentCount }}</span>
+        </button>
+      </div>
+
+      <CommentsTab v-if="activeTab === 'comments'" :post="post" />
+
+      <div v-show="activeTab === 'details'" class="details-pane">
       <!-- Status Card -->
       <div class="card detail-card">
         <div class="status-row">
@@ -505,6 +542,7 @@ const useAsTemplate = () => {
           Delete
         </button>
       </div>
+      </div>
     </div>
 
     <!-- Not Found -->
@@ -662,6 +700,55 @@ const useAsTemplate = () => {
 <style scoped>
 .post-detail-page {
   max-width: 800px;
+}
+
+.tab-strip {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab-button:hover {
+  color: var(--text);
+}
+
+.tab-button.active {
+  color: var(--text);
+  border-bottom-color: var(--accent-light);
+}
+
+.tab-badge {
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  min-width: 20px;
+  text-align: center;
+}
+
+.details-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .page-header {

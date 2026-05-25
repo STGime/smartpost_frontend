@@ -288,6 +288,17 @@ export const usePostsStore = defineStore('posts', () => {
     templatePost.value = null
   }
 
+  // Called by the comments store after a successful mark-read so the unread
+  // pill on the posts list card and the badge on the post detail tab clear
+  // immediately, without waiting for a refetch.
+  const clearUnreadCommentCount = (postId: string) => {
+    if (currentPost.value?.id === postId) {
+      currentPost.value.unreadCommentCount = 0
+    }
+    const row = posts.value.find((p) => p.id === postId)
+    if (row) row.unreadCommentCount = 0
+  }
+
   return {
     posts,
     currentPost,
@@ -316,5 +327,6 @@ export const usePostsStore = defineStore('posts', () => {
     unsubscribeFromSSE,
     setTemplate,
     clearTemplate,
+    clearUnreadCommentCount,
   }
 })
