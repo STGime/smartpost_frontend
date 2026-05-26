@@ -8,6 +8,37 @@ import type { WaitingListSource } from '@/services'
 
 const waitingListSource = ref<WaitingListSource>('seo-autopost')
 
+const autoPostFaq = [
+  {
+    q: 'What does "auto-post" mean in Posta?',
+    a: 'Posta auto-formats your source media for each target platform (crops, compresses, picks the right aspect ratio), then auto-publishes at the scheduled time via each network\'s official API. No manual exports or uploads.',
+  },
+  {
+    q: 'Can I receive webhooks when my posts publish or fail?',
+    a: 'Yes. Posta sends HMAC-signed webhook events for post.scheduled, post.processing, post.published, post.partially_published, post.failed, post.result.success, and post.result.failed. Register a webhook URL in Settings → Webhooks.',
+  },
+  {
+    q: 'Does Posta retry failed publications automatically?',
+    a: 'Each publishing job is retried up to 3 times with exponential backoff before being marked failed. Webhook deliveries to your endpoints retry up to 5 times.',
+  },
+  {
+    q: 'Can I trigger posts from Zapier, Make, or n8n?',
+    a: 'Yes — Posta exposes a public REST API documented at api.getposta.app/docs. Use the Zapier / Make / n8n HTTP modules to call the create-post endpoint with a bearer token.',
+  },
+  {
+    q: 'How does Posta handle scheduled posts across time zones?',
+    a: 'Scheduled times are stored in UTC and rendered in your local timezone. A scheduler worker checks for due posts every minute and dispatches them to the right publisher.',
+  },
+  {
+    q: 'Can I auto-post from my IDE or CLI?',
+    a: 'Yes. Posta has a Claude Code skill that lets you create, schedule, and publish posts directly from your terminal or IDE using natural-language commands.',
+  },
+  {
+    q: 'Does Posta auto-format content for each platform?',
+    a: 'Yes. Face-aware cropping detects subjects and keeps them centered. Smart compression matches each platform\'s size limits. Different aspect-ratio variants (1:1, 4:5, 9:16, 16:9) are generated automatically.',
+  },
+]
+
 useHead({
   title: 'Auto Post Social Media – Automatic Posting, Zero Manual Work',
   meta: [
@@ -26,6 +57,20 @@ useHead({
   ],
   link: [
     { rel: 'canonical', href: 'https://getposta.app/auto-post-social-media' },
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: autoPostFaq.map((item) => ({
+          '@type': 'Question',
+          name: item.q,
+          acceptedAnswer: { '@type': 'Answer', text: item.a },
+        })),
+      }),
+    },
   ],
 })
 </script>
@@ -61,6 +106,16 @@ useHead({
       <p>
         With Posta's visual calendar and timezone-aware scheduling, you can plan days or weeks of content in a single session. Batch scheduling lets you queue up a week of posts in minutes. Once it is scheduled, Posta handles the rest. Your content goes live when your audience is active, whether you are at your desk or not.
       </p>
+    </section>
+
+    <section class="faq-section">
+      <h2>Auto-posting FAQ</h2>
+      <div class="faq-list">
+        <div v-for="item in autoPostFaq" :key="item.q" class="faq-item">
+          <h3>{{ item.q }}</h3>
+          <p>{{ item.a }}</p>
+        </div>
+      </div>
     </section>
 
     <InternalLinks />
@@ -108,5 +163,34 @@ h1 {
   line-height: 1.7;
   max-width: 720px;
   margin-bottom: 14px;
+}
+
+.faq-section {
+  margin: 48px 0 36px;
+}
+
+.faq-section h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.faq-list {
+  display: grid;
+  gap: 18px;
+  max-width: 760px;
+}
+
+.faq-item h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.faq-item p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.65;
 }
 </style>

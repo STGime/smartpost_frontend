@@ -1,10 +1,12 @@
 # Robots.txt for Posta
 # https://getposta.app
+#
+# Posta wants to be discoverable in both classic search and AI-grounded answers.
+# Each AI crawler gets its own block with the same disallow list as the catch-all,
+# so they can index our public marketing pages but never crawl auth/app routes.
 
 User-agent: *
 Allow: /
-
-# Disallow auth and app pages
 Disallow: /login
 Disallow: /signup
 Disallow: /forgot-password
@@ -12,17 +14,147 @@ Disallow: /reset-password
 Disallow: /app/
 Disallow: /oauth/
 Disallow: /auth/
-
-# Disallow API endpoints
 Disallow: /v1/
 Disallow: /api/
-
-# Allow static assets
 Allow: /*.css
 Allow: /*.js
 Allow: /*.svg
 Allow: /*.png
 Allow: /*.jpg
+
+# --- AI crawlers (allowlist) ---
+# Each is explicitly allowed so our stance is unambiguous in robots-respecting agents.
+
+# OpenAI (training)
+User-agent: GPTBot
+Allow: /
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /app/
+Disallow: /oauth/
+Disallow: /auth/
+Disallow: /v1/
+Disallow: /api/
+
+# OpenAI (ChatGPT Search citations — separate from GPTBot)
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /app/
+Disallow: /oauth/
+Disallow: /auth/
+Disallow: /v1/
+Disallow: /api/
+
+# Anthropic Claude (training)
+User-agent: ClaudeBot
+Allow: /
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /app/
+Disallow: /oauth/
+Disallow: /auth/
+Disallow: /v1/
+Disallow: /api/
+
+# Anthropic Claude (search/citations)
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /app/
+Disallow: /oauth/
+Disallow: /auth/
+Disallow: /v1/
+Disallow: /api/
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /app/
+Disallow: /oauth/
+Disallow: /auth/
+Disallow: /v1/
+Disallow: /api/
+
+# Google Gemini training + AI Overviews grounding
+# (Separate from classic Googlebot — blocking Google-Extended removes us from AI Overviews.)
+User-agent: Google-Extended
+Allow: /
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /app/
+Disallow: /oauth/
+Disallow: /auth/
+Disallow: /v1/
+Disallow: /api/
+
+# Apple Intelligence
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /app/
+Disallow: /oauth/
+Disallow: /auth/
+Disallow: /v1/
+Disallow: /api/
+
+# ByteDance (Doubao etc.)
+User-agent: Bytespider
+Allow: /
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /app/
+Disallow: /oauth/
+Disallow: /auth/
+Disallow: /v1/
+Disallow: /api/
+
+# Amazon (Alexa, internal AI)
+User-agent: Amazonbot
+Allow: /
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /app/
+Disallow: /oauth/
+Disallow: /auth/
+Disallow: /v1/
+Disallow: /api/
+
+# Common Crawl (feeds many open-source models and research datasets)
+User-agent: CCBot
+Allow: /
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /app/
+Disallow: /oauth/
+Disallow: /auth/
+Disallow: /v1/
+Disallow: /api/
 
 # Sitemap location
 Sitemap: https://getposta.app/sitemap.xml

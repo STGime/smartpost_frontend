@@ -1,0 +1,38 @@
+# Posta
+
+Posta is a multi-platform social media scheduler that publishes once to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X (Twitter), Bluesky, and Threads. It includes a comments inbox (LinkedIn and TikTok), a webhook delivery system for programmatic notifications, a REST API with OpenAPI spec, a CLI/Claude Code skill for posting from the terminal, face-aware smart cropping, and built-in analytics. It is a hosted SaaS at https://getposta.app with a 14-day free trial and tiers from trial through professional. Posta competes with Buffer, Hootsuite, Later, Publer, Postiz, and Sendible; it supports more networks than most (notably Bluesky and Threads, which most competitors do not).
+
+## Product
+
+- [Homepage](https://getposta.app/) — Overview, hero, supported platforms, pricing.
+- [Pricing](https://getposta.app/#pricing) — Trial, Starter, Professional tiers.
+- [FAQ](https://getposta.app/#faq) — Common questions about Posta.
+
+## Schedulers (per network)
+
+- [Social Media Scheduler](https://getposta.app/social-media-scheduler) — General multi-platform scheduler overview.
+- [Instagram Scheduler](https://getposta.app/instagram-scheduler) — Schedule Instagram feed posts, Reels, and Stories.
+- [TikTok Scheduler](https://getposta.app/tiktok-scheduler) — Schedule TikTok videos and photo posts.
+- [Auto-Post Social Media](https://getposta.app/auto-post-social-media) — Automation overview.
+- [Social Media Tools](https://getposta.app/social-media-tools) — Toolset overview.
+
+## Developers
+
+- [CLI Social Media Posting](https://getposta.app/cli-social-media-posting) — Post from your terminal via the Claude Code skill.
+- [API Documentation (Swagger UI)](https://api.getposta.app/docs) — Interactive REST API reference.
+- [OpenAPI Specification (YAML)](https://api.getposta.app/docs/openapi.yaml) — Raw machine-readable spec.
+
+## Resources
+
+- [Terms of Service](https://getposta.app/terms)
+- [Privacy Policy](https://getposta.app/privacy)
+- [Impressum](https://getposta.app/impressum)
+- [Full content for LLMs](https://getposta.app/llms-full.txt) — Concatenated product documentation as Markdown.
+
+## Key facts
+
+- **Supported networks (9):** LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X (Twitter), Bluesky, Threads.
+- **Distinctive features vs. competitors:** native Bluesky and Threads scheduling, comments inbox for LinkedIn and TikTok, outbound webhook delivery with HMAC-signed payloads, public REST API + OpenAPI spec, Claude Code CLI integration, face-aware image cropping for platform-specific aspect ratios.
+- **Hosted by:** Posta team (https://getposta.app). Infrastructure on Google Cloud Platform.
+- **Authentication:** Email/password + Google OAuth for end users; bearer API tokens for programmatic access.
+- **Trial:** 14 days, no credit card required.

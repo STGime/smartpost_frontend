@@ -8,6 +8,37 @@ import type { WaitingListSource } from '@/services'
 
 const waitingListSource = ref<WaitingListSource>('seo-tiktok')
 
+const tiktokFaq = [
+  {
+    q: 'Can I schedule TikTok videos with Posta?',
+    a: 'Yes. Posta publishes directly to TikTok via the official Content Posting API. Set a future date and time, and Posta uploads the video at that moment.',
+  },
+  {
+    q: 'Does Posta support TikTok photo posts?',
+    a: 'Yes. Posta supports both video and photo posts on TikTok. Photo posts are uploaded via TikTok\'s PULL_FROM_URL flow with a signed media URL.',
+  },
+  {
+    q: 'What privacy levels can I set on scheduled TikToks?',
+    a: 'All four: PUBLIC_TO_EVERYONE, MUTUAL_FOLLOW_FRIENDS, FOLLOWER_OF_CREATOR, and SELF_ONLY. Posta surfaces only the privacy levels your TikTok account is currently eligible to use.',
+  },
+  {
+    q: 'Can I disable comments, duets, or stitches on scheduled posts?',
+    a: 'Yes. Each option is a toggle on the post composer. Defaults match TikTok\'s UX guidelines (interaction controls default off).',
+  },
+  {
+    q: 'Does Posta auto-format my videos to 1080×1920?',
+    a: 'Yes. Posta detects faces and important subjects, then crops to TikTok\'s 9:16 portrait format with the subject centered. Smart compression keeps the file size within TikTok\'s limits without visible quality loss.',
+  },
+  {
+    q: 'How does Posta handle branded-content disclosure?',
+    a: 'Posta surfaces TikTok\'s branded-content and paid-partnership toggles at compose time, and requires explicit user acknowledgement of TikTok\'s branded-content policy before publishing. We never enable these toggles automatically.',
+  },
+  {
+    q: 'Can I save scheduled TikToks as drafts to finalize on the TikTok mobile app?',
+    a: 'Yes. Toggle "Save as draft" on the post composer. Posta uploads the content to your TikTok inbox so you can edit and publish it from the mobile app.',
+  },
+]
+
 useHead({
   title: 'TikTok Scheduler – Schedule TikTok Videos Automatically',
   meta: [
@@ -26,6 +57,20 @@ useHead({
   ],
   link: [
     { rel: 'canonical', href: 'https://getposta.app/tiktok-scheduler' },
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: tiktokFaq.map((item) => ({
+          '@type': 'Question',
+          name: item.q,
+          acceptedAnswer: { '@type': 'Answer', text: item.a },
+        })),
+      }),
+    },
   ],
 })
 </script>
@@ -63,6 +108,16 @@ useHead({
         <span class="pill">Instagram Reels</span>
         <span class="pill">YouTube Shorts</span>
         <span class="pill">Facebook Reels</span>
+      </div>
+    </section>
+
+    <section class="faq-section">
+      <h2>TikTok scheduling FAQ</h2>
+      <div class="faq-list">
+        <div v-for="item in tiktokFaq" :key="item.q" class="faq-item">
+          <h3>{{ item.q }}</h3>
+          <p>{{ item.a }}</p>
+        </div>
       </div>
     </section>
 
@@ -133,5 +188,34 @@ h1 {
   border-color: rgba(99, 102, 241, 0.7);
   color: #a5b4fc;
   background: rgba(79, 70, 229, 0.15);
+}
+
+.faq-section {
+  margin: 48px 0 36px;
+}
+
+.faq-section h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.faq-list {
+  display: grid;
+  gap: 18px;
+  max-width: 760px;
+}
+
+.faq-item h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.faq-item p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.65;
 }
 </style>

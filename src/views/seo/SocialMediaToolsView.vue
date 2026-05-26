@@ -8,6 +8,37 @@ import type { WaitingListSource } from '@/services'
 
 const waitingListSource = ref<WaitingListSource>('seo-tools')
 
+const toolsFaq = [
+  {
+    q: 'What does Posta include beyond scheduling?',
+    a: 'Face-aware cropping, smart compression, a visual calendar, a comments inbox (LinkedIn and TikTok), outbound HMAC-signed webhooks, a public REST API, a Claude Code CLI skill, and a built-in analytics dashboard.',
+  },
+  {
+    q: 'Does Posta have a visual content calendar?',
+    a: 'Yes. Drag-and-drop calendar view shows scheduled, published, and failed posts across every connected network at a glance.',
+  },
+  {
+    q: 'Does Posta include analytics?',
+    a: 'Yes. Per-post engagement metrics across the supported networks, plus aggregated benchmarks and trends.',
+  },
+  {
+    q: 'Can I manage comments and replies from Posta?',
+    a: 'Yes for LinkedIn and TikTok in v1 — a per-post Comments tab with inline reply. Other networks are on the roadmap.',
+  },
+  {
+    q: 'Does Posta have a media library?',
+    a: 'Yes. Uploaded media is stored, processed into platform-specific variants automatically, and is reusable across posts.',
+  },
+  {
+    q: 'Is there an API or webhook system?',
+    a: 'Yes. Public REST API with an OpenAPI specification at api.getposta.app/docs, plus outbound webhook delivery for post lifecycle events (HMAC-signed payloads, retried up to 5 times).',
+  },
+  {
+    q: 'Does Posta support multiple connected accounts per platform?',
+    a: 'Yes. You can connect multiple accounts on the same network — e.g. two Instagram Business accounts — and pick which one each post publishes to.',
+  },
+]
+
 useHead({
   title: 'Social Media Tools – Smart Tools for Creators Who Ship Fast',
   meta: [
@@ -26,6 +57,20 @@ useHead({
   ],
   link: [
     { rel: 'canonical', href: 'https://getposta.app/social-media-tools' },
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: toolsFaq.map((item) => ({
+          '@type': 'Question',
+          name: item.q,
+          acceptedAnswer: { '@type': 'Answer', text: item.a },
+        })),
+      }),
+    },
   ],
 })
 </script>
@@ -76,6 +121,16 @@ useHead({
       <p>
         Posta is built for indie creators, solo founders and small marketing teams. That means no agency-level pricing, no feature-gating that pushes you to expensive plans, and no hidden limits. You get all the tools on every plan. The difference between tiers is usage limits like number of social accounts and posts per month, not access to features.
       </p>
+    </section>
+
+    <section class="faq-section">
+      <h2>Social media tools FAQ</h2>
+      <div class="faq-list">
+        <div v-for="item in toolsFaq" :key="item.q" class="faq-item">
+          <h3>{{ item.q }}</h3>
+          <p>{{ item.a }}</p>
+        </div>
+      </div>
     </section>
 
     <InternalLinks />
@@ -155,5 +210,34 @@ h1 {
   .tools-grid {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+.faq-section {
+  margin: 48px 0 36px;
+}
+
+.faq-section h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.faq-list {
+  display: grid;
+  gap: 18px;
+  max-width: 760px;
+}
+
+.faq-item h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.faq-item p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.65;
 }
 </style>
