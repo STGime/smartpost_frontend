@@ -73,15 +73,20 @@ for f in llms.txt llms-full.txt; do
 done
 
 # Refresh openapi.yaml from the live backend before serving it, then set headers.
-# The in-tree public/openapi.yaml acts as the fallback if the backend is unreachable.
+# The in-tree public/openapi.yaml acts as the fallback: Vite copies public/ → dist/
+# at build time, and the prior `gsutil rsync` step above already uploaded
+# dist/openapi.yaml (the in-tree copy) to GCS. If the curl below fails, the bucket
+# still has that fallback snapshot — do NOT reorder this block above the rsync,
+# or the "fallback to in-tree copy" message becomes a lie.
+# Content-Type per RFC 9512 (2023): application/yaml.
 log_info "Refreshing openapi.yaml from live backend..."
 if curl -sf https://api.getposta.app/docs/openapi.yaml -o dist/openapi.yaml; then
     log_info "openapi.yaml refreshed ($(wc -l < dist/openapi.yaml) lines)"
     gsutil cp dist/openapi.yaml "gs://$GCS_BUCKET/openapi.yaml"
 else
-    log_warn "Could not fetch live openapi.yaml; falling back to in-tree copy from public/"
+    log_warn "Could not fetch live openapi.yaml; falling back to in-tree copy from public/ (already in GCS via prior rsync)"
 fi
-gsutil setmeta -h "Content-Type:application/x-yaml; charset=utf-8" \
+gsutil setmeta -h "Content-Type:application/yaml; charset=utf-8" \
     -h "Cache-Control:public, max-age=3600" \
     "gs://$GCS_BUCKET/openapi.yaml" 2>/dev/null || true
 

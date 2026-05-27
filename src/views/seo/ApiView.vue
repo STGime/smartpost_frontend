@@ -23,7 +23,7 @@ const apiFaq = [
   },
   {
     q: 'How are webhooks signed?',
-    a: 'Posta sends an X-Posta-Signature header computed as HMAC SHA-256 over the request body, using the secret you set when you registered the webhook endpoint. Compare the header against your own HMAC of the body to verify authenticity. A timestamp in X-Posta-Timestamp lets you reject replays older than your chosen window.',
+    a: 'Posta sends an X-Posta-Signature header computed as HMAC SHA-256 over the string "<X-Posta-Timestamp>.<raw request body>" — timestamp and body joined by a literal dot. Compare the header against your own HMAC of that string to verify authenticity. The X-Posta-Timestamp value is an ISO 8601 datetime string. Reject deliveries whose timestamp is older than your chosen replay-protection window.',
   },
   {
     q: 'What webhook events does Posta send?',
@@ -100,7 +100,7 @@ User-Agent: Posta-Webhooks/1.0
 X-Posta-Event: post.result.success
 X-Posta-Delivery: 9f1a2b...
 X-Posta-Timestamp: 2026-05-27T10:00:00Z
-X-Posta-Signature: <HMAC SHA-256 of timestamp + body>
+X-Posta-Signature: <HMAC SHA-256 of "timestamp.body" (hex)>
 
 {
   "post": { "id": "7a8b..." },
@@ -230,7 +230,7 @@ useHead({
       </p>
       <pre class="code-block"><code>{{ webhookPayloadExample }}</code></pre>
       <p>
-        Verify the signature by computing <code>HMAC-SHA256(secret, timestamp + body)</code> and comparing it to the <code>X-Posta-Signature</code> header. Reject deliveries where the <code>X-Posta-Timestamp</code> is older than your tolerance window (we recommend 5 minutes).
+        Verify the signature by computing <code>HMAC-SHA256(secret, timestamp + "." + body)</code> as a hex digest and comparing it to the <code>X-Posta-Signature</code> header. The <code>timestamp</code> is the value of the <code>X-Posta-Timestamp</code> header (an ISO 8601 datetime string) and <code>body</code> is the raw, byte-for-byte request body — don't re-serialize the JSON before hashing. Reject deliveries whose timestamp is older than your tolerance window (we recommend 5 minutes).
       </p>
     </section>
 
