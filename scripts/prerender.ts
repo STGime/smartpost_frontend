@@ -15,6 +15,7 @@ const ROUTES = [
   '/threads-scheduler',
   '/buffer-alternative',
   '/hootsuite-alternative',
+  '/compare',
   '/terms',
   '/privacy',
   '/impressum',

@@ -74,6 +74,11 @@ const routes: RouteRecordRaw[] = [
     name: 'hootsuite-alternative',
     component: () => import('@/views/seo/HootsuiteAlternativeView.vue'),
   },
+  {
+    path: '/compare',
+    name: 'compare',
+    component: () => import('@/views/seo/ComparePillarView.vue'),
+  },
 
   {
     path: '/login',
