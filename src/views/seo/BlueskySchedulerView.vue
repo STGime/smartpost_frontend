@@ -171,21 +171,21 @@ useHead({
         </div>
       </div>
       <p>
-        Threads are split using a separator character you pick (default <code>---</code>). Each segment respects Bluesky\'s 300-character per-post cap. Posta validates the split before scheduling so you don\'t end up with truncated thoughts.
+        Threads are split using a separator character you pick (default <code>---</code>). Each segment respects Bluesky's 300-character per-post cap. Posta validates the split before scheduling so you don't end up with truncated thoughts.
       </p>
     </section>
 
     <section class="content-section">
       <h2>One subscription, every network</h2>
       <p>
-        Most creators don\'t post only to Bluesky. With Posta, the same subscription that publishes to Bluesky also publishes to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X (Twitter), and Threads. Auto-format images for each network\'s aspect ratios, run the same caption across all of them, and see everything on one visual calendar.
+        Most creators don't post only to Bluesky. With Posta, the same subscription that publishes to Bluesky also publishes to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X (Twitter), and Threads. Auto-format images for each network's aspect ratios, run the same caption across all of them, and see everything on one visual calendar.
       </p>
     </section>
 
     <section class="content-section">
       <h2>Why most schedulers still don't support Bluesky</h2>
       <p>
-        AT Protocol uses a different identity model than the OAuth flows that dominate the older social media APIs. Adding Bluesky means writing a brand-new authentication and posting client, not bolting on yet another OAuth provider. Most established schedulers haven\'t made that investment yet — or shipped half-finished support that doesn\'t cover threads, alt text, or content labels.
+        AT Protocol uses a different identity model than the OAuth flows that dominate the older social media APIs. Adding Bluesky means writing a brand-new authentication and posting client, not bolting on yet another OAuth provider. Most established schedulers haven't made that investment yet — or shipped half-finished support that doesn't cover threads, alt text, or content labels.
       </p>
       <p>
         Posta added Bluesky early because the network is growing fast and the creators who want it are the same creators we serve.
