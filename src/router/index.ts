@@ -59,6 +59,11 @@ const routes: RouteRecordRaw[] = [
     name: 'bluesky-scheduler',
     component: () => import('@/views/seo/BlueskySchedulerView.vue'),
   },
+  {
+    path: '/threads-scheduler',
+    name: 'threads-scheduler',
+    component: () => import('@/views/seo/ThreadsSchedulerView.vue'),
+  },
 
   {
     path: '/login',
