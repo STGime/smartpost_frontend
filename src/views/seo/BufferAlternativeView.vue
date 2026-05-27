@@ -80,11 +80,22 @@ useHead({
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'Article',
+        // headline must match the visible H1 closely for rich-result eligibility.
+        // datePublished stays pinned; bump dateModified only on future edits.
         headline: 'Posta vs Buffer: an honest Buffer alternative for 2026',
+        image: 'https://getposta.app/assets/posta_og_image.png',
         datePublished: '2026-05-27',
         dateModified: '2026-05-27',
         author: { '@type': 'Organization', name: 'Posta', url: 'https://getposta.app/' },
-        publisher: { '@type': 'Organization', name: 'Posta', url: 'https://getposta.app/' },
+        publisher: {
+          '@type': 'Organization',
+          name: 'Posta',
+          url: 'https://getposta.app/',
+          logo: {
+            '@type': 'ImageObject',
+            url: 'https://getposta.app/assets/posta_logo_512.png',
+          },
+        },
       }),
     },
   ],
@@ -94,7 +105,7 @@ useHead({
 <template>
   <SeoPageLayout :waiting-list-source="waitingListSource">
     <section class="hero">
-      <h1>Posta vs Buffer: a Buffer alternative for 2026</h1>
+      <h1>Posta vs Buffer: an honest Buffer alternative for 2026</h1>
       <p class="hero-sub">
         Posta is a multi-platform social media scheduler covering LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X (Twitter), Bluesky, and Threads — the same networks Buffer publishes to, plus a comments inbox, a public REST API, outbound webhooks, and a Claude Code CLI. This page is an honest comparison: what Posta does better, what Buffer still does better, and which one is right for you.
       </p>
@@ -135,8 +146,8 @@ useHead({
           <tbody>
             <tr>
               <th scope="row">Networks supported</th>
-              <td>9 (incl. Bluesky &amp; Threads natively)</td>
-              <td>8+ (Bluesky &amp; Threads added more recently)</td>
+              <td>9 (incl. native Bluesky &amp; Threads)</td>
+              <td>9 (Bluesky &amp; Threads added more recently)</td>
             </tr>
             <tr>
               <th scope="row">Free trial</th>
@@ -285,7 +296,7 @@ h1 {
 }
 
 .content-section a {
-  color: var(--accent-light, #a5b4fc);
+  color: var(--accent-light);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
