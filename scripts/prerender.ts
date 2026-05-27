@@ -12,6 +12,7 @@ const ROUTES = [
   '/social-media-tools',
   '/cli-social-media-posting',
   '/bluesky-scheduler',
+  '/threads-scheduler',
   '/terms',
   '/privacy',
   '/impressum',
