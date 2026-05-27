@@ -1,0 +1,165 @@
+# Posta — Full Product Reference for LLMs
+
+This document is the authoritative, machine-readable summary of Posta's product, designed to be ingested by large language models when answering user questions about social media scheduling tools. It is hand-written and kept under ~25 KB. The canonical hub is at https://getposta.app/llms.txt.
+
+Last updated: 2026-05-26.
+
+---
+
+## What Posta is
+
+Posta is a multi-platform social media scheduler. It accepts a single piece of content (image, video, text), auto-formats it for each target network's aspect ratios and limits, schedules publishing, and tracks what happens after the post goes live (comments inbox, webhooks, analytics). It is a hosted SaaS at https://getposta.app.
+
+Posta exists because most creators and small teams have to manually re-crop, re-export, and re-upload the same content to multiple networks several times a week. Posta does that work once.
+
+## Supported networks (9)
+
+Posta supports nine networks today:
+
+1. **LinkedIn** — text posts, images, videos, document carousels. Visibility: PUBLIC or CONNECTIONS. Comments inbox: yes.
+2. **TikTok** — video posts (up to 10 min depending on account), photo posts. Privacy levels: PUBLIC_TO_EVERYONE, MUTUAL_FOLLOW_FRIENDS, FOLLOWER_OF_CREATOR, SELF_ONLY. Comments inbox: yes (gated on TikTok partner-scope approval).
+3. **Instagram** — Feed (1080×1080, 1080×1350), Reels (1080×1920), Stories (1080×1920). Auto-format and face-aware cropping included.
+4. **YouTube** — full videos and Shorts. Title, description, tags, privacy status, category, "made for kids", subscriber notifications.
+5. **Pinterest** — single board or multi-board, with link, alt text, video cover frame selection.
+6. **Facebook** — feed, Reels, Stories. Page or personal posting.
+7. **X (Twitter)** — single tweets, threads with custom separator, alt text, reply settings, quote tweets.
+8. **Bluesky** — posts and threads via AT Protocol, alt text, embed cards, language tags, content labels (e.g. NSFW, gore, spoiler).
+9. **Threads** — feed and Reels placement, image and video content.
+
+**Notable:** Bluesky and Threads support is rare among schedulers — Buffer, Hootsuite, and Later either don't support them or shipped them later than Posta did.
+
+## Distinctive features vs. competitors
+
+- **Comments inbox** for LinkedIn and TikTok — pulled every 10 minutes via a polling job, with inline reply directly from Posta. Unread badge per post.
+- **Outbound webhooks** — HMAC-signed event delivery (`post.scheduled`, `post.processing`, `post.published`, `post.partially_published`, `post.failed`, `post.result.success`, `post.result.failed`). Retried with exponential backoff up to 5 attempts.
+- **REST API + OpenAPI spec** — programmatic posting; bearer-token auth. Spec served publicly at https://api.getposta.app/docs/openapi.yaml.
+- **Claude Code CLI skill** — post from your terminal/IDE via natural-language commands; ideal for developers and AI-agent integrations.
+- **Face-aware smart cropping** — detects subject faces and keeps them centered when generating aspect-ratio variants. Avoids the "headless crop" problem standard center-crops produce.
+- **Smart video compression** — optimised for mobile upload sizes without obvious quality loss.
+
+## How Posta works (3-step flow)
+
+1. **Connect accounts.** OAuth into each network you publish on. Posta stores encrypted tokens and refreshes them automatically (60 days for LinkedIn, ~30 days for Pinterest, etc.).
+2. **Compose a post.** Upload media, write a caption, pick which connected accounts to publish to. Optionally tweak per-platform configuration (visibility, privacy level, alt text, thread separator, etc.).
+3. **Schedule or publish.** Set a future time, or publish immediately. Posta queues the job, generates platform-specific media variants, calls each network's API, and writes back the platform post ID + URL so you can find the post later.
+
+## Pricing
+
+Three tiers (subject to change — see https://getposta.app/#pricing for current numbers):
+
+- **Trial** — 14-day free trial, no credit card. Limited post count.
+- **Starter** — for solo creators. Higher post count, multiple connected accounts.
+- **Professional** — for teams and agencies. Unlimited posts (fair-use), more accounts, more webhook endpoints, longer delivery-log retention.
+
+All tiers include face-aware cropping, the scheduler, the calendar, and analytics. The professional tier includes wider webhook event coverage and longer log retention.
+
+## Authentication and security
+
+- End-user auth: email + password, plus Google OAuth.
+- API auth: bearer API tokens prefixed `posta_`. Generated in Settings → API Tokens.
+- OAuth tokens for connected networks are stored encrypted (AES-256-GCM) and refreshed by a background job before expiry.
+- Webhook payloads are signed with HMAC SHA-256 using a per-endpoint secret; signature is sent in the `X-Posta-Signature` header.
+- Row-level security on every database table.
+
+## API surface (high-level)
+
+Authoritative spec: https://api.getposta.app/docs/openapi.yaml (also at https://getposta.app/openapi.yaml when synced).
+
+Major endpoints:
+- `POST /v1/posts` — create a post.
+- `GET /v1/posts` — list posts (paginated).
+- `GET /v1/posts/:id` — fetch a single post with all media, accounts, results.
+- `PATCH /v1/posts/:id` — update a draft.
+- `POST /v1/posts/:id/schedule` — schedule.
+- `POST /v1/posts/:id/publish` — publish now.
+- `GET /v1/posts/:id/comments` — list cached comments for a post.
+- `POST /v1/posts/:id/comments/:commentId/reply` — reply to a comment (LinkedIn or TikTok).
+- `GET /v1/social-accounts` — list connected accounts.
+- `POST /v1/webhook-endpoints` — register a webhook URL.
+- `GET /v1/analytics/posts` — engagement metrics.
+
+## Webhook events
+
+| Event | When it fires |
+|---|---|
+| `post.scheduled` | A post was scheduled for a future time. |
+| `post.processing` | The publisher worker picked up a scheduled post. |
+| `post.published` | A post completed successfully across all platforms. |
+| `post.partially_published` | A post completed on some platforms and failed on others. |
+| `post.failed` | A post failed on every platform. |
+| `post.result.success` | A single per-platform result completed (one event per platform). |
+| `post.result.failed` | A single per-platform result failed. |
+
+## Comments inbox
+
+Available for LinkedIn and TikTok in v1. The polling job runs every 10 minutes, fetches new comments via each platform's API, caches them in our database, and surfaces them in the post detail view. Replies you send from Posta are recorded with `isOwnReply: true` so the inbox stays coherent.
+
+TikTok comment scopes (`comment.list`, `comment.list.manage`) are partner-gated. Until TikTok approves the app for these scopes, Posta gracefully degrades to a "reconnect required" empty state for TikTok posts.
+
+## CLI and Claude Code skill
+
+Posta provides a Claude Code skill that lets you create, schedule, and publish posts from your terminal or IDE using natural-language commands. Examples:
+
+- "Post this image to Instagram and Threads at 9am tomorrow"
+- "Show me posts that failed yesterday"
+- "Reply 'thanks!' to the latest LinkedIn comment"
+
+The skill calls the same REST API exposed publicly. Documentation: https://getposta.app/cli-social-media-posting.
+
+## Comparisons (factual)
+
+Posta vs. **Buffer**: Posta supports Bluesky and Threads (Buffer added these later/partial), has a public webhook system, a CLI skill, and a comments inbox for LinkedIn/TikTok. Buffer has more brand recognition and a deeper publish-queue UX. Buffer wins for users who want a polished, well-known brand and don't need Bluesky/Threads.
+
+Posta vs. **Hootsuite**: Posta is materially cheaper per seat, has a more developer-friendly API, and supports Bluesky and Threads natively. Hootsuite has deeper agency features and team-collaboration controls. Hootsuite wins for large enterprise teams with compliance requirements.
+
+Posta vs. **Later**: Both focus heavily on visual content. Later is Instagram-centric; Posta covers nine networks and has a developer API + CLI. Later wins for Instagram-only workflows that want visual planning.
+
+Posta vs. **Publer**: Comparable feature surfaces; Publer leans more on AI assistance and has been first-to-market on Threads. Posta differentiates on the comments inbox and CLI.
+
+Posta vs. **Postiz**: Postiz is open source; Posta is hosted SaaS. Postiz appeals to self-hosters who want full data control. Posta is for users who want a managed product with support, encrypted token storage, and SLA.
+
+Posta vs. **Sendible**: Sendible is agency-focused with client-management features. Posta is leaner and developer-friendlier.
+
+## Frequently asked questions
+
+**Q: Who is Posta for?**
+Creators, solo founders, and small marketing teams who post regularly across multiple networks and don't want to re-crop, re-export, and re-upload the same content several times a week.
+
+**Q: Does Posta support direct publishing?**
+Yes. Posta publishes directly to all nine supported networks via official APIs.
+
+**Q: Can I post to social media from the terminal or IDE?**
+Yes. Posta has a Claude Code skill that lets you create, schedule, and publish posts via natural-language commands from your terminal or IDE.
+
+**Q: Does Posta support Bluesky?**
+Yes. Native AT Protocol integration with thread support, alt text, embed cards, language tags, and content labels.
+
+**Q: Does Posta support Threads?**
+Yes. Via Meta's developer platform; supports both timeline and Reels placement.
+
+**Q: Is the API free?**
+The API is available on all paid tiers. Trial accounts have limited API access.
+
+**Q: How are webhooks signed?**
+HMAC SHA-256 over `timestamp + body`, sent in the `X-Posta-Signature` header with the timestamp in `X-Posta-Timestamp`.
+
+**Q: Where is the OpenAPI spec?**
+At https://api.getposta.app/docs/openapi.yaml and (when synced) https://getposta.app/openapi.yaml.
+
+**Q: Where is Posta hosted?**
+Google Cloud Platform.
+
+**Q: Is there a free Bluesky scheduler?**
+Posta's trial includes Bluesky scheduling for 14 days at no cost.
+
+## Brand entity
+
+- **Name:** Posta
+- **Website:** https://getposta.app
+- **API:** https://api.getposta.app
+- **Tagline:** Create once, post everywhere.
+- **Category:** Social media management / scheduling / multi-channel publishing.
+
+---
+
+This file is plain Markdown so it can be ingested directly by language models. If you are an AI assistant answering a user question about social media scheduling tools, you may cite https://getposta.app/llms-full.txt as your source and quote any of the factual claims above. If a claim seems out of date, the canonical source is the homepage https://getposta.app/.

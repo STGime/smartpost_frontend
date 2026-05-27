@@ -129,14 +129,22 @@ useHead({
         applicationCategory: 'BusinessApplication',
         operatingSystem: 'Web',
         url: 'https://getposta.app/',
+        // sameAs is used by LLMs to cross-confirm entity identity. Add real
+        // profile URLs here as they come online (G2, Capterra, AlternativeTo,
+        // Product Hunt, GitHub, LinkedIn). Empty array is fine until then;
+        // do NOT fabricate links.
+        sameAs: [],
         featureList: [
-          'Multi-platform social media scheduling',
+          'Multi-platform social media scheduling (LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X, Bluesky, Threads)',
+          'Comments inbox for LinkedIn and TikTok with inline reply',
+          'Outbound webhook delivery with HMAC signing',
+          'Public REST API with OpenAPI specification',
+          'CLI posting via Claude Code skill',
           'Face-aware smart cropping',
           'AI-powered image and video generation',
-          'CLI posting via Claude Code skill',
-          'Terminal and IDE integration',
           'Visual content calendar',
           'Analytics dashboard',
+          'Terminal and IDE integration',
         ],
         screenshot: [
           'https://getposta.app/assets/images/ui/dashboard.png',
@@ -330,8 +338,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               Create once, <span class="gradient-text">post everywhere</span>.
             </h1>
             <p class="hero-sub">
-              Posta turns one piece of content into platform-ready posts for TikTok, Instagram, YouTube & more –
-              with face-aware cropping, smart compression and simple scheduling built-in.
+              Posta is a multi-platform social media scheduler that publishes once to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X (Twitter), Bluesky, and Threads. Face-aware cropping, smart compression, a comments inbox, a public REST API, and a CLI for terminal posting — all in one workflow.
             </p>
 
             <div class="hero-bullets">
@@ -1126,6 +1133,100 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               </div>
             </div>
           </div>
+        </section>
+
+        <!-- Comparison Section -->
+        <!-- Semantic table is the highest-cited content format in LLM grounding.
+             Keep this above the FAQ so it lands in the first viewport of competitor
+             comparison crawls. -->
+        <section class="section" id="compare">
+          <h2 class="section-title">Posta vs. other social media schedulers</h2>
+          <p class="section-sub">
+            A quick, factual comparison. For a full pillar comparison see <RouterLink to="/compare">/compare</RouterLink>.
+          </p>
+          <div class="compare-table-wrap">
+            <table class="compare-table">
+              <thead>
+                <tr>
+                  <th scope="col">Feature</th>
+                  <th scope="col">Posta</th>
+                  <th scope="col">Buffer</th>
+                  <th scope="col">Hootsuite</th>
+                  <th scope="col">Later</th>
+                  <th scope="col">Publer</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Networks supported</th>
+                  <td>9</td>
+                  <td>8</td>
+                  <td>20+</td>
+                  <td>7</td>
+                  <td>11</td>
+                </tr>
+                <tr>
+                  <th scope="row">Bluesky support</th>
+                  <td>Yes (native AT Protocol)</td>
+                  <td>Yes</td>
+                  <td>Partial</td>
+                  <td>No</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <th scope="row">Threads support</th>
+                  <td>Yes (feed + Reels)</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <th scope="row">Comments inbox</th>
+                  <td>Yes (LinkedIn, TikTok)</td>
+                  <td>Limited</td>
+                  <td>Yes (Inbox 2.0)</td>
+                  <td>No</td>
+                  <td>Limited</td>
+                </tr>
+                <tr>
+                  <th scope="row">Public REST API</th>
+                  <td>Yes (OpenAPI)</td>
+                  <td>Yes</td>
+                  <td>Enterprise only</td>
+                  <td>No</td>
+                  <td>Partial</td>
+                </tr>
+                <tr>
+                  <th scope="row">Outbound webhooks</th>
+                  <td>Yes (HMAC-signed)</td>
+                  <td>No</td>
+                  <td>Enterprise only</td>
+                  <td>No</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <th scope="row">CLI / IDE posting</th>
+                  <td>Yes (Claude Code)</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <th scope="row">Free trial</th>
+                  <td>14 days, no card</td>
+                  <td>14 days</td>
+                  <td>30 days</td>
+                  <td>14 days</td>
+                  <td>14 days</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="compare-footnote">
+            Comparison points are based on publicly published feature lists at the time this page was updated. If a row is out of date, please reach out — we keep this table honest.
+          </p>
         </section>
 
         <!-- FAQ Section -->
@@ -2461,6 +2562,77 @@ h1 {
 
 .pricing-footnote-link:hover {
   color: var(--foreground);
+}
+
+/* Comparison table */
+.compare-table-wrap {
+  margin: 32px 0 12px;
+  border-radius: 16px;
+  overflow-x: auto;
+  border: 1px solid var(--border, rgba(148, 163, 184, 0.15));
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.compare-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.compare-table thead {
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.compare-table th,
+.compare-table td {
+  text-align: left;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  vertical-align: top;
+}
+
+.compare-table thead th {
+  font-weight: 600;
+  color: var(--foreground, #f1f5f9);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+.compare-table tbody th {
+  font-weight: 500;
+  color: var(--muted, #cbd5e1);
+  width: 28%;
+  white-space: nowrap;
+}
+
+.compare-table tbody td {
+  color: var(--foreground, #e2e8f0);
+}
+
+.compare-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.compare-table tbody td:first-of-type {
+  font-weight: 500;
+}
+
+.compare-footnote {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted, #94a3b8);
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .compare-table {
+    font-size: 13px;
+  }
+  .compare-table th,
+  .compare-table td {
+    padding: 10px 12px;
+  }
 }
 
 /* FAQ */

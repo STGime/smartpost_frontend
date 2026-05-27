@@ -8,6 +8,37 @@ import type { WaitingListSource } from '@/services'
 
 const waitingListSource = ref<WaitingListSource>('seo-instagram')
 
+const instagramFaq = [
+  {
+    q: 'Can I schedule Instagram Reels with Posta?',
+    a: 'Yes. Posta schedules Reels at 1080×1920 and auto-formats your source media to fit. Pick a date and time, preview the post, and Posta publishes it via the Instagram Graph API.',
+  },
+  {
+    q: 'Does Posta support Instagram Stories?',
+    a: 'Yes. Stories use the same 1080×1920 dimensions as Reels and are scheduled the same way. Posta keeps the safe zone in mind when generating crops so faces and text stay visible inside the story UI.',
+  },
+  {
+    q: 'How does Posta auto-crop images for Instagram?',
+    a: 'Posta detects faces and important subjects in your source media, then generates correctly cropped variants for each Instagram format (1:1 feed, 4:5 portrait, 9:16 Reels and Stories). Faces stay centered even when the target aspect ratio is very different from the source.',
+  },
+  {
+    q: 'Can I schedule carousel posts to Instagram?',
+    a: 'Yes. Drop multiple images and Posta queues them as a carousel. Each slide is auto-formatted to the same aspect ratio so the carousel scrolls cleanly.',
+  },
+  {
+    q: 'Does Posta require an Instagram Business or Creator account?',
+    a: 'Yes — Instagram\'s scheduling API only works for Business and Creator accounts. Posta connects via your linked Facebook Page during account setup.',
+  },
+  {
+    q: 'How far in advance can I schedule Instagram posts?',
+    a: 'Months in advance. Posta stores the scheduled date in your account and a background worker picks it up at the right moment, regardless of how far out it was scheduled.',
+  },
+  {
+    q: 'Is Posta a cheaper alternative to Later for Instagram?',
+    a: 'Posta\'s tiers start at a lower entry price than Later\'s comparable plans, and the same subscription also covers TikTok, LinkedIn, YouTube, Pinterest, Facebook, X, Bluesky and Threads — not just Instagram.',
+  },
+]
+
 useHead({
   title: 'Instagram Scheduler – Schedule Reels, Stories & Feed Posts',
   meta: [
@@ -26,6 +57,20 @@ useHead({
   ],
   link: [
     { rel: 'canonical', href: 'https://getposta.app/instagram-scheduler' },
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: instagramFaq.map((item) => ({
+          '@type': 'Question',
+          name: item.q,
+          acceptedAnswer: { '@type': 'Answer', text: item.a },
+        })),
+      }),
+    },
   ],
 })
 </script>
@@ -79,6 +124,16 @@ useHead({
       <p>
         Plan your Instagram content calendar days or weeks in advance. Set the exact date and time for each post, preview how it will look on Instagram, and let Posta handle the publishing. Timezone-safe scheduling means your posts go live when your audience is active, no matter where you are.
       </p>
+    </section>
+
+    <section class="faq-section">
+      <h2>Instagram scheduling FAQ</h2>
+      <div class="faq-list">
+        <div v-for="item in instagramFaq" :key="item.q" class="faq-item">
+          <h3>{{ item.q }}</h3>
+          <p>{{ item.a }}</p>
+        </div>
+      </div>
     </section>
 
     <InternalLinks />
@@ -158,5 +213,34 @@ h1 {
   background: rgba(79, 70, 229, 0.15);
   padding: 2px 8px;
   border-radius: 4px;
+}
+
+.faq-section {
+  margin: 48px 0 36px;
+}
+
+.faq-section h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.faq-list {
+  display: grid;
+  gap: 18px;
+  max-width: 760px;
+}
+
+.faq-item h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.faq-item p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.65;
 }
 </style>

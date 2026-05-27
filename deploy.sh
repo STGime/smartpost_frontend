@@ -54,10 +54,21 @@ gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" \
 
 # Set no-cache for pre-rendered HTML pages
 log_info "Setting cache headers for pre-rendered pages..."
-for dir in social-media-scheduler instagram-scheduler tiktok-scheduler auto-post-social-media social-media-tools terms privacy impressum; do
+for dir in social-media-scheduler instagram-scheduler tiktok-scheduler auto-post-social-media social-media-tools cli-social-media-posting terms privacy impressum; do
     if [ -f "dist/$dir/index.html" ]; then
         gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" \
             "gs://$GCS_BUCKET/$dir/index.html" 2>/dev/null || true
+    fi
+done
+
+# Set headers for llms.txt / llms-full.txt (LLM crawler hints).
+# Markdown content-type so LLM tooling parses them, short cache so updates surface fast.
+log_info "Setting headers for llms.txt and llms-full.txt..."
+for f in llms.txt llms-full.txt; do
+    if [ -f "dist/$f" ]; then
+        gsutil setmeta -h "Content-Type:text/markdown; charset=utf-8" \
+            -h "Cache-Control:public, max-age=3600" \
+            "gs://$GCS_BUCKET/$f" 2>/dev/null || true
     fi
 done
 
