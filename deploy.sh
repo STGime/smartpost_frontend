@@ -54,7 +54,7 @@ gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" \
 
 # Set no-cache for pre-rendered HTML pages
 log_info "Setting cache headers for pre-rendered pages..."
-for dir in social-media-scheduler instagram-scheduler tiktok-scheduler auto-post-social-media social-media-tools cli-social-media-posting bluesky-scheduler threads-scheduler buffer-alternative hootsuite-alternative compare terms privacy impressum; do
+for dir in social-media-scheduler instagram-scheduler tiktok-scheduler auto-post-social-media social-media-tools cli-social-media-posting bluesky-scheduler threads-scheduler buffer-alternative hootsuite-alternative compare developers terms privacy impressum; do
     if [ -f "dist/$dir/index.html" ]; then
         gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" \
             "gs://$GCS_BUCKET/$dir/index.html" 2>/dev/null || true
@@ -71,6 +71,19 @@ for f in llms.txt llms-full.txt; do
             "gs://$GCS_BUCKET/$f" 2>/dev/null || true
     fi
 done
+
+# Refresh openapi.yaml from the live backend before serving it, then set headers.
+# The in-tree public/openapi.yaml acts as the fallback if the backend is unreachable.
+log_info "Refreshing openapi.yaml from live backend..."
+if curl -sf https://api.getposta.app/docs/openapi.yaml -o dist/openapi.yaml; then
+    log_info "openapi.yaml refreshed ($(wc -l < dist/openapi.yaml) lines)"
+    gsutil cp dist/openapi.yaml "gs://$GCS_BUCKET/openapi.yaml"
+else
+    log_warn "Could not fetch live openapi.yaml; falling back to in-tree copy from public/"
+fi
+gsutil setmeta -h "Content-Type:application/x-yaml; charset=utf-8" \
+    -h "Cache-Control:public, max-age=3600" \
+    "gs://$GCS_BUCKET/openapi.yaml" 2>/dev/null || true
 
 echo ""
 echo "============================================"

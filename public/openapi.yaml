@@ -1,0 +1,5857 @@
+openapi: 3.0.3
+info:
+  title: Posta API
+  description: |
+    Posta is a multi-platform social media auto-posting tool that helps content creators
+    publish their content across multiple social media platforms simultaneously.
+
+    ## Features
+    - User authentication with JWT tokens
+    - Media upload with smart cropping for different platforms
+    - Social media account OAuth connections (TikTok, Instagram, etc.)
+    - Subscription plan management
+
+    ## Authentication
+    Most endpoints require authentication using a Bearer token. Include the token in the
+    Authorization header: `Authorization: Bearer <access_token>`
+
+    ## Rate Limiting
+    API requests are rate-limited based on your subscription plan.
+
+    ## Platform Media Limits
+    Each platform has specific limits on the number of media items per post:
+
+    | Platform | Max Images | Max Videos | Notes |
+    |----------|-----------|------------|-------|
+    | Instagram | 10 | 1 | Carousel posts support up to 10 items |
+    | Threads | 10 | 1 | Similar to Instagram |
+    | LinkedIn | 20 | 1 | Multi-image posts; PDF carousels separate |
+    | Facebook | 10 | 1 | Carousel posts |
+    | Pinterest | 5 | 1 | Carousel pins |
+    | X (Twitter) | 4 | 1 | Cannot mix images and video |
+    | Bluesky | 4 | 0 | No video support yet |
+    | TikTok | 1 | 1 | Primarily video platform |
+    | YouTube | 0 | 1 | Video only (thumbnail separate) |
+
+    **Important:** When a post includes video, most platforms only accept 1 video and ignore additional images.
+  version: 1.0.0
+  contact:
+    name: Posta Support
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+  - url: https://api.getposta.app
+    description: Production server
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Platforms
+    description: Platform specifications and requirements
+  - name: Payments
+    description: Stripe payment processing and subscription management
+  - name: Auth
+    description: Authentication and user session management
+  - name: Users
+    description: User profile and subscription management
+  - name: Media
+    description: Media upload and management
+  - name: Social Accounts
+    description: Social media account OAuth connections
+  - name: Posts
+    description: Post creation, scheduling, and publishing
+  - name: Analytics
+    description: Post performance analytics and metrics
+  - name: Tags
+    description: Hashtag tag management for posts
+  - name: Feedback
+    description: User feedback submission
+  - name: Waiting List
+    description: Pre-launch waiting list signup
+  - name: SSE
+    description: Server-Sent Events for real-time updates
+  - name: Webhooks
+    description: Third-party webhook callbacks (Meta/Facebook)
+  - name: Webhook Endpoints
+    description: |
+      Outbound webhooks for programmatic notifications when posts are published, fail, or change status.
+      Configure endpoints to receive real-time HTTP POST callbacks with signed payloads.
+
+      **Event Types:**
+      - `post.scheduled` — Post scheduled for publishing
+      - `post.processing` — Publishing in progress
+      - `post.published` — Fully published to all platforms
+      - `post.partially_published` — Some platforms failed
+      - `post.failed` — All platforms failed
+      - `post.result.success` — Single platform succeeded
+      - `post.result.failed` — Single platform failed
+
+      **Plan Limits:**
+      | Plan | Max Endpoints | Available Events | Log Retention |
+      |------|--------------|------------------|---------------|
+      | Trial | 1 | post.published, post.failed | 24 hours |
+      | Starter | 3 | All events | 7 days |
+      | Professional | 10 | All events | 30 days |
+
+      **Signature Verification:**
+      Each delivery includes an `X-Posta-Signature` header containing an HMAC-SHA256 hex digest.
+      Verify using: `HMAC-SHA256(secret, X-Posta-Timestamp + "." + raw_body)`
+  - name: API Tokens
+    description: Create and manage API tokens for CLI and programmatic access
+  - name: Admin
+    description: Admin-only endpoints for system monitoring
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token from login or signup
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code
+        details:
+          type: object
+          description: Additional error details
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        display_name:
+          type: string
+        avatar_url:
+          type: string
+          format: uri
+        created_at:
+          type: string
+          format: date-time
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        display_name:
+          type: string
+        avatar_url:
+          type: string
+        role:
+          type: string
+          enum: [user, admin]
+        onboarding_completed:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Plan:
+      type: object
+      properties:
+        plan:
+          type: object
+          properties:
+            name:
+              type: string
+              enum: [free, starter, professional, business]
+            status:
+              type: string
+              enum: [active, cancelled, expired, trial]
+            started_at:
+              type: string
+              format: date-time
+            expires_at:
+              type: string
+              format: date-time
+        limits:
+          type: object
+          properties:
+            posts_per_month:
+              type: integer
+            media_storage_mb:
+              type: integer
+            connected_accounts:
+              type: integer
+            scheduled_posts:
+              type: integer
+        usage:
+          type: object
+          properties:
+            posts_this_month:
+              type: integer
+            storage_used_mb:
+              type: number
+            connected_accounts:
+              type: integer
+            scheduled_posts:
+              type: integer
+
+    Media:
+      type: object
+      description: |
+        A media item (image or video) uploaded by the user.
+
+        After upload confirmation, media is processed to generate platform-optimized variants
+        with smart cropping that preserves faces and important content areas.
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "2810592b-359e-4a87-a6e0-41085ab06474"
+        name:
+          type: string
+          example: "my-video.mp4"
+        type:
+          type: string
+          enum: [image, video]
+          example: "video"
+        mime_type:
+          type: string
+          example: "video/mp4"
+        size_bytes:
+          type: integer
+          example: 15728640
+        width:
+          type: integer
+          description: Original width in pixels
+          example: 1920
+        height:
+          type: integer
+          description: Original height in pixels
+          example: 1080
+        duration:
+          type: number
+          description: Duration in seconds (video only)
+          example: 15.5
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+          description: |
+            - `pending` - Upload not yet confirmed
+            - `processing` - Variants being generated
+            - `completed` - All variants ready
+            - `failed` - Processing failed
+          example: "completed"
+        thumbnail_url:
+          type: string
+          format: uri
+          description: Signed URL for video thumbnail (videos only)
+          example: "https://storage.googleapis.com/bucket/thumbnail.jpg?signature=..."
+        original_url:
+          type: string
+          format: uri
+          description: Signed URL to download the original media
+          example: "https://storage.googleapis.com/bucket/original.mp4?signature=..."
+        variants:
+          type: array
+          description: |
+            Platform-optimized versions of this media.
+            See MediaVariant schema for the full list of generated variants.
+          items:
+            $ref: '#/components/schemas/MediaVariant'
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-12-19T20:00:00Z"
+      example:
+        id: "2810592b-359e-4a87-a6e0-41085ab06474"
+        name: "my-video.mp4"
+        type: "video"
+        mime_type: "video/mp4"
+        size_bytes: 15728640
+        width: 1920
+        height: 1080
+        duration: 15.5
+        status: "completed"
+        thumbnail_url: "https://storage.googleapis.com/bucket/thumbnail.jpg?signature=..."
+        original_url: "https://storage.googleapis.com/bucket/original.mp4?signature=..."
+        variants:
+          - id: "v1-uuid"
+            platform: "tiktok"
+            aspect_ratio: "9:16"
+            width: 1080
+            height: 1920
+            url: "https://storage.googleapis.com/bucket/tiktok_9x16.mp4?signature=..."
+          - id: "v2-uuid"
+            platform: "instagram_feed_square"
+            aspect_ratio: "1:1"
+            width: 1080
+            height: 1080
+            url: "https://storage.googleapis.com/bucket/instagram_feed_square_1x1.mp4?signature=..."
+          - id: "v3-uuid"
+            platform: "facebook_reels"
+            aspect_ratio: "9:16"
+            width: 1080
+            height: 1920
+            url: "https://storage.googleapis.com/bucket/facebook_reels_9x16.mp4?signature=..."
+        created_at: "2024-12-19T20:00:00Z"
+
+    MediaListItem:
+      type: object
+      description: Lightweight media item for list responses (excludes face_data, variants, original_url)
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "2810592b-359e-4a87-a6e0-41085ab06474"
+        name:
+          type: string
+          example: "my-video.mp4"
+        type:
+          type: string
+          enum: [image, video]
+          example: "video"
+        mime_type:
+          type: string
+          example: "video/mp4"
+        size_bytes:
+          type: integer
+          example: 15728640
+        width:
+          type: integer
+          description: Original width in pixels
+          example: 1920
+        height:
+          type: integer
+          description: Original height in pixels
+          example: 1080
+        duration:
+          type: number
+          description: Duration in seconds (video only)
+          example: 15.5
+        processing_status:
+          type: string
+          enum: [pending, processing, completed, failed]
+          example: "completed"
+        thumbnail_url:
+          type: string
+          format: uri
+          description: Signed URL for video thumbnail (videos only)
+          example: "https://storage.googleapis.com/bucket/thumbnail.jpg?signature=..."
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-12-19T20:00:00Z"
+
+    MediaVariant:
+      type: object
+      description: |
+        A platform-optimized variant of the original media with smart cropping.
+
+        Variants are automatically generated when media is uploaded and processed.
+        Each variant is optimized for a specific platform's requirements including
+        aspect ratio, dimensions, and encoding settings.
+
+        **Available Variants:**
+
+        | Platform | Aspect Ratio | Dimensions | Use Case |
+        |----------|--------------|------------|----------|
+        | tiktok | 9:16 | 1080x1920 | TikTok videos |
+        | instagram_reels | 9:16 | 1080x1920 | Instagram Reels |
+        | instagram_story | 9:16 | 1080x1920 | Instagram Stories |
+        | instagram_feed_square | 1:1 | 1080x1080 | Instagram Feed |
+        | instagram_feed_portrait | 4:5 | 1080x1350 | Instagram Feed |
+        | facebook_reels | 9:16 | 1080x1920 | Facebook Reels |
+        | facebook_story | 9:16 | 1080x1920 | Facebook Stories |
+        | facebook_feed | 1:1 | 1200x1200 | Facebook Feed |
+        | youtube_shorts | 9:16 | 1080x1920 | YouTube Shorts |
+        | youtube_landscape | 16:9 | 1920x1080 | YouTube Videos |
+        | twitter | 16:9 | 1200x675 | X/Twitter |
+        | twitter_square | 1:1 | 1200x1200 | X/Twitter |
+        | linkedin_square | 1:1 | 1200x1200 | LinkedIn |
+        | linkedin_landscape | 1.91:1 | 1200x628 | LinkedIn |
+        | linkedin_portrait | 4:5 | 1080x1350 | LinkedIn |
+        | pinterest | 2:3 | 1000x1500 | Pinterest Pins |
+        | pinterest_square | 1:1 | 1000x1000 | Pinterest |
+        | bluesky | 16:9 | 2000x1125 | Bluesky |
+        | bluesky_square | 1:1 | 2000x2000 | Bluesky |
+        | threads | 1:1 | 1440x1440 | Threads |
+        | threads_portrait | 4:5 | 1080x1350 | Threads |
+        | threads_reels | 9:16 | 1080x1920 | Threads Reels |
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        platform:
+          type: string
+          description: Platform and variant identifier
+          example: "instagram_reels"
+          enum:
+            - tiktok
+            - instagram_reels
+            - instagram_feed_square
+            - instagram_feed_portrait
+            - instagram_story
+            - youtube_shorts
+            - youtube_landscape
+            - pinterest
+            - pinterest_square
+            - facebook_feed
+            - facebook_story
+            - facebook_reels
+            - twitter
+            - twitter_square
+            - linkedin_square
+            - linkedin_landscape
+            - linkedin_portrait
+            - bluesky
+            - bluesky_square
+            - threads
+            - threads_portrait
+            - threads_reels
+        aspect_ratio:
+          type: string
+          description: Aspect ratio of the variant
+          example: "9:16"
+          enum:
+            - '9:16'
+            - '1:1'
+            - '4:5'
+            - '16:9'
+            - '2:3'
+            - '1.91:1'
+        width:
+          type: integer
+          description: Width in pixels
+          example: 1080
+        height:
+          type: integer
+          description: Height in pixels
+          example: 1920
+        url:
+          type: string
+          format: uri
+          description: Signed URL to download the variant (valid for 1 hour)
+          example: "https://storage.googleapis.com/bucket/path/variant.mp4?signature=..."
+      example:
+        id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        platform: "instagram_reels"
+        aspect_ratio: "9:16"
+        width: 1080
+        height: 1920
+        url: "https://storage.googleapis.com/smartpost-media/users/xyz/media/abc/instagram_reels_9x16.mp4?X-Goog-Signature=..."
+
+    SocialAccount:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        platform:
+          type: string
+          enum: [tiktok, instagram, youtube, twitter, facebook, pinterest, linkedin, bluesky, threads]
+        username:
+          type: string
+        display_name:
+          type: string
+        profile_image_url:
+          type: string
+          format: uri
+        is_active:
+          type: boolean
+        connection_error:
+          type: string
+        token_expires_at:
+          type: string
+          format: date-time
+        connected_at:
+          type: string
+          format: date-time
+        last_used_at:
+          type: string
+          format: date-time
+
+    Platform:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        enabled:
+          type: boolean
+        features:
+          type: array
+          items:
+            type: string
+
+    Post:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        caption:
+          type: string
+        status:
+          type: string
+          enum: [draft, scheduled, processing, posted, partially_posted, failed]
+        scheduledAt:
+          type: string
+          format: date-time
+        publishedAt:
+          type: string
+          format: date-time
+        isDraft:
+          type: boolean
+        processingEnabled:
+          type: boolean
+        platformConfigurations:
+          type: object
+          description: Platform-specific settings
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostMedia'
+        socialAccounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostSocialAccount'
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostResult'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    PostMedia:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        mediaId:
+          type: string
+          format: uuid
+        position:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [image, video]
+        thumbnailUrl:
+          type: string
+          format: uri
+        variants:
+          type: array
+          items:
+            type: object
+            properties:
+              platform:
+                type: string
+              aspectRatio:
+                type: string
+              url:
+                type: string
+                format: uri
+
+    PostSocialAccount:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        accountId:
+          type: string
+          format: uuid
+        platform:
+          type: string
+        username:
+          type: string
+        displayName:
+          type: string
+        profileImageUrl:
+          type: string
+          format: uri
+
+    PostResult:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        socialAccountId:
+          type: integer
+          description: FK to social_accounts.id (SERIAL/INTEGER)
+        platform:
+          type: string
+        status:
+          type: string
+          enum: [pending, processing, success, failed]
+        platformPostId:
+          type: string
+        platformPostUrl:
+          type: string
+          format: uri
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        publishedAt:
+          type: string
+          format: date-time
+
+    PlatformConfigurations:
+      type: object
+      description: |
+        Platform-specific configurations for posts.
+
+        Each platform can have custom settings that override the default post content.
+        Use these to customize captions, visibility, and platform-specific features.
+
+        **Supported Platforms:**
+        - `tiktok`: TikTok video posts with AI disclosure and engagement settings
+        - `instagram`: Feed posts, Reels, and Stories
+        - `youtube`: Videos and Shorts with privacy settings
+        - `pinterest`: Pins with board selection and links
+        - `facebook`: Feed posts, Reels, and Stories
+        - `twitter`/`x`: Tweets with thread and reply settings
+        - `linkedin`: Posts (up to 20 images), documents, and articles
+        - `bluesky`: Posts with content labels and thread support
+        - `threads`: Timeline posts and Reels
+      properties:
+        tiktok:
+          $ref: '#/components/schemas/TikTokConfiguration'
+        instagram:
+          $ref: '#/components/schemas/InstagramConfiguration'
+        youtube:
+          $ref: '#/components/schemas/YouTubeConfiguration'
+        pinterest:
+          $ref: '#/components/schemas/PinterestConfiguration'
+        facebook:
+          $ref: '#/components/schemas/FacebookConfiguration'
+        twitter:
+          $ref: '#/components/schemas/XConfiguration'
+        x:
+          $ref: '#/components/schemas/XConfiguration'
+        linkedin:
+          $ref: '#/components/schemas/LinkedInConfiguration'
+        bluesky:
+          $ref: '#/components/schemas/BlueskyConfiguration'
+        threads:
+          $ref: '#/components/schemas/ThreadsConfiguration'
+
+    TikTokConfiguration:
+      type: object
+      description: |
+        TikTok-specific post settings. Note that TikTok API initially publishes
+        videos as private (SELF_ONLY) - users can change visibility after posting.
+      properties:
+        caption:
+          type: string
+          maxLength: 2200
+          description: Override the main caption for TikTok
+        title:
+          type: string
+          maxLength: 150
+          description: Video title (shown in feed)
+        videoCoverTimestampMs:
+          type: integer
+          minimum: 0
+          description: Timestamp in milliseconds for video thumbnail
+        draft:
+          type: boolean
+          default: false
+          description: If true, saves as draft instead of publishing (MEDIA_UPLOAD mode)
+        isAigc:
+          type: boolean
+          default: false
+          description: AI-generated content disclosure (required by TikTok for AI content)
+        disableComment:
+          type: boolean
+          default: false
+          description: Disable comments on the video
+        disableDuet:
+          type: boolean
+          default: false
+          description: Disable duet feature
+        disableStitch:
+          type: boolean
+          default: false
+          description: Disable stitch feature
+        brandContentToggle:
+          type: boolean
+          default: false
+          description: Mark as branded content (paid partnership)
+        brandOrganicToggle:
+          type: boolean
+          default: false
+          description: Mark as organic branded content
+
+    InstagramConfiguration:
+      type: object
+      description: Instagram-specific post settings
+      properties:
+        caption:
+          type: string
+          maxLength: 2200
+          description: Override the main caption for Instagram
+        placement:
+          type: string
+          enum: [feed, reels, story]
+          default: feed
+          description: Where to post the content
+        video_cover_timestamp_ms:
+          type: integer
+          minimum: 0
+          description: Timestamp in milliseconds for video thumbnail (reels only)
+
+    YouTubeConfiguration:
+      type: object
+      description: YouTube-specific post settings (not yet implemented)
+      properties:
+        caption:
+          type: string
+          description: Override the main caption for YouTube
+        title:
+          type: string
+          maxLength: 100
+          description: Video title
+        description:
+          type: string
+          maxLength: 5000
+          description: Video description
+        tags:
+          type: array
+          items:
+            type: string
+          maxItems: 500
+          description: Video tags
+        privacy:
+          type: string
+          enum: [public, unlisted, private]
+          default: private
+          description: Video privacy setting
+
+    PinterestConfiguration:
+      type: object
+      description: Pinterest-specific post settings (not yet implemented)
+      properties:
+        caption:
+          type: string
+          description: Override the main caption for Pinterest
+        title:
+          type: string
+          maxLength: 100
+          description: Pin title
+        board_ids:
+          type: array
+          items:
+            type: string
+          description: Board IDs to pin to
+        link:
+          type: string
+          format: uri
+          description: Link URL for the pin
+        video_cover_timestamp_ms:
+          type: integer
+          minimum: 0
+          description: Timestamp for video thumbnail
+
+    FacebookConfiguration:
+      type: object
+      description: Facebook-specific post settings (not yet implemented)
+      properties:
+        caption:
+          type: string
+          description: Override the main caption for Facebook
+        placement:
+          type: string
+          enum: [feed, reels, story]
+          default: feed
+          description: Where to post the content
+
+    ThreadsConfiguration:
+      type: object
+      description: Threads-specific post settings (not yet implemented)
+      properties:
+        caption:
+          type: string
+          description: Override the main caption for Threads
+        location:
+          type: string
+          enum: [reels, timeline]
+          default: timeline
+          description: Where to post the content
+
+    LinkedInConfiguration:
+      type: object
+      description: |
+        LinkedIn-specific post settings. Supports regular posts, document/carousel posts, and articles.
+
+        **Media Limits:**
+        - Up to 20 images per post (multi-image)
+        - 1 video per post
+        - Cannot mix images and video
+
+        **Post Types:**
+        - `post`: Standard text + image/video post (up to 20 images)
+        - `document`: Carousel/PDF document post (up to 300 pages, max 100MB)
+        - `article`: Long-form article or article share
+
+        **PDF Document Posts:**
+        For carousel-style presentations, upload a multi-page PDF:
+        1. Upload a multi-page PDF as media
+        2. Set `postType: 'document'`
+        3. Optionally set `documentTitle` for the carousel title
+      properties:
+        caption:
+          type: string
+          maxLength: 3000
+          description: Override the main caption for LinkedIn
+        visibility:
+          type: string
+          enum: [PUBLIC, CONNECTIONS]
+          default: PUBLIC
+          description: Who can see the post
+        postType:
+          type: string
+          enum: [post, document, article]
+          default: post
+          description: |
+            Type of LinkedIn content:
+            - `post`: Standard post with text and optional media
+            - `document`: PDF carousel (multi-page document)
+            - `article`: Long-form article
+        documentTitle:
+          type: string
+          maxLength: 150
+          description: Title for document/carousel posts (displayed above the document)
+        articleTitle:
+          type: string
+          maxLength: 200
+          description: Title for article posts
+        articleUrl:
+          type: string
+          format: uri
+          description: URL to share as an article link post
+        shareCommentary:
+          type: string
+          maxLength: 1300
+          description: Commentary text when sharing an article or URL
+
+    XConfiguration:
+      type: object
+      description: |
+        X (Twitter) specific post settings.
+
+        **Character Limits:**
+        - Standard: 280 characters
+        - Premium: 25,000 characters
+
+        **Thread Mode:**
+        When `threadMode: true`, the caption is split into multiple tweets.
+        Use `threadSeparator` to define where to split (default: double newline).
+
+        **Media:**
+        - Up to 4 images per tweet
+        - 1 video or GIF per tweet
+        - Alt text is highly recommended for accessibility
+      properties:
+        caption:
+          type: string
+          description: Override the main caption for X
+        threadMode:
+          type: boolean
+          default: false
+          description: If true, split caption into a thread of multiple tweets
+        threadSeparator:
+          type: string
+          default: "\n\n"
+          description: Character/string used to split caption into thread parts
+        altText:
+          type: array
+          items:
+            type: string
+            maxLength: 1000
+          maxItems: 4
+          description: Alt text for each image (accessibility)
+        replySettings:
+          type: string
+          enum: [everyone, following, mentionedUsers]
+          default: everyone
+          description: Who can reply to this tweet
+        quoteTweetId:
+          type: string
+          description: ID of a tweet to quote (creates a quote tweet)
+
+    BlueskyConfiguration:
+      type: object
+      description: |
+        Bluesky (AT Protocol) specific post settings.
+
+        **Character Limit:** 300 characters per post
+
+        **Thread Mode:**
+        When `threadMode: true`, the caption is split into multiple posts.
+        Use `threadSeparator` to define where to split.
+
+        **Media:**
+        - Up to 4 images per post
+        - No video support yet (as of Dec 2024)
+        - Alt text is highly encouraged
+
+        **Content Labels:**
+        Use labels to add content warnings for sensitive content.
+      properties:
+        caption:
+          type: string
+          maxLength: 300
+          description: Override the main caption for Bluesky
+        threadMode:
+          type: boolean
+          default: false
+          description: If true, split caption into a thread of multiple posts
+        threadSeparator:
+          type: string
+          default: "\n\n"
+          description: Character/string used to split caption into thread parts
+        altText:
+          type: array
+          items:
+            type: string
+            maxLength: 2000
+          maxItems: 4
+          description: Alt text for each image (accessibility)
+        embedUrl:
+          type: string
+          format: uri
+          description: URL to embed as a link card preview
+        languages:
+          type: array
+          items:
+            type: string
+            pattern: ^[a-z]{2}(-[A-Z]{2})?$
+          maxItems: 3
+          description: ISO language codes (e.g., ['en', 'es-MX'])
+        labels:
+          type: array
+          items:
+            type: string
+            enum: [nsfw, nudity, suggestive, gore, spoiler]
+          description: Content warning labels for sensitive content
+
+    PricingPlan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        planType:
+          type: string
+          enum: [starter, professional]
+        billingInterval:
+          type: string
+          enum: [month, year]
+        price:
+          type: number
+          description: Price in cents
+        currency:
+          type: string
+          default: eur
+        name:
+          type: string
+        features:
+          type: array
+          items:
+            type: string
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        stripeSubscriptionId:
+          type: string
+        planType:
+          type: string
+          enum: [starter, professional]
+        billingInterval:
+          type: string
+          enum: [month, year]
+        status:
+          type: string
+          enum: [active, past_due, canceled, unpaid, trialing, incomplete, incomplete_expired, paused]
+        currentPeriodStart:
+          type: string
+          format: date-time
+        currentPeriodEnd:
+          type: string
+          format: date-time
+        cancelAtPeriodEnd:
+          type: boolean
+        canceledAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    PaymentHistoryItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        stripePaymentIntentId:
+          type: string
+        amount:
+          type: integer
+          description: Amount in cents
+        currency:
+          type: string
+        status:
+          type: string
+          enum: [succeeded, failed, pending, refunded]
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    AnalyticsOverview:
+      type: object
+      description: Aggregated analytics across all posts
+      properties:
+        totalPosts:
+          type: integer
+          description: Total number of posts with analytics
+        totalLikes:
+          type: integer
+        totalComments:
+          type: integer
+        totalShares:
+          type: integer
+        totalViews:
+          type: integer
+        totalImpressions:
+          type: integer
+        totalReach:
+          type: integer
+        engagementRate:
+          type: number
+          format: float
+          description: Overall engagement rate as percentage
+        byPlatform:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformAnalytics'
+
+    PlatformAnalytics:
+      type: object
+      properties:
+        platform:
+          type: string
+        postsCount:
+          type: integer
+        likes:
+          type: integer
+        comments:
+          type: integer
+        shares:
+          type: integer
+        views:
+          type: integer
+        impressions:
+          type: integer
+        reach:
+          type: integer
+        engagementRate:
+          type: number
+          format: float
+
+    PostAnalyticsSummary:
+      type: object
+      description: Summary analytics for a post
+      properties:
+        postId:
+          type: string
+          format: uuid
+        postResultId:
+          type: string
+          format: uuid
+        caption:
+          type: string
+          nullable: true
+        platform:
+          type: string
+        platformPostUrl:
+          type: string
+          format: uri
+          nullable: true
+        publishedAt:
+          type: string
+          format: date-time
+        thumbnailUrl:
+          type: string
+          format: uri
+          nullable: true
+        likes:
+          type: integer
+        comments:
+          type: integer
+        shares:
+          type: integer
+        views:
+          type: integer
+        impressions:
+          type: integer
+        reach:
+          type: integer
+        totalEngagement:
+          type: integer
+        lastUpdated:
+          type: string
+          format: date-time
+
+    PostAnalyticsDetail:
+      allOf:
+        - $ref: '#/components/schemas/PostAnalyticsSummary'
+        - type: object
+          properties:
+            timeSeriesData:
+              type: array
+              items:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    format: date
+                  likes:
+                    type: integer
+                  comments:
+                    type: integer
+                  shares:
+                    type: integer
+                  views:
+                    type: integer
+                  impressions:
+                    type: integer
+            platformMetrics:
+              type: object
+              description: Platform-specific metrics
+
+    TrendsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              value:
+                type: number
+        metric:
+          type: string
+        period:
+          type: string
+
+    Tag:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tag:
+          type: string
+        usage_count:
+          type: integer
+        last_used_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    FeedbackRequest:
+      type: object
+      required:
+        - category
+        - comment
+      properties:
+        category:
+          type: string
+          enum: [bug, feature, improvement, other]
+        comment:
+          type: string
+          minLength: 1
+          maxLength: 2000
+
+    WaitingListRequest:
+      type: object
+      required:
+        - email
+        - source
+      properties:
+        email:
+          type: string
+          format: email
+        source:
+          type: string
+          enum: [hero, header, pricing]
+
+    Worker:
+      type: object
+      properties:
+        id:
+          type: string
+        queue:
+          type: string
+        status:
+          type: string
+          enum: [running, stopped, error]
+        uptime:
+          type: number
+          description: Uptime in milliseconds
+        startedAt:
+          type: string
+          format: date-time
+        lastHeartbeat:
+          type: string
+          format: date-time
+        errorMessage:
+          type: string
+          nullable: true
+
+    QueueStatus:
+      type: object
+      properties:
+        queueConnected:
+          type: boolean
+        queueHealthy:
+          type: boolean
+        workerSummary:
+          type: object
+          properties:
+            total:
+              type: integer
+            running:
+              type: integer
+            stopped:
+              type: integer
+            error:
+              type: integer
+        workers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Worker'
+        queueStats:
+          type: object
+          additionalProperties:
+            type: object
+            nullable: true
+            properties:
+              queued:
+                type: integer
+              active:
+                type: integer
+
+    ApiToken:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        last_used_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    WebhookEndpoint:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        description:
+          type: string
+          nullable: true
+        events:
+          type: array
+          items:
+            type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    WebhookEndpointWithSecret:
+      allOf:
+        - $ref: '#/components/schemas/WebhookEndpoint'
+        - type: object
+          properties:
+            secret:
+              type: string
+              description: HMAC signing key (64-char hex). Only returned on creation or regeneration.
+
+    WebhookDelivery:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        webhook_endpoint_id:
+          type: string
+          format: uuid
+        event:
+          type: string
+          description: Event type (e.g. post.published, ping)
+        payload:
+          type: object
+          description: The JSON payload that was sent
+        response_status:
+          type: integer
+          nullable: true
+          description: HTTP response status code
+        response_body:
+          type: string
+          nullable: true
+          description: Response body (truncated to 4KB)
+        response_time_ms:
+          type: integer
+          nullable: true
+        attempt:
+          type: integer
+        max_attempts:
+          type: integer
+        status:
+          type: string
+          enum: [pending, success, failed, retrying]
+        error_message:
+          type: string
+          nullable: true
+        delivered_at:
+          type: string
+          format: date-time
+          nullable: true
+        next_retry_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+paths:
+  /v1/platforms:
+    get:
+      tags:
+        - Platforms
+      summary: List all platforms
+      description: Get a summary of all supported social media platforms
+      responses:
+        '200':
+          description: List of platforms
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  platforms:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: tiktok
+                        name:
+                          type: string
+                          example: TikTok
+                        color:
+                          type: string
+                          example: "#000000"
+                        features:
+                          type: array
+                          items:
+                            type: string
+                        supportsImage:
+                          type: boolean
+                        supportsVideo:
+                          type: boolean
+
+  /v1/platforms/aspect-ratios:
+    get:
+      tags:
+        - Platforms
+      summary: Get aspect ratios
+      description: Get all supported aspect ratios with their dimensions
+      responses:
+        '200':
+          description: List of aspect ratios
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  aspectRatios:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        key:
+                          type: string
+                          example: "9:16"
+                        width:
+                          type: integer
+                          example: 9
+                        height:
+                          type: integer
+                          example: 16
+                        name:
+                          type: string
+                          example: "9:16 (Vertical)"
+                        decimal:
+                          type: number
+                          example: 0.5625
+
+  /v1/platforms/specifications:
+    get:
+      tags:
+        - Platforms
+      summary: Get platform specifications
+      description: |
+        Get comprehensive specifications for all platforms including:
+        - Image dimensions and file size limits
+        - Video dimensions, duration, and file size limits
+        - Caption and content restrictions
+        - Platform-specific notes and recommendations
+      responses:
+        '200':
+          description: Platform specifications summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  specifications:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        platform:
+                          type: string
+                          example: TikTok
+                        id:
+                          type: string
+                          example: tiktok
+                        image:
+                          type: object
+                          nullable: true
+                          properties:
+                            maxSize:
+                              type: string
+                              example: "20 MB"
+                            maxDimensions:
+                              type: string
+                              example: "1080x1920"
+                            aspectRatios:
+                              type: array
+                              items:
+                                type: string
+                            formats:
+                              type: array
+                              items:
+                                type: string
+                        video:
+                          type: object
+                          nullable: true
+                          properties:
+                            maxSize:
+                              type: string
+                              example: "287.6 MB"
+                            maxDimensions:
+                              type: string
+                              example: "4096x4096"
+                            duration:
+                              type: string
+                              example: "3s - 600s"
+                            aspectRatios:
+                              type: array
+                              items:
+                                type: string
+                            formats:
+                              type: array
+                              items:
+                                type: string
+                        content:
+                          type: object
+                          properties:
+                            maxCaption:
+                              type: integer
+                              example: 2200
+                            maxTitle:
+                              type: integer
+                              nullable: true
+                            supportsLinks:
+                              type: boolean
+                            supportsHashtags:
+                              type: boolean
+                        notes:
+                          type: array
+                          items:
+                            type: string
+
+  /v1/platforms/{platformId}:
+    get:
+      tags:
+        - Platforms
+      summary: Get platform details
+      description: Get detailed specification for a specific platform
+      parameters:
+        - name: platformId
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [tiktok, instagram, youtube, facebook, twitter, linkedin, pinterest, bluesky, threads]
+          description: Platform identifier
+      responses:
+        '200':
+          description: Platform specification
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  displayName:
+                    type: string
+                  color:
+                    type: string
+                  image:
+                    type: object
+                    nullable: true
+                    description: Image specifications (null if platform doesn't support images)
+                  video:
+                    type: object
+                    nullable: true
+                    description: Video specifications (null if platform doesn't support video)
+                  content:
+                    type: object
+                    description: Content restrictions (caption length, etc.)
+                  features:
+                    type: array
+                    items:
+                      type: string
+                  notes:
+                    type: array
+                    items:
+                      type: string
+        '404':
+          description: Platform not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/payments/plans:
+    get:
+      tags:
+        - Payments
+      summary: Get pricing plans
+      description: |
+        Get all available pricing plans with their prices and features.
+        This is a public endpoint for displaying on landing pages.
+      responses:
+        '200':
+          description: Pricing plans retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plans:
+                    type: object
+                    properties:
+                      starter:
+                        type: object
+                        properties:
+                          monthly:
+                            $ref: '#/components/schemas/PricingPlan'
+                          yearly:
+                            $ref: '#/components/schemas/PricingPlan'
+                      professional:
+                        type: object
+                        properties:
+                          monthly:
+                            $ref: '#/components/schemas/PricingPlan'
+                          yearly:
+                            $ref: '#/components/schemas/PricingPlan'
+                  allPlans:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PricingPlan'
+
+  /v1/payments/status:
+    get:
+      tags:
+        - Payments
+      summary: Check payment configuration
+      description: Check if Stripe payments are configured and available
+      responses:
+        '200':
+          description: Payment status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  configured:
+                    type: boolean
+                    description: Whether Stripe is configured
+
+  /v1/payments/checkout:
+    post:
+      tags:
+        - Payments
+      summary: Create checkout session
+      description: |
+        Create a Stripe Checkout session for subscribing to a plan.
+        User will be redirected to Stripe's hosted payment page.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - planType
+                - billingInterval
+                - successUrl
+                - cancelUrl
+              properties:
+                planType:
+                  type: string
+                  enum: [starter, professional]
+                  description: The plan to subscribe to
+                billingInterval:
+                  type: string
+                  enum: [month, year]
+                  description: Monthly or yearly billing
+                successUrl:
+                  type: string
+                  format: uri
+                  description: URL to redirect after successful payment
+                cancelUrl:
+                  type: string
+                  format: uri
+                  description: URL to redirect if user cancels
+      responses:
+        '200':
+          description: Checkout session created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionId:
+                    type: string
+                    description: Stripe Checkout Session ID
+                  url:
+                    type: string
+                    format: uri
+                    description: URL to redirect user to for payment
+        '400':
+          description: User already has active subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Payments not configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/payments/portal:
+    post:
+      tags:
+        - Payments
+      summary: Create customer portal session
+      description: |
+        Create a Stripe Customer Portal session for managing subscription.
+        Users can update payment methods, cancel, or change plans.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - returnUrl
+              properties:
+                returnUrl:
+                  type: string
+                  format: uri
+                  description: URL to redirect after leaving portal
+      responses:
+        '200':
+          description: Portal session created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    format: uri
+                    description: URL to redirect user to customer portal
+        '404':
+          description: No Stripe customer found for user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/payments/subscription:
+    get:
+      tags:
+        - Payments
+      summary: Get current subscription
+      description: Get the current user's subscription details
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Subscription details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscription:
+                    $ref: '#/components/schemas/Subscription'
+                    nullable: true
+                  hasActiveSubscription:
+                    type: boolean
+
+  /v1/payments/subscription/cancel:
+    post:
+      tags:
+        - Payments
+      summary: Cancel subscription
+      description: |
+        Cancel the current subscription at the end of the billing period.
+        User retains access until the period ends.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Subscription cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscription:
+                    $ref: '#/components/schemas/Subscription'
+                  message:
+                    type: string
+                    example: Subscription will be cancelled at the end of the current billing period
+        '404':
+          description: No active subscription found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/payments/subscription/resume:
+    post:
+      tags:
+        - Payments
+      summary: Resume cancelled subscription
+      description: |
+        Resume a subscription that was cancelled but hasn't ended yet.
+        Only works if the subscription is set to cancel at period end.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Subscription resumed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscription:
+                    $ref: '#/components/schemas/Subscription'
+                  message:
+                    type: string
+                    example: Subscription has been resumed
+        '400':
+          description: Subscription cannot be resumed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/payments/history:
+    get:
+      tags:
+        - Payments
+      summary: Get payment history
+      description: Get the user's payment history with pagination
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Payment history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PaymentHistoryItem'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+
+  /v1/payments/webhook:
+    post:
+      tags:
+        - Payments
+      summary: Stripe webhook
+      description: |
+        Endpoint for Stripe to send webhook events.
+        **This endpoint is called by Stripe, not by your application.**
+
+        Handles events:
+        - checkout.session.completed
+        - customer.subscription.created
+        - customer.subscription.updated
+        - customer.subscription.deleted
+        - invoice.paid
+        - invoice.payment_failed
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Stripe Event object
+      responses:
+        '200':
+          description: Webhook received
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  received:
+                    type: boolean
+        '400':
+          description: Invalid signature or missing header
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/health:
+    get:
+      tags:
+        - Health
+      summary: Full health check
+      description: Returns detailed health status including database and storage connectivity
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded, unhealthy]
+                  timestamp:
+                    type: string
+                    format: date-time
+                  services:
+                    type: object
+                    properties:
+                      database:
+                        type: string
+                      storage:
+                        type: string
+
+  /v1/health/live:
+    get:
+      tags:
+        - Health
+      summary: Liveness probe
+      description: Simple liveness check for load balancers
+      responses:
+        '200':
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /v1/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: User login
+      description: Authenticate with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+                  expires_at:
+                    type: string
+                    format: date-time
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/auth/refresh:
+    post:
+      tags:
+        - Auth
+      summary: Refresh access token
+      description: Get a new access token using refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+                  expires_at:
+                    type: string
+                    format: date-time
+        '401':
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: Logout
+      description: Sign out and invalidate session
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /v1/auth/forgot-password:
+    post:
+      tags:
+        - Auth
+      summary: Request password reset
+      description: Send password reset email. Always returns success to prevent email enumeration.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Reset email sent (if account exists)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /v1/auth/reset-password:
+    post:
+      tags:
+        - Auth
+      summary: Reset password
+      description: Reset password using token from email
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password
+              properties:
+                password:
+                  type: string
+                  minLength: 8
+      responses:
+        '200':
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /v1/auth/me:
+    get:
+      tags:
+        - Auth
+      summary: Get current user
+      description: Get the currently authenticated user's basic info
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/users/profile:
+    get:
+      tags:
+        - Users
+      summary: Get user profile
+      description: Get the current user's full profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+    patch:
+      tags:
+        - Users
+      summary: Update user profile
+      description: Update the current user's profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                display_name:
+                  type: string
+                avatar_url:
+                  type: string
+                  format: uri
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+  /v1/users/plan:
+    get:
+      tags:
+        - Users
+      summary: Get plan and usage
+      description: Get the current user's subscription plan and usage statistics
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Plan and usage info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+
+  /v1/media/create-upload-url:
+    post:
+      tags:
+        - Media
+      summary: Create upload URL
+      description: |
+        Get a signed URL for direct upload to Google Cloud Storage.
+        Supports images (jpeg, png, webp) up to 20MB and videos (mp4, mov, webm) up to 500MB.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - mime_type
+                - size_bytes
+              properties:
+                name:
+                  type: string
+                  description: Original filename
+                mime_type:
+                  type: string
+                  enum: [image/jpeg, image/png, image/webp, video/mp4, video/quicktime, video/webm]
+                size_bytes:
+                  type: integer
+                  description: File size in bytes
+      responses:
+        '201':
+          description: Upload URL created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  media_id:
+                    type: string
+                    format: uuid
+                  upload_url:
+                    type: string
+                    format: uri
+                    description: Signed URL for PUT request
+                  expires_at:
+                    type: string
+                    format: date-time
+        '400':
+          description: Invalid file type or size
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Storage limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/media/{id}/confirm-upload:
+    post:
+      tags:
+        - Media
+      summary: Confirm upload
+      description: |
+        Confirm the upload is complete and start processing.
+        This triggers face detection, smart cropping, and variant generation for all supported platforms.
+
+        ## Generated Variants
+
+        When media processing completes, the following platform-optimized variants are created:
+
+        ### Vertical (9:16) - 1080x1920
+        - `tiktok` - TikTok videos/photos
+        - `instagram_reels` - Instagram Reels
+        - `instagram_story` - Instagram Stories
+        - `facebook_reels` - Facebook Reels
+        - `facebook_story` - Facebook Stories
+        - `youtube_shorts` - YouTube Shorts
+        - `threads_reels` - Threads Reels
+
+        ### Square (1:1)
+        - `instagram_feed_square` - 1080x1080 (Instagram Feed)
+        - `facebook_feed` - 1200x1200 (Facebook Feed)
+        - `twitter_square` - 1200x1200 (X/Twitter)
+        - `linkedin_square` - 1200x1200 (LinkedIn)
+        - `pinterest_square` - 1000x1000 (Pinterest)
+        - `bluesky_square` - 2000x2000 (Bluesky)
+        - `threads` - 1440x1440 (Threads)
+
+        ### Portrait (4:5) - 1080x1350
+        - `instagram_feed_portrait` - Instagram Feed
+        - `linkedin_portrait` - LinkedIn
+        - `threads_portrait` - Threads
+
+        ### Landscape (16:9)
+        - `youtube_landscape` - 1920x1080 (YouTube)
+        - `twitter` - 1200x675 (X/Twitter)
+        - `bluesky` - 2000x1125 (Bluesky)
+
+        ### Other Aspect Ratios
+        - `pinterest` - 2:3 (1000x1500) - Pinterest Pins
+        - `linkedin_landscape` - 1.91:1 (1200x628) - LinkedIn
+
+        Each variant includes smart cropping to preserve faces and important content areas.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '202':
+          description: Processing started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  media:
+                    $ref: '#/components/schemas/Media'
+        '404':
+          description: Media not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/media:
+    get:
+      tags:
+        - Media
+      summary: List media
+      description: List all media items for the current user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [image, video]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, processing, completed, failed]
+      responses:
+        '200':
+          description: List of media items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    description: Lightweight media items (use GET /v1/media/{id} for full details including variants and face_data)
+                    items:
+                      $ref: '#/components/schemas/MediaListItem'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+
+  /v1/media/{id}:
+    get:
+      tags:
+        - Media
+      summary: Get media
+      description: Get a single media item with all variants
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Media item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Media'
+        '404':
+          description: Media not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Media
+      summary: Delete media
+      description: Soft delete a media item
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Media deleted
+        '404':
+          description: Media not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/social-accounts/platforms:
+    get:
+      tags:
+        - Social Accounts
+      summary: Get supported platforms
+      description: Get list of supported social media platforms and their status
+      responses:
+        '200':
+          description: List of platforms
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  platforms:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Platform'
+
+  /v1/social-accounts:
+    get:
+      tags:
+        - Social Accounts
+      summary: List connected accounts
+      description: List all social media accounts connected to the current user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of connected accounts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accounts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SocialAccount'
+
+  /v1/social-accounts/{accountId}:
+    get:
+      tags:
+        - Social Accounts
+      summary: Get social account
+      description: Get details of a specific connected account
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Social account details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialAccount'
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Social Accounts
+      summary: Disconnect account
+      description: Disconnect a social media account and revoke tokens
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Account disconnected
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/social-accounts/oauth/initiate:
+    post:
+      tags:
+        - Social Accounts
+      summary: Initiate OAuth flow
+      description: |
+        Start OAuth authorization flow for a platform.
+        Returns a URL to redirect the user to for authorization.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - platform
+              properties:
+                platform:
+                  type: string
+                  enum: [tiktok, instagram, youtube, twitter, facebook, pinterest, linkedin, threads]
+                  description: |
+                    Platform to connect. Note: Bluesky uses app passwords instead of OAuth,
+                    use /v1/social-accounts/bluesky/connect for Bluesky.
+                redirectUrl:
+                  type: string
+                  format: uri
+                  description: URL to redirect user after OAuth completes
+      responses:
+        '200':
+          description: OAuth URL generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authorizationUrl:
+                    type: string
+                    format: uri
+                  state:
+                    type: string
+                  expiresIn:
+                    type: integer
+                    description: Seconds until state expires
+        '400':
+          description: Platform not supported or not configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/social-accounts/oauth/callback:
+    post:
+      tags:
+        - Social Accounts
+      summary: OAuth callback
+      description: |
+        Handle OAuth callback after user authorizes.
+        Exchange authorization code for tokens and create account.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+                - state
+              properties:
+                code:
+                  type: string
+                  description: Authorization code from OAuth provider
+                state:
+                  type: string
+                  description: State parameter for CSRF validation
+      responses:
+        '200':
+          description: Account connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  account:
+                    $ref: '#/components/schemas/SocialAccount'
+                  redirectUrl:
+                    type: string
+                    format: uri
+        '401':
+          description: Invalid or expired state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/social-accounts/oauth/tiktok/callback:
+    get:
+      tags:
+        - Social Accounts
+      summary: TikTok OAuth browser callback
+      description: |
+        Browser redirect endpoint for TikTok OAuth.
+        TikTok redirects users here after they authorize the app.
+        This endpoint exchanges the code for tokens and either:
+        - Redirects to a custom URL (if provided during initiate)
+        - Shows a success page
+
+        **Note:** This is called directly by TikTok's redirect, not by your app.
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Authorization code from TikTok
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: State parameter for CSRF validation
+        - name: error
+          in: query
+          schema:
+            type: string
+          description: Error code if user denied authorization
+        - name: error_description
+          in: query
+          schema:
+            type: string
+          description: Human-readable error description
+      responses:
+        '302':
+          description: Redirect to success URL or app deep link
+        '200':
+          description: Success page (HTML) if no redirect URL provided
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /v1/social-accounts/oauth/instagram/callback:
+    get:
+      tags:
+        - Social Accounts
+      summary: Instagram OAuth browser callback
+      description: |
+        Browser redirect endpoint for Instagram OAuth.
+        Instagram redirects users here after they authorize the app.
+        This endpoint exchanges the code for tokens and either:
+        - Redirects to a custom URL (if provided during initiate)
+        - Shows a success page
+
+        **Note:** This is called directly by Instagram's redirect, not by your app.
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Authorization code from Instagram
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: State parameter for CSRF validation
+        - name: error
+          in: query
+          schema:
+            type: string
+          description: Error code if user denied authorization
+        - name: error_description
+          in: query
+          schema:
+            type: string
+          description: Human-readable error description
+      responses:
+        '302':
+          description: Redirect to success URL or app deep link
+        '200':
+          description: Success page (HTML) if no redirect URL provided
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /v1/social-accounts/{accountId}/refresh:
+    post:
+      tags:
+        - Social Accounts
+      summary: Refresh account tokens
+      description: Manually refresh OAuth tokens for an account
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tokens refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  account:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      platform:
+                        type: string
+                      is_active:
+                        type: boolean
+                      token_expires_at:
+                        type: string
+                        format: date-time
+        '401':
+          description: Account needs reconnection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/social-accounts/bluesky/connect:
+    post:
+      tags:
+        - Social Accounts
+      summary: Connect Bluesky account
+      description: |
+        Connect a Bluesky account using an app password.
+        Bluesky uses the AT Protocol with app passwords instead of OAuth.
+
+        **How to get an app password:**
+        1. Go to Settings → Privacy and Security → App Passwords
+        2. Or visit: https://bsky.app/settings/app-passwords
+        3. Create a new app password
+        4. Use your handle (e.g., user.bsky.social) as the identifier
+
+        **Note:** Access tokens expire in ~2 hours and refresh tokens in ~2 months.
+        Tokens are automatically refreshed when needed.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - identifier
+                - appPassword
+              properties:
+                identifier:
+                  type: string
+                  description: Your Bluesky handle (e.g., user.bsky.social) or email
+                  example: yourhandle.bsky.social
+                appPassword:
+                  type: string
+                  description: App password generated from Bluesky settings
+                  example: xxxx-xxxx-xxxx-xxxx
+      responses:
+        '200':
+          description: Bluesky account connected successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  account:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      platform:
+                        type: string
+                        enum: [bluesky]
+                      username:
+                        type: string
+                      display_name:
+                        type: string
+                      profile_image_url:
+                        type: string
+                      is_active:
+                        type: boolean
+        '400':
+          description: Invalid credentials or missing parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/posts:
+    get:
+      tags:
+        - Posts
+      summary: List posts
+      description: List all posts for the current user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, scheduled, processing, posted, partially_posted, failed]
+        - name: isDraft
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+    post:
+      tags:
+        - Posts
+      summary: Create post
+      description: |
+        Create a new post with media and target social accounts.
+        Posts are created as drafts by default and can be scheduled or published later.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - mediaIds
+                - socialAccountIds
+              properties:
+                caption:
+                  type: string
+                  maxLength: 2200
+                mediaIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  minItems: 1
+                socialAccountIds:
+                  type: array
+                  items:
+                    type: integer
+                    description: FK to social_accounts.id (SERIAL/INTEGER)
+                  minItems: 1
+                scheduledAt:
+                  type: string
+                  format: date-time
+                isDraft:
+                  type: boolean
+                  default: true
+                processingEnabled:
+                  type: boolean
+                  default: true
+                platformConfigurations:
+                  $ref: '#/components/schemas/PlatformConfigurations'
+      responses:
+        '201':
+          description: Post created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/posts/{postId}:
+    get:
+      tags:
+        - Posts
+      summary: Get post
+      description: Get a single post with all media, accounts, and results
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Post details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags:
+        - Posts
+      summary: Update post
+      description: Update a draft post. Cannot update posts that are scheduled, processing, or published.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                caption:
+                  type: string
+                  maxLength: 2200
+                mediaIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                socialAccountIds:
+                  type: array
+                  items:
+                    type: integer
+                    description: FK to social_accounts.id (SERIAL/INTEGER)
+                scheduledAt:
+                  type: string
+                  format: date-time
+                  nullable: true
+                isDraft:
+                  type: boolean
+                processingEnabled:
+                  type: boolean
+                platformConfigurations:
+                  $ref: '#/components/schemas/PlatformConfigurations'
+      responses:
+        '200':
+          description: Post updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          description: Validation error or post cannot be updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Posts
+      summary: Delete post
+      description: Delete a draft or failed post. Cannot delete scheduled, processing, or published posts.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Post deleted
+        '400':
+          description: Post cannot be deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/posts/{postId}/schedule:
+    post:
+      tags:
+        - Posts
+      summary: Schedule post
+      description: Schedule a draft post for future publishing
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - scheduledAt
+              properties:
+                scheduledAt:
+                  type: string
+                  format: date-time
+                  description: Must be in the future
+      responses:
+        '200':
+          description: Post scheduled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          description: Invalid scheduled time or post not in draft status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/posts/{postId}/publish:
+    post:
+      tags:
+        - Posts
+      summary: Publish post immediately
+      description: |
+        Start publishing a post immediately to all connected social accounts.
+        The post status will change to 'processing' and results will be populated as each platform completes.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Publishing started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          description: Post cannot be published (missing media or accounts)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/posts/{postId}/cancel:
+    post:
+      tags:
+        - Posts
+      summary: Cancel scheduled post
+      description: Cancel a scheduled post and return it to draft status
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Post cancelled and returned to draft
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          description: Post is not scheduled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/posts/{postId}/validate-tiktok:
+    post:
+      tags:
+        - Posts
+      summary: Validate TikTok post configuration
+      description: |
+        Validates a TikTok post configuration against TikTok's UX Guidelines
+        before publishing. This endpoint checks:
+
+        1. **Creator can post** - Account is not restricted
+        2. **Video duration** - Within creator's maximum allowed duration
+        3. **Privacy level** - Explicitly selected (required)
+        4. **Branded content** - Cannot be private (SELF_ONLY)
+        5. **Interaction controls** - Respect creator's disabled features
+
+        Per TikTok UX Guidelines, the frontend should:
+        - Display policy links for user acknowledgment
+        - NOT pre-select interaction controls (comments, duet, stitch)
+        - Require explicit privacy level selection
+
+        See: https://developers.tiktok.com/doc/content-sharing-guidelines
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - socialAccountId
+              properties:
+                socialAccountId:
+                  type: integer
+                  description: ID of the TikTok social account to validate against (FK to social_accounts.id, SERIAL/INTEGER)
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                    description: Whether the post configuration is valid
+                  errors:
+                    type: array
+                    description: List of validation errors
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          description: Error code
+                          enum:
+                            - CREATOR_CANNOT_POST
+                            - VIDEO_DURATION_EXCEEDED
+                            - PRIVACY_LEVEL_REQUIRED
+                            - PRIVACY_LEVEL_NOT_AVAILABLE
+                            - BRANDED_CONTENT_PRIVACY_CONFLICT
+                            - COMMENTS_DISABLED_BY_CREATOR
+                            - DUET_DISABLED_BY_CREATOR
+                            - STITCH_DISABLED_BY_CREATOR
+                        message:
+                          type: string
+                          description: Human-readable error message
+                        details:
+                          type: object
+                          description: Additional error details
+                  creatorInfo:
+                    type: object
+                    description: TikTok creator info (null if fetch failed)
+                    properties:
+                      creatorUsername:
+                        type: string
+                      creatorNickname:
+                        type: string
+                      creatorAvatarUrl:
+                        type: string
+                      maxVideoPostDurationSec:
+                        type: integer
+                        description: Maximum video duration allowed for this creator
+                      privacyLevelOptions:
+                        type: array
+                        items:
+                          type: string
+                          enum:
+                            - PUBLIC_TO_EVERYONE
+                            - MUTUAL_FOLLOW_FRIENDS
+                            - FOLLOWER_OF_CREATOR
+                            - SELF_ONLY
+                      commentDisabled:
+                        type: boolean
+                        description: Whether creator has comments disabled globally
+                      duetDisabled:
+                        type: boolean
+                        description: Whether creator has duet disabled globally
+                      stitchDisabled:
+                        type: boolean
+                        description: Whether creator has stitch disabled globally
+                      canPost:
+                        type: boolean
+                        description: Whether the creator can post (false if restricted)
+                  policyUrls:
+                    type: object
+                    description: URLs to TikTok policies that must be displayed
+                    properties:
+                      musicUsageConfirmation:
+                        type: string
+                        format: uri
+                      brandedContentPolicy:
+                        type: string
+                        format: uri
+                      communityGuidelines:
+                        type: string
+                        format: uri
+                      termsOfService:
+                        type: string
+                        format: uri
+                  uxGuidance:
+                    type: object
+                    description: UX requirements for TikTok compliance
+                    properties:
+                      privacyLevelRequired:
+                        type: boolean
+                        description: Privacy level must be explicitly selected (no default)
+                      interactionControlsDefaultOff:
+                        type: boolean
+                        description: Interaction controls should NOT be pre-checked
+                      brandedContentRestrictsPrivacy:
+                        type: array
+                        items:
+                          type: string
+                        description: Privacy levels not allowed with branded content
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/health/ready:
+    get:
+      tags:
+        - Health
+      summary: Readiness probe
+      description: |
+        Readiness check for Kubernetes/load balancers.
+        Returns 200 if the service is ready to accept traffic (database and storage connected).
+        Returns 503 if any critical service is unavailable.
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ready
+        '503':
+          description: Service is not ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: not ready
+                  reasons:
+                    type: array
+                    items:
+                      type: string
+                    example: ["database unavailable"]
+
+  /v1/social-accounts/oauth/facebook/callback:
+    get:
+      tags:
+        - Social Accounts
+      summary: Facebook OAuth browser callback
+      description: |
+        Browser redirect endpoint for Facebook OAuth.
+        Facebook redirects users here after they authorize the app.
+        This endpoint exchanges the code for tokens and either:
+        - Redirects to a custom URL (if provided during initiate)
+        - Shows a success page
+
+        **Note:** This is called directly by Facebook's redirect, not by your app.
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Authorization code from Facebook
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: State parameter for CSRF validation
+        - name: error
+          in: query
+          schema:
+            type: string
+          description: Error code if user denied authorization
+        - name: error_description
+          in: query
+          schema:
+            type: string
+          description: Human-readable error description
+      responses:
+        '302':
+          description: Redirect to success URL or app deep link
+        '200':
+          description: Success page (HTML) if no redirect URL provided
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /v1/social-accounts/oauth/x/callback:
+    get:
+      tags:
+        - Social Accounts
+      summary: X (Twitter) OAuth browser callback
+      description: |
+        Browser redirect endpoint for X/Twitter OAuth.
+        X redirects users here after they authorize the app.
+        Uses OAuth 2.0 with PKCE for enhanced security.
+
+        **Note:** This is called directly by X's redirect, not by your app.
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Authorization code from X
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: State parameter for CSRF validation (contains PKCE verifier reference)
+        - name: error
+          in: query
+          schema:
+            type: string
+          description: Error code if user denied authorization
+        - name: error_description
+          in: query
+          schema:
+            type: string
+          description: Human-readable error description
+      responses:
+        '302':
+          description: Redirect to success URL or app deep link
+        '200':
+          description: Success page (HTML) if no redirect URL provided
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /v1/social-accounts/oauth/threads/callback:
+    get:
+      tags:
+        - Social Accounts
+      summary: Threads OAuth browser callback
+      description: |
+        Browser redirect endpoint for Threads OAuth.
+        Threads (Meta) redirects users here after they authorize the app.
+
+        **Note:** This is called directly by Threads' redirect, not by your app.
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Authorization code from Threads
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: State parameter for CSRF validation
+        - name: error
+          in: query
+          schema:
+            type: string
+          description: Error code if user denied authorization
+        - name: error_description
+          in: query
+          schema:
+            type: string
+          description: Human-readable error description
+      responses:
+        '302':
+          description: Redirect to success URL or app deep link
+        '200':
+          description: Success page (HTML) if no redirect URL provided
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /v1/social-accounts/oauth/youtube/callback:
+    get:
+      tags:
+        - Social Accounts
+      summary: YouTube OAuth browser callback
+      description: |
+        Browser redirect endpoint for YouTube/Google OAuth.
+        Google redirects users here after they authorize the app.
+
+        **Note:** This is called directly by Google's redirect, not by your app.
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Authorization code from Google
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: State parameter for CSRF validation
+        - name: error
+          in: query
+          schema:
+            type: string
+          description: Error code if user denied authorization
+        - name: error_description
+          in: query
+          schema:
+            type: string
+          description: Human-readable error description
+      responses:
+        '302':
+          description: Redirect to success URL or app deep link
+        '200':
+          description: Success page (HTML) if no redirect URL provided
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /v1/social-accounts/oauth/pinterest/callback:
+    get:
+      tags:
+        - Social Accounts
+      summary: Pinterest OAuth browser callback
+      description: |
+        Browser redirect endpoint for Pinterest OAuth.
+        Pinterest redirects users here after they authorize the app.
+
+        **Note:** This is called directly by Pinterest's redirect, not by your app.
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Authorization code from Pinterest
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: State parameter for CSRF validation
+        - name: error
+          in: query
+          schema:
+            type: string
+          description: Error code if user denied authorization
+        - name: error_description
+          in: query
+          schema:
+            type: string
+          description: Human-readable error description
+      responses:
+        '302':
+          description: Redirect to success URL or app deep link
+        '200':
+          description: Success page (HTML) if no redirect URL provided
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /v1/social-accounts/oauth/linkedin/callback:
+    get:
+      tags:
+        - Social Accounts
+      summary: LinkedIn OAuth browser callback
+      description: |
+        Browser redirect endpoint for LinkedIn OAuth.
+        LinkedIn redirects users here after they authorize the app.
+
+        **Note:** This is called directly by LinkedIn's redirect, not by your app.
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Authorization code from LinkedIn
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: State parameter for CSRF validation
+        - name: error
+          in: query
+          schema:
+            type: string
+          description: Error code if user denied authorization
+        - name: error_description
+          in: query
+          schema:
+            type: string
+          description: Human-readable error description
+      responses:
+        '302':
+          description: Redirect to success URL or app deep link
+        '200':
+          description: Success page (HTML) if no redirect URL provided
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /v1/social-accounts/pinterest/connect:
+    post:
+      tags:
+        - Social Accounts
+      summary: Connect Pinterest with manual token
+      description: |
+        Connect a Pinterest account using a manually obtained access token.
+        This is primarily for sandbox/testing when OAuth flow isn't available.
+
+        **How to get a token:**
+        1. Go to Pinterest Developer Console
+        2. Create or select your app
+        3. Generate an access token with required scopes
+        4. Use that token here
+
+        **Note:** Manual tokens may have limited expiration and no refresh capability.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - accessToken
+              properties:
+                accessToken:
+                  type: string
+                  description: Access token from Pinterest Developer Console
+                  example: pina_XXXXXXXXXXXXXXXXXXXX
+      responses:
+        '201':
+          description: Pinterest account connected successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  account:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      platform:
+                        type: string
+                        enum: [pinterest]
+                      username:
+                        type: string
+                      displayName:
+                        type: string
+                      profileImageUrl:
+                        type: string
+                      isActive:
+                        type: boolean
+        '400':
+          description: Invalid or missing access token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/social-accounts/{accountId}/boards:
+    get:
+      tags:
+        - Social Accounts
+      summary: Get Pinterest boards
+      description: |
+        Get all boards for a Pinterest account.
+        Use this to let users select which board to pin to when creating a post.
+
+        **Required for Pinterest posts** - Users must select a board before publishing.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The Pinterest social account ID
+      responses:
+        '200':
+          description: List of Pinterest boards
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  boards:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Pinterest board ID
+                          example: "1234567890123456789"
+                        name:
+                          type: string
+                          description: Board name
+                          example: "My Recipes"
+                        description:
+                          type: string
+                          description: Board description
+                          example: "Collection of favorite recipes"
+                        privacy:
+                          type: string
+                          enum: [PUBLIC, PROTECTED, SECRET]
+                          description: Board privacy setting
+                        pinCount:
+                          type: integer
+                          description: Number of pins in the board
+                          example: 42
+        '400':
+          description: Account is not a Pinterest account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Social account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - Social Accounts
+      summary: Create Pinterest board
+      description: |
+        Create a new board on Pinterest.
+        Useful when the user wants to create a new board directly from your app.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The Pinterest social account ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: Board name
+                  maxLength: 50
+                  example: "My New Board"
+                description:
+                  type: string
+                  description: Board description
+                  maxLength: 500
+                  example: "A collection of inspiring content"
+                privacy:
+                  type: string
+                  enum: [PUBLIC, PROTECTED, SECRET]
+                  default: PUBLIC
+                  description: Board privacy setting
+      responses:
+        '201':
+          description: Board created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Pinterest board ID
+                    example: "1234567890123456789"
+                  name:
+                    type: string
+                    example: "My New Board"
+                  description:
+                    type: string
+                    example: "A collection of inspiring content"
+                  privacy:
+                    type: string
+                    enum: [PUBLIC, PROTECTED, SECRET]
+        '400':
+          description: Invalid request or account is not Pinterest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Social account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/social-accounts/{accountId}/tiktok/creator-info:
+    get:
+      tags:
+        - Social Accounts
+      summary: Get TikTok creator info
+      description: |
+        Get TikTok creator info for a connected TikTok account.
+
+        **Required per TikTok UX Guidelines** before showing the post creation page.
+        This endpoint returns:
+        - Available privacy levels for this creator
+        - Whether comments, duet, or stitch are disabled globally
+        - Maximum video post duration allowed
+        - Policy URLs that must be displayed to users
+        - UX guidance for frontend controls
+
+        If `canPost` is false, the creator cannot post due to account restrictions.
+
+        See: https://developers.tiktok.com/doc/content-sharing-guidelines
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The TikTok social account ID
+      responses:
+        '200':
+          description: TikTok creator info with UX compliance data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  creatorAvatarUrl:
+                    type: string
+                    format: uri
+                    description: Creator's avatar URL
+                  creatorUsername:
+                    type: string
+                    description: Creator's TikTok username
+                  creatorNickname:
+                    type: string
+                    description: Creator's display name
+                  privacyLevelOptions:
+                    type: array
+                    description: Available privacy levels for this creator
+                    items:
+                      type: string
+                      enum:
+                        - PUBLIC_TO_EVERYONE
+                        - MUTUAL_FOLLOW_FRIENDS
+                        - FOLLOWER_OF_CREATOR
+                        - SELF_ONLY
+                  commentDisabled:
+                    type: boolean
+                    description: Whether creator has comments disabled globally
+                  duetDisabled:
+                    type: boolean
+                    description: Whether creator has duet disabled globally
+                  stitchDisabled:
+                    type: boolean
+                    description: Whether creator has stitch disabled globally
+                  maxVideoPostDurationSec:
+                    type: integer
+                    description: Maximum video duration allowed (in seconds)
+                    example: 600
+                  canPost:
+                    type: boolean
+                    description: Whether the creator can post (false if account is restricted)
+                  cannotPostReason:
+                    type: string
+                    nullable: true
+                    description: Reason why creator cannot post (null if canPost is true)
+                  policyUrls:
+                    type: object
+                    description: TikTok policy URLs that must be displayed to users
+                    properties:
+                      musicUsageConfirmation:
+                        type: string
+                        format: uri
+                        example: "https://www.tiktok.com/legal/music-usage-confirmation"
+                      brandedContentPolicy:
+                        type: string
+                        format: uri
+                        example: "https://www.tiktok.com/legal/bc-policy"
+                      communityGuidelines:
+                        type: string
+                        format: uri
+                        example: "https://www.tiktok.com/community-guidelines"
+                      termsOfService:
+                        type: string
+                        format: uri
+                        example: "https://www.tiktok.com/legal/terms-of-service"
+                  uxGuidance:
+                    type: object
+                    description: UX requirements for TikTok compliance
+                    properties:
+                      privacyLevelRequired:
+                        type: boolean
+                        description: Privacy level must be explicitly selected (no default allowed)
+                      interactionControlsDefaultOff:
+                        type: boolean
+                        description: Interaction controls (comment, duet, stitch) should NOT be pre-checked
+                      brandedContentRestrictsPrivacy:
+                        type: array
+                        items:
+                          type: string
+                        description: Privacy levels not allowed with branded content (e.g., SELF_ONLY)
+        '400':
+          description: Account is not a TikTok account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Social account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Failed to fetch creator info from TikTok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/analytics/overview:
+    get:
+      tags:
+        - Analytics
+      summary: Get analytics overview
+      description: |
+        Get aggregated analytics across all posts.
+        Returns total metrics and breakdown by platform.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter analytics from this date (YYYY-MM-DD)
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter analytics until this date (YYYY-MM-DD)
+        - name: platforms
+          in: query
+          schema:
+            type: string
+          description: Comma-separated platform filter (e.g., instagram,tiktok)
+      responses:
+        '200':
+          description: Analytics overview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsOverview'
+
+  /v1/analytics/trends:
+    get:
+      tags:
+        - Analytics
+      summary: Get trend data
+      description: |
+        Get time-series data for charts.
+        Returns data points grouped by day, week, or month.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: metric
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [likes, comments, shares, views, impressions, engagement]
+          description: Which metric to return
+        - name: period
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [7d, 30d, 90d, 12m]
+          description: Time period to query
+        - name: groupBy
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month]
+            default: day
+          description: How to group the data points
+        - name: platforms
+          in: query
+          schema:
+            type: string
+          description: Comma-separated platform filter
+      responses:
+        '200':
+          description: Trend data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrendsResponse'
+
+  /v1/analytics/posts:
+    get:
+      tags:
+        - Analytics
+      summary: List posts with analytics
+      description: |
+        Get paginated list of posts with their analytics metrics.
+        Useful for showing a table of post performance.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [engagement, likes, comments, views, date]
+            default: date
+          description: Sort posts by this metric
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: platforms
+          in: query
+          schema:
+            type: string
+          description: Comma-separated platform filter
+      responses:
+        '200':
+          description: List of posts with analytics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PostAnalyticsSummary'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+
+  /v1/analytics/posts/{postId}:
+    get:
+      tags:
+        - Analytics
+      summary: Get post analytics detail
+      description: |
+        Get detailed analytics for a single post including time-series data
+        and platform-specific metrics.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detailed post analytics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostAnalyticsDetail'
+        '404':
+          description: Post not found or no analytics available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/analytics/refresh/{postResultId}:
+    post:
+      tags:
+        - Analytics
+      summary: Refresh post analytics
+      description: |
+        Manually trigger a refresh of analytics for a specific post.
+        This fetches the latest metrics from the platform API.
+
+        **Note:** This may be rate-limited by the platform.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: postResultId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The post result ID to refresh analytics for
+      responses:
+        '200':
+          description: Updated analytics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostAnalyticsDetail'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Failed to refresh (may be rate limited)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/analytics/scope-status:
+    get:
+      tags:
+        - Analytics
+      summary: Get analytics scope status
+      description: |
+        Check which connected accounts need OAuth scope upgrades
+        to enable analytics data collection.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Scope status for all accounts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  needsUpgrade:
+                    type: boolean
+                    description: Whether any accounts need scope upgrades
+                  accounts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        platform:
+                          type: string
+                        username:
+                          type: string
+                          nullable: true
+                        displayName:
+                          type: string
+                          nullable: true
+                        profileImageUrl:
+                          type: string
+                          format: uri
+                          nullable: true
+                        missingScopes:
+                          type: array
+                          items:
+                            type: string
+                        description:
+                          type: string
+
+  /v1/analytics/upgrade/{accountId}:
+    post:
+      tags:
+        - Analytics
+      summary: Initiate analytics scope upgrade
+      description: |
+        Start the OAuth re-authorization flow to add analytics permissions
+        to an existing social account connection.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The social account ID to upgrade
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                redirectUrl:
+                  type: string
+                  format: uri
+                  description: Optional custom redirect URL after OAuth
+      responses:
+        '200':
+          description: OAuth authorization URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authUrl:
+                    type: string
+                    format: uri
+                    description: URL to redirect user for OAuth authorization
+        '404':
+          description: Social account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ─── Health: Queue ───────────────────────────────────────────────────
+
+  /v1/health/queue:
+    get:
+      tags:
+        - Health
+      summary: Queue health check
+      description: Check the health status of the background job queue (BullMQ/Redis).
+      responses:
+        '200':
+          description: Queue is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, unhealthy, not_configured]
+                  connected:
+                    type: boolean
+                  started:
+                    type: boolean
+                  healthy:
+                    type: boolean
+        '503':
+          description: Queue is unhealthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [unhealthy]
+                  connected:
+                    type: boolean
+                  started:
+                    type: boolean
+                  healthy:
+                    type: boolean
+
+  # ─── Auth: Change password, Google OAuth ─────────────────────────────
+
+  /v1/auth/password:
+    patch:
+      tags:
+        - Auth
+      summary: Change password
+      description: Change the current user's password. Requires the current password for verification.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - current_password
+                - new_password
+              properties:
+                current_password:
+                  type: string
+                  minLength: 1
+                new_password:
+                  type: string
+                  minLength: 6
+      responses:
+        '200':
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password changed successfully
+        '400':
+          description: Validation error (e.g., weak password)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Current password is incorrect
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/auth/google:
+    get:
+      tags:
+        - Auth
+      summary: Initiate Google OAuth
+      description: |
+        Redirects the user to Google's OAuth consent screen.
+        After authorization, Google redirects to `/v1/auth/google/callback`.
+      parameters:
+        - name: redirect_to
+          in: query
+          schema:
+            type: string
+            format: uri
+          description: Frontend URL to redirect to after successful authentication
+      responses:
+        '302':
+          description: Redirect to Google OAuth consent screen
+
+  /v1/auth/google/callback:
+    get:
+      tags:
+        - Auth
+      summary: Google OAuth callback
+      description: |
+        Callback endpoint for Google OAuth. Google redirects here after the user
+        authorizes. On success, redirects to the frontend with tokens in the URL hash fragment.
+
+        Redirect format: `{redirect_to}#access_token=...&refresh_token=...&expires_at=...&user_id=...&user_email=...&user_name=...`
+      parameters:
+        - name: code
+          in: query
+          schema:
+            type: string
+          description: Authorization code from Google
+        - name: state
+          in: query
+          schema:
+            type: string
+          description: State parameter containing redirect URL
+        - name: error
+          in: query
+          schema:
+            type: string
+          description: Error code if user denied authorization
+        - name: error_description
+          in: query
+          schema:
+            type: string
+          description: Human-readable error description
+      responses:
+        '302':
+          description: Redirect to frontend with tokens in URL hash fragment
+
+  # ─── Users: Onboarding, Account deletion ─────────────────────────────
+
+  /v1/users/onboarding/complete:
+    post:
+      tags:
+        - Users
+      summary: Complete onboarding
+      description: Mark the user's onboarding as complete and optionally set their selected plan.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                selectedPlan:
+                  type: string
+                  description: The plan the user selected during onboarding
+                  default: trial
+      responses:
+        '200':
+          description: Onboarding completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /v1/users/account:
+    delete:
+      tags:
+        - Users
+      summary: Delete user account
+      description: Permanently delete the current user's account and all associated data including posts, media, and social account connections.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Account deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: Account deleted successfully
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ─── Media: Carousel PDF ─────────────────────────────────────────────
+
+  /v1/media/generate-carousel-pdf:
+    post:
+      tags:
+        - Media
+      summary: Generate carousel PDF
+      description: |
+        Generate a multi-page PDF from selected media items for use as a LinkedIn carousel post.
+        Each media item becomes one page in the PDF.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - media_ids
+              properties:
+                media_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  description: Array of media IDs to include in the carousel
+                title:
+                  type: string
+                  description: Optional title for the carousel document
+      responses:
+        '201':
+          description: Carousel PDF generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  media_id:
+                    type: string
+                    format: uuid
+                    description: ID of the newly created PDF media item
+                  thumbnail_url:
+                    type: string
+                    format: uri
+                  original_url:
+                    type: string
+                    format: uri
+                    description: Signed URL to download the PDF
+                  page_count:
+                    type: integer
+                    description: Number of pages in the generated PDF
+        '400':
+          description: Invalid media IDs or unsupported media types
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ─── Posts: Calendar ─────────────────────────────────────────────────
+
+  /v1/posts/calendar:
+    get:
+      tags:
+        - Posts
+      summary: Calendar view
+      description: Get posts within a date range for calendar display. Returns lightweight post objects.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: start
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Start date (YYYY-MM-DD)
+        - name: end
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: End date (YYYY-MM-DD)
+      responses:
+        '200':
+          description: Posts in the date range
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+        '400':
+          description: Invalid date format or range
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ─── Tags ────────────────────────────────────────────────────────────
+
+  /v1/tags:
+    get:
+      tags:
+        - Tags
+      summary: List tags
+      description: List the current user's saved hashtag tags with optional search and sorting.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Filter tags by search term
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+          description: Maximum number of tags to return
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [usage, recent, alpha]
+            default: usage
+          description: Sort order for tags
+      responses:
+        '200':
+          description: List of tags
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tag'
+                  total:
+                    type: integer
+    post:
+      tags:
+        - Tags
+      summary: Save tags
+      description: Save one or more hashtag tags. Existing tags are returned as-is.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tags
+              properties:
+                tags:
+                  type: array
+                  items:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                  minItems: 1
+                  maxItems: 50
+      responses:
+        '201':
+          description: Tags saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tag'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/tags/{id}:
+    delete:
+      tags:
+        - Tags
+      summary: Delete tag
+      description: Delete a saved tag by ID.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Tag deleted
+        '404':
+          description: Tag not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ─── SSE ─────────────────────────────────────────────────────────────
+
+  /v1/sse/posts:
+    get:
+      tags:
+        - SSE
+      summary: Post status updates stream
+      description: |
+        Server-Sent Events stream for real-time post status updates.
+        The connection stays open and sends events as posts are processed and published.
+
+        **Authentication:** Pass the access token as a query parameter since
+        the EventSource API does not support custom headers.
+
+        **Events:**
+        - `connected` — Initial connection confirmation
+        - Post update events with current post status and results
+
+        A keepalive comment is sent every 30 seconds to prevent timeouts.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: token
+          in: query
+          schema:
+            type: string
+          description: Access token (alternative to Authorization header for EventSource clients)
+      responses:
+        '200':
+          description: SSE stream opened
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: Server-Sent Events stream
+
+  # ─── Feedback ────────────────────────────────────────────────────────
+
+  /v1/feedback:
+    post:
+      tags:
+        - Feedback
+      summary: Submit feedback
+      description: Submit user feedback. Requires authentication.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackRequest'
+      responses:
+        '201':
+          description: Feedback submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: Thank you for your feedback!
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ─── Waiting List ────────────────────────────────────────────────────
+
+  /v1/waiting-list:
+    post:
+      tags:
+        - Waiting List
+      summary: Join waiting list
+      description: Add an email address to the pre-launch waiting list. This is a public endpoint.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaitingListRequest'
+      responses:
+        '201':
+          description: Added to waiting list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '200':
+          description: Already on waiting list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  already_registered:
+                    type: boolean
+        '400':
+          description: Invalid email or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ─── Webhooks: Meta ──────────────────────────────────────────────────
+
+  /v1/webhooks/meta/deauthorize:
+    post:
+      tags:
+        - Webhooks
+      summary: Meta deauthorization callback
+      description: |
+        Called by Meta when a user removes the app from their Facebook/Instagram account.
+        Verified via the `signed_request` parameter signed with the app secret.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - signed_request
+              properties:
+                signed_request:
+                  type: string
+                  description: Meta-signed request payload
+      responses:
+        '200':
+          description: Deauthorization acknowledged
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /v1/webhooks/meta/data-deletion:
+    post:
+      tags:
+        - Webhooks
+      summary: Meta GDPR data deletion request
+      description: |
+        Called by Meta when a user requests deletion of their data via Facebook/Instagram settings.
+        Returns a confirmation code and status URL as required by Meta's GDPR compliance.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - signed_request
+              properties:
+                signed_request:
+                  type: string
+                  description: Meta-signed request payload
+      responses:
+        '200':
+          description: Deletion request accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    format: uri
+                    description: URL to check deletion status
+                  confirmation_code:
+                    type: string
+                    description: Unique code for this deletion request
+    get:
+      tags:
+        - Webhooks
+      summary: Check data deletion status
+      description: Check the status of a Meta GDPR data deletion request. Returns an HTML status page.
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Confirmation code from the data deletion response
+      responses:
+        '200':
+          description: Deletion status page
+          content:
+            text/html:
+              schema:
+                type: string
+
+  # ─── Admin ───────────────────────────────────────────────────────────
+
+  /v1/admin/queue-status:
+    get:
+      tags:
+        - Admin
+      summary: Get queue status
+      description: Get the status of the background job queue, workers, and queue statistics. Requires admin role.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Queue status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueueStatus'
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/admin/workers:
+    get:
+      tags:
+        - Admin
+      summary: List workers
+      description: List all registered background workers and their status. Requires admin role.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Worker list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  running:
+                    type: integer
+                  stopped:
+                    type: integer
+                  error:
+                    type: integer
+                  workers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Worker'
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ─── Analytics: Missing endpoints ────────────────────────────────────
+
+  /v1/analytics/capabilities:
+    get:
+      tags:
+        - Analytics
+      summary: Get analytics capabilities
+      description: |
+        Get the analytics features available for the current user's plan.
+        Returns which metrics, periods, and features (best times, hashtags, etc.) are available.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Analytics capabilities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  canViewAnalytics:
+                    type: boolean
+                  canViewTrends:
+                    type: boolean
+                  canCompare:
+                    type: boolean
+                  canExport:
+                    type: boolean
+                  maxAnalyticsHistory:
+                    type: integer
+                    description: Maximum analytics history in days
+                  allowedMetrics:
+                    type: array
+                    items:
+                      type: string
+                  allowedPeriods:
+                    type: array
+                    items:
+                      type: string
+                  maxPosts:
+                    type: integer
+                  features:
+                    type: object
+                    properties:
+                      bestTimes:
+                        type: boolean
+                      contentTypes:
+                        type: boolean
+                      hashtags:
+                        type: boolean
+                      benchmarks:
+                        type: boolean
+
+  /v1/analytics/best-times:
+    get:
+      tags:
+        - Analytics
+      summary: Best posting times
+      description: |
+        Get a heatmap of the best times to post based on historical engagement data.
+        Requires starter plan or above.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: platforms
+          in: query
+          schema:
+            type: string
+          description: Comma-separated platform filter
+      responses:
+        '200':
+          description: Best times heatmap
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  heatmap:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        day:
+                          type: string
+                          description: Day of week (MON-SUN)
+                        hour:
+                          type: integer
+                          minimum: 0
+                          maximum: 23
+                        engagement:
+                          type: number
+                          description: Engagement score (0-100)
+                  recommendedTimes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        day:
+                          type: string
+                        hour:
+                          type: integer
+                        engagement:
+                          type: number
+        '403':
+          description: Plan upgrade required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/analytics/content-types:
+    get:
+      tags:
+        - Analytics
+      summary: Content type breakdown
+      description: |
+        Get engagement breakdown by content type (photo, video, carousel, etc.).
+        Requires starter plan or above.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: platforms
+          in: query
+          schema:
+            type: string
+          description: Comma-separated platform filter
+      responses:
+        '200':
+          description: Content type analytics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  types:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          description: Content type (e.g., photo, video, carousel)
+                        count:
+                          type: integer
+                        avgEngagement:
+                          type: number
+                        avgReach:
+                          type: number
+        '403':
+          description: Plan upgrade required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/analytics/hashtags:
+    get:
+      tags:
+        - Analytics
+      summary: Hashtag performance
+      description: |
+        Get performance metrics for hashtags used in posts.
+        Requires professional plan.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [engagement, usage, views]
+            default: engagement
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: platforms
+          in: query
+          schema:
+            type: string
+          description: Comma-separated platform filter
+      responses:
+        '200':
+          description: Hashtag performance data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hashtags:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tag:
+                          type: string
+                        count:
+                          type: integer
+                          description: Number of times used
+                        engagement:
+                          type: number
+                        reach:
+                          type: number
+                        impressions:
+                          type: number
+                        engagementRate:
+                          type: number
+        '403':
+          description: Professional plan required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/analytics/compare:
+    get:
+      tags:
+        - Analytics
+      summary: Compare posts
+      description: |
+        Compare analytics between 2-4 posts side by side.
+        Requires professional plan.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: postIds
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Comma-separated post IDs (2-4 posts)
+      responses:
+        '200':
+          description: Post comparison
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        caption:
+                          type: string
+                        platform:
+                          type: string
+                        posted_at:
+                          type: string
+                          format: date-time
+                        engagement:
+                          type: number
+                        likes:
+                          type: integer
+                        comments:
+                          type: integer
+                        shares:
+                          type: integer
+                        views:
+                          type: integer
+                        impressions:
+                          type: integer
+                        engagementRate:
+                          type: number
+                  metrics:
+                    type: object
+                    description: Per-metric comparison with leader identification
+        '400':
+          description: Invalid number of post IDs (must be 2-4)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Professional plan required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/analytics/export/csv:
+    get:
+      tags:
+        - Analytics
+      summary: Export analytics as CSV
+      description: |
+        Export analytics data as a CSV file download.
+        Requires professional plan.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Start date (YYYY-MM-DD)
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: End date (YYYY-MM-DD)
+        - name: platforms
+          in: query
+          schema:
+            type: string
+          description: Comma-separated platform filter
+      responses:
+        '200':
+          description: CSV file download
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                example: attachment; filename="smartpost-analytics-2026-02-28.csv"
+        '403':
+          description: Professional plan required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/analytics/export/pdf:
+    get:
+      tags:
+        - Analytics
+      summary: Export analytics as PDF
+      description: |
+        Export analytics data as a PDF report download.
+        Requires professional plan.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Start date (YYYY-MM-DD)
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: End date (YYYY-MM-DD)
+        - name: platforms
+          in: query
+          schema:
+            type: string
+          description: Comma-separated platform filter
+      responses:
+        '200':
+          description: PDF file download
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                example: attachment; filename="smartpost-analytics-2026-02-28.pdf"
+        '403':
+          description: Professional plan required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/analytics/benchmarks:
+    get:
+      tags:
+        - Analytics
+      summary: Engagement benchmarks
+      description: |
+        Get engagement benchmarks showing average, median, and percentile metrics.
+        Requires professional plan.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: platforms
+          in: query
+          schema:
+            type: string
+          description: Comma-separated platform filter
+      responses:
+        '200':
+          description: Engagement benchmarks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  benchmarks:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        platform:
+                          type: string
+                        metric:
+                          type: string
+                        average:
+                          type: number
+                        median:
+                          type: number
+                        p75:
+                          type: number
+                          description: 75th percentile
+                        p90:
+                          type: number
+                          description: 90th percentile
+        '403':
+          description: Professional plan required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/analytics/refresh-all:
+    post:
+      tags:
+        - Analytics
+      summary: Refresh all analytics
+      description: |
+        Trigger a refresh of analytics data for all posts.
+        Rate limited to 1 call per hour per user.
+        Requires starter plan or above.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Analytics refresh completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  refreshedCount:
+                    type: integer
+                    description: Number of posts successfully refreshed
+                  failedCount:
+                    type: integer
+                    description: Number of posts that failed to refresh
+                  nextRefreshAt:
+                    type: string
+                    format: date-time
+                    description: Earliest time the next refresh can be triggered
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                  nextRefreshAt:
+                    type: string
+                    format: date-time
+                  retryAfterSeconds:
+                    type: integer
+        '403':
+          description: Plan upgrade required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ── API Tokens ─────────────────────────────────────────────
+
+  /v1/auth/tokens:
+    get:
+      tags:
+        - API Tokens
+      summary: List API tokens
+      description: List all API tokens for the authenticated user. Token values are not returned — only metadata.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Token list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tokens:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ApiToken'
+    post:
+      tags:
+        - API Tokens
+      summary: Create API token
+      description: |
+        Create a new API token. The raw token value is returned **only once** in the response.
+        Store it securely — it cannot be retrieved again.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: Human-readable name for the token
+                  example: CLI Token
+      responses:
+        '201':
+          description: Token created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: The raw API token (shown only once)
+                  id:
+                    type: string
+                    format: uuid
+                  name:
+                    type: string
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/auth/tokens/{tokenId}:
+    delete:
+      tags:
+        - API Tokens
+      summary: Revoke API token
+      description: Permanently revoke an API token. Any integrations using this token will stop working immediately.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tokenId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Token revoked
+        '404':
+          description: Token not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ── Webhook Endpoints ──────────────────────────────────────
+
+  /v1/webhook-endpoints:
+    get:
+      tags:
+        - Webhook Endpoints
+      summary: List webhook endpoints
+      description: List all webhook endpoints for the authenticated user. Also returns available events for the user's plan.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Endpoint list with plan info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  endpoints:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WebhookEndpoint'
+                  available_events:
+                    type: array
+                    items:
+                      type: string
+                    description: Events available on the user's current plan
+                  all_events:
+                    type: array
+                    items:
+                      type: string
+                    description: All possible webhook event types
+    post:
+      tags:
+        - Webhook Endpoints
+      summary: Create webhook endpoint
+      description: |
+        Create a new webhook endpoint. The signing secret is returned **only once** in the response.
+        Store it securely — it cannot be retrieved again (unless regenerated via PATCH).
+
+        Plan limits apply to the number of endpoints and available event types.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - url
+                - events
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  description: Must be HTTPS (HTTP allowed for localhost in dev)
+                  example: https://example.com/posta-webhook
+                description:
+                  type: string
+                  maxLength: 200
+                  description: Human-readable description
+                events:
+                  type: array
+                  items:
+                    type: string
+                  minItems: 1
+                  description: Event types to subscribe to
+                  example: ["post.published", "post.failed"]
+      responses:
+        '201':
+          description: Endpoint created (includes secret — save it now)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookEndpointWithSecret'
+        '400':
+          description: Validation error (invalid URL, no events, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Plan limit exceeded (max endpoints or disallowed events)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/webhook-endpoints/{id}:
+    get:
+      tags:
+        - Webhook Endpoints
+      summary: Get webhook endpoint
+      description: Get endpoint details with the 10 most recent deliveries.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Endpoint with recent deliveries
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/WebhookEndpoint'
+                  - type: object
+                    properties:
+                      recent_deliveries:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/WebhookDelivery'
+        '404':
+          description: Endpoint not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags:
+        - Webhook Endpoints
+      summary: Update webhook endpoint
+      description: |
+        Update URL, description, events, or active state. Set `regenerate_secret` to true
+        to get a new signing secret (the new secret is returned in the response).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+                  format: uri
+                description:
+                  type: string
+                  maxLength: 200
+                events:
+                  type: array
+                  items:
+                    type: string
+                  minItems: 1
+                is_active:
+                  type: boolean
+                regenerate_secret:
+                  type: boolean
+                  description: Set to true to generate a new signing secret
+      responses:
+        '200':
+          description: Updated endpoint (includes secret only if regenerated)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookEndpoint'
+        '404':
+          description: Endpoint not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Webhook Endpoints
+      summary: Delete webhook endpoint
+      description: Delete an endpoint and all its delivery history. This cannot be undone.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Endpoint deleted
+        '404':
+          description: Endpoint not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/webhook-endpoints/{id}/test:
+    post:
+      tags:
+        - Webhook Endpoints
+      summary: Send test ping
+      description: Send a `ping` event to the endpoint to verify it is reachable and correctly configured.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Ping queued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deliveryId:
+                    type: string
+                    format: uuid
+        '404':
+          description: Endpoint not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/webhook-endpoints/{id}/deliveries:
+    get:
+      tags:
+        - Webhook Endpoints
+      summary: List deliveries
+      description: Paginated delivery history for an endpoint, newest first.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Delivery list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WebhookDelivery'
+                  total:
+                    type: integer
+
+  /v1/webhook-endpoints/{id}/deliveries/{deliveryId}/retry:
+    post:
+      tags:
+        - Webhook Endpoints
+      summary: Retry failed delivery
+      description: Re-queue a failed delivery for another attempt.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: deliveryId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Retry queued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Delivery is not in failed status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Delivery not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

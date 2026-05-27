@@ -16,6 +16,7 @@ const ROUTES = [
   '/buffer-alternative',
   '/hootsuite-alternative',
   '/compare',
+  '/developers',
   '/terms',
   '/privacy',
   '/impressum',

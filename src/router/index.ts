@@ -79,6 +79,11 @@ const routes: RouteRecordRaw[] = [
     name: 'compare',
     component: () => import('@/views/seo/ComparePillarView.vue'),
   },
+  {
+    path: '/developers',
+    name: 'developers',
+    component: () => import('@/views/seo/ApiView.vue'),
+  },
 
   {
     path: '/login',
