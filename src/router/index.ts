@@ -54,6 +54,11 @@ const routes: RouteRecordRaw[] = [
     name: 'cli-social-media-posting',
     component: () => import('@/views/seo/CliPostingView.vue'),
   },
+  {
+    path: '/bluesky-scheduler',
+    name: 'bluesky-scheduler',
+    component: () => import('@/views/seo/BlueskySchedulerView.vue'),
+  },
 
   {
     path: '/login',

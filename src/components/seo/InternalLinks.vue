@@ -9,6 +9,7 @@ const links = [
   { path: '/social-media-scheduler', label: 'Social Media Scheduler' },
   { path: '/instagram-scheduler', label: 'Instagram Scheduler' },
   { path: '/tiktok-scheduler', label: 'TikTok Scheduler' },
+  { path: '/bluesky-scheduler', label: 'Bluesky Scheduler' },
   { path: '/auto-post-social-media', label: 'Auto Post Social Media' },
   { path: '/social-media-tools', label: 'Social Media Tools' },
   { path: '/cli-social-media-posting', label: 'CLI Social Media Posting' },
