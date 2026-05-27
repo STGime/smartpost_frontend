@@ -54,7 +54,7 @@ gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" \
 
 # Set no-cache for pre-rendered HTML pages
 log_info "Setting cache headers for pre-rendered pages..."
-for dir in social-media-scheduler instagram-scheduler tiktok-scheduler auto-post-social-media social-media-tools cli-social-media-posting bluesky-scheduler threads-scheduler terms privacy impressum; do
+for dir in social-media-scheduler instagram-scheduler tiktok-scheduler auto-post-social-media social-media-tools cli-social-media-posting bluesky-scheduler threads-scheduler buffer-alternative terms privacy impressum; do
     if [ -f "dist/$dir/index.html" ]; then
         gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" \
             "gs://$GCS_BUCKET/$dir/index.html" 2>/dev/null || true
