@@ -39,7 +39,7 @@ const blueskyFaq = [
   },
   {
     q: 'Is there a free Bluesky scheduler?',
-    a: 'Posta\'s 14-day trial includes Bluesky scheduling at no cost, no credit card required. The same trial also covers LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X (Twitter), and Threads.',
+    a: 'Posta\'s 14-day trial includes Bluesky scheduling at no cost, no credit card required. The same trial also covers LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, and Threads.',
   },
 ]
 
@@ -115,7 +115,7 @@ useHead({
     <section class="hero">
       <h1>Schedule Bluesky posts and threads</h1>
       <p class="hero-sub">
-        Posta is a native Bluesky scheduler. Publish posts and threads via the AT Protocol with thread chains, alt text, embed cards, language tags, and content labels — all in one workflow alongside LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X, and Threads.
+        Posta is a native Bluesky scheduler. Publish posts and threads via the AT Protocol with thread chains, alt text, embed cards, language tags, and content labels — all in one workflow alongside LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, and Threads.
       </p>
     </section>
 
@@ -178,7 +178,7 @@ useHead({
     <section class="content-section">
       <h2>One subscription, every network</h2>
       <p>
-        Most creators don't post only to Bluesky. With Posta, the same subscription that publishes to Bluesky also publishes to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X (Twitter), and Threads. Auto-format images for each network's aspect ratios, run the same caption across all of them, and see everything on one visual calendar.
+        Most creators don't post only to Bluesky. With Posta, the same subscription that publishes to Bluesky also publishes to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, and Threads. Auto-format images for each network's aspect ratios, run the same caption across all of them, and see everything on one visual calendar.
       </p>
     </section>
 

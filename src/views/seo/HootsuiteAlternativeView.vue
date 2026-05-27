@@ -11,7 +11,7 @@ const waitingListSource = ref<WaitingListSource>('seo-hootsuite-alt')
 const hootsuiteFaq = [
   {
     q: 'Is Posta a Hootsuite alternative?',
-    a: 'Yes. Posta is a multi-platform social media scheduler that publishes to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X (Twitter), Bluesky, and Threads — the same networks most teams use Hootsuite for, with a leaner UI and a developer-friendly API.',
+    a: 'Yes. Posta is a multi-platform social media scheduler that publishes to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads — most of the major networks teams use Hootsuite for, with a leaner UI and a developer-friendly API. Note that X (Twitter) is not officially supported by Posta today; Hootsuite covers it.',
   },
   {
     q: 'Is Posta cheaper than Hootsuite?',
@@ -107,7 +107,7 @@ useHead({
     <section class="hero">
       <h1>Posta vs Hootsuite: an honest Hootsuite alternative for teams and agencies</h1>
       <p class="hero-sub">
-        Posta is a multi-platform social media scheduler covering LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X (Twitter), Bluesky, and Threads — the same networks most teams use Hootsuite for, at a fraction of the per-seat price, with a public REST API on every tier and outbound webhooks. This page is a direct comparison: what Posta does better, what Hootsuite still does better, and which one fits which team.
+        Posta is a multi-platform social media scheduler covering LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads — most of the major networks teams use Hootsuite for, at a fraction of the per-seat price, with a public REST API on every tier and outbound webhooks. X (Twitter) is not officially supported by Posta today. This page is a direct comparison: what Posta does better, what Hootsuite still does better, and which one fits which team.
       </p>
     </section>
 
@@ -156,7 +156,7 @@ useHead({
           <tbody>
             <tr>
               <th scope="row">Networks supported</th>
-              <td>9 (incl. native Bluesky &amp; Threads)</td>
+              <td>8 (incl. native Bluesky &amp; Threads; no X / Twitter)</td>
               <td>20+ via integrations</td>
             </tr>
             <tr>
@@ -262,7 +262,7 @@ useHead({
 
     <CtaSection
       heading="Try Posta as your Hootsuite alternative"
-      subtext="14-day free trial, no credit card. Publish to 9 networks from one workflow at a fraction of Hootsuite's per-seat pricing."
+      subtext="14-day free trial, no credit card. Publish to 8 networks from one workflow at a fraction of Hootsuite's per-seat pricing."
       :source="waitingListSource"
     />
   </SeoPageLayout>

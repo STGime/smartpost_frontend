@@ -116,17 +116,17 @@ X-Posta-Signature: <HMAC SHA-256 of "timestamp.body" (hex)>
 useHead({
   title: 'Posta API and Webhooks – REST API for Social Media Scheduling',
   meta: [
-    { name: 'description', content: 'The Posta REST API lets you create, schedule, and publish social media posts programmatically across 9 networks. Outbound HMAC-signed webhooks, full OpenAPI spec, Bearer-token auth, available on every paid tier.' },
+    { name: 'description', content: 'The Posta REST API lets you create, schedule, and publish social media posts programmatically across 8 networks. Outbound HMAC-signed webhooks, full OpenAPI spec, Bearer-token auth, available on every paid tier.' },
     { name: 'keywords', content: 'posta api, social media scheduler api, instagram scheduling api, tiktok api, linkedin api scheduler, social media webhook, openapi social media' },
     { name: 'robots', content: 'index, follow' },
     { property: 'og:type', content: 'website' },
     { property: 'og:url', content: 'https://getposta.app/developers' },
     { property: 'og:title', content: 'Posta API and Webhooks – REST API for Social Media Scheduling | Posta' },
-    { property: 'og:description', content: 'REST API for creating, scheduling, and publishing posts to 9 networks. Outbound HMAC-signed webhooks, full OpenAPI spec, on every paid tier.' },
+    { property: 'og:description', content: 'REST API for creating, scheduling, and publishing posts to 8 networks. Outbound HMAC-signed webhooks, full OpenAPI spec, on every paid tier.' },
     { property: 'og:image', content: 'https://getposta.app/assets/posta_og_image.png' },
     { name: 'twitter:card', content: 'summary_large_image' },
     { name: 'twitter:title', content: 'Posta API and Webhooks – REST API for Social Media Scheduling | Posta' },
-    { name: 'twitter:description', content: 'REST API for creating, scheduling, and publishing posts to 9 networks. Outbound HMAC-signed webhooks, full OpenAPI spec, on every paid tier.' },
+    { name: 'twitter:description', content: 'REST API for creating, scheduling, and publishing posts to 8 networks. Outbound HMAC-signed webhooks, full OpenAPI spec, on every paid tier.' },
     { name: 'twitter:image', content: 'https://getposta.app/assets/posta_og_image.png' },
   ],
   link: [
@@ -173,7 +173,7 @@ useHead({
     <section class="hero">
       <h1>Posta API and Webhooks</h1>
       <p class="hero-sub">
-        Posta exposes a REST API for creating, scheduling, and publishing social media posts across LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X (Twitter), Bluesky, and Threads. Bearer-token auth, full OpenAPI 3.0 spec, outbound HMAC-signed webhooks — available on every paid tier, no enterprise contract required.
+        Posta exposes a REST API for creating, scheduling, and publishing social media posts across LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads. Bearer-token auth, full OpenAPI 3.0 spec, outbound HMAC-signed webhooks — available on every paid tier, no enterprise contract required.
       </p>
       <div class="hero-links">
         <a class="btn-primary" href="https://api.getposta.app/docs">Open Swagger UI</a>

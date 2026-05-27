@@ -43,7 +43,7 @@ const compareFaq = [
   },
   {
     q: 'Which social media scheduler supports the most platforms?',
-    a: 'Hootsuite claims the largest list via integrations (20+ networks including older systems like Tumblr and Reddit). For mainstream networks — LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X, Bluesky, Threads — Posta, Buffer, Hootsuite, and Publer all cover 8–10. Later is Instagram-heavy and covers fewer networks. Postiz coverage depends on plugins.',
+    a: 'Hootsuite claims the largest list via integrations (20+ networks including older systems like Tumblr and Reddit). For mainstream networks — LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X, Bluesky, Threads — Buffer, Hootsuite, and Publer cover the full 9; Posta covers 8 (no X / Twitter today). Later is Instagram-heavy and covers fewer networks. Postiz coverage depends on plugins.',
   },
   {
     q: 'Which is the best social media scheduler for developers?',
@@ -144,7 +144,7 @@ useHead({
           <tbody>
             <tr>
               <th scope="row">Networks supported</th>
-              <td>9</td>
+              <td>8</td>
               <td>9</td>
               <td>20+ via integrations</td>
               <td>7</td>
@@ -276,7 +276,7 @@ useHead({
       <div class="tool-callout">
         <h3>Posta — best for developer-leaning creators and small teams</h3>
         <p>
-          The only tool in this comparison with a Claude Code CLI, native Bluesky support, a full public REST API on every paid tier, and outbound HMAC-signed webhooks. Pricing is flat (not per-seat). Comments inbox is scoped to LinkedIn and TikTok in v1 but actively expanding. Mobile is web-responsive only — no native apps yet. Best for indie creators, solo founders, and small teams who value an API.
+          The only tool in this comparison with a Claude Code CLI, native Bluesky support, a full public REST API on every paid tier, and outbound HMAC-signed webhooks. Pricing is flat (not per-seat). Comments inbox is scoped to LinkedIn and TikTok in v1 but actively expanding. Mobile is web-responsive only — no native apps yet. X / Twitter is not officially supported today. Best for indie creators, solo founders, and small teams who value an API.
           <RouterLink to="/buffer-alternative">Compare directly to Buffer →</RouterLink>
         </p>
       </div>
@@ -374,7 +374,7 @@ useHead({
     <section class="content-section">
       <h2>Where Posta is honest about its gaps</h2>
       <p>
-        We don't ship native mobile apps. We don't have a link-in-bio product. Our team-collaboration is basic. Our comments inbox is LinkedIn + TikTok only today. We don't have SOC 2. If any of those are dealbreakers, one of the other tools in this table is a better fit — we'd rather you find that out from this page than after you've migrated.
+        We don't officially support X / Twitter today (Buffer, Hootsuite, Publer, and Sendible all do). We don't ship native mobile apps. We don't have a link-in-bio product. Our team-collaboration is basic. Our comments inbox is LinkedIn + TikTok only today. We don't have SOC 2. If any of those are dealbreakers, one of the other tools in this table is a better fit — we'd rather you find that out from this page than after you've migrated.
       </p>
     </section>
 
@@ -392,7 +392,7 @@ useHead({
 
     <CtaSection
       heading="Try Posta — the developer-leaning scheduler"
-      subtext="14-day free trial, no credit card. Publish to 9 networks from one workflow, with a public API and outbound webhooks on every tier."
+      subtext="14-day free trial, no credit card. Publish to 8 networks from one workflow, with a public API and outbound webhooks on every tier."
       :source="waitingListSource"
     />
   </SeoPageLayout>

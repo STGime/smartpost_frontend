@@ -58,10 +58,10 @@ useHead({
           },
           {
             '@type': 'Question',
-            name: 'Will you support direct publishing?',
+            name: 'Does Posta publish directly to social networks?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes. The beta focuses on creating perfect, platform-ready assets. Direct publishing and scheduling to selected platforms will roll out step by step.',
+              text: 'Yes. Posta publishes directly to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads via each platform\'s official API. Schedule a post for a future time and Posta uploads it at the scheduled moment — no manual hand-off required.',
             },
           },
           {
@@ -135,7 +135,7 @@ useHead({
         // do NOT fabricate links.
         sameAs: [],
         featureList: [
-          'Multi-platform social media scheduling (LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X, Bluesky, Threads)',
+          'Multi-platform social media scheduling (LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, Threads)',
           'Comments inbox for LinkedIn and TikTok with inline reply',
           'Outbound webhook delivery with HMAC signing',
           'Public REST API with OpenAPI specification',
@@ -338,7 +338,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               Create once, <span class="gradient-text">post everywhere</span>.
             </h1>
             <p class="hero-sub">
-              Posta is a multi-platform social media scheduler that publishes once to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X (Twitter), Bluesky, and Threads. Face-aware cropping, smart compression, a comments inbox, a public REST API, and a CLI for terminal posting — all in one workflow.
+              Posta is a multi-platform social media scheduler that publishes once to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads. Face-aware cropping, smart compression, a comments inbox, a public REST API, and a CLI for terminal posting — all in one workflow.
             </p>
 
             <div class="hero-bullets">
@@ -1159,7 +1159,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               <tbody>
                 <tr>
                   <th scope="row">Networks supported</th>
-                  <td>9</td>
+                  <td>8</td>
                   <td>8</td>
                   <td>20+</td>
                   <td>7</td>
@@ -1241,10 +1241,9 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               </div>
             </div>
             <div class="faq-item">
-              <div class="faq-q">Will you support direct publishing?</div>
+              <div class="faq-q">Does Posta publish directly to social networks?</div>
               <div class="faq-a">
-                Yes. The beta focuses on creating perfect, platform-ready assets. Direct publishing and scheduling to
-                selected platforms will roll out step by step.
+                Yes. Posta publishes directly to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads via each platform's official API. Schedule a post for a future time and Posta uploads it at the scheduled moment — no manual hand-off required.
               </div>
             </div>
             <div class="faq-item">
