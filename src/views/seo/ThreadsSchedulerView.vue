@@ -31,11 +31,11 @@ const threadsFaq = [
   },
   {
     q: 'How many hashtags can I use on Threads?',
-    a: 'Threads currently surfaces only one hashtag per post. Posta caps hashtags at 5 in the composer but emits the post with the limit Threads honours; extras are passed through in the caption text.',
+    a: 'Posta enforces a 5-hashtag cap on Threads posts. If your caption contains more than 5, the extras are trimmed before publish so the post never gets rejected by the API.',
   },
   {
     q: 'Can I cross-post from Instagram to Threads with Posta?',
-    a: 'Yes. Connect both accounts and pick both in the composer; Posta auto-formats once and publishes the same content to both, with each platform\'s aspect-ratio and caption rules respected. You can also pick Threads-specific placement — feed or Reels — via the platform configuration.',
+    a: 'Yes. Connect both accounts and pick both in the composer; Posta auto-formats once and publishes the same content to both, with each platform\'s aspect-ratio and caption rules respected. You can also pick Threads-specific placement — Timeline or Reels — via the platform configuration.',
   },
   {
     q: 'Is there a free Threads scheduler?',
@@ -149,11 +149,11 @@ useHead({
         </div>
         <div class="format-item">
           <span class="format-label">Image</span>
-          <span class="format-size">1080×1920 + more</span>
+          <span class="format-size">Up to 1080×1920</span>
         </div>
         <div class="format-item">
           <span class="format-label">Placement</span>
-          <span class="format-size">Feed or Reels</span>
+          <span class="format-size">Timeline or Reels</span>
         </div>
         <div class="format-item">
           <span class="format-label">Hashtags</span>
@@ -166,9 +166,9 @@ useHead({
     </section>
 
     <section class="content-section">
-      <h2>Feed or Reels — pick the placement</h2>
+      <h2>Timeline or Reels — pick the placement</h2>
       <p>
-        Threads supports two video placements: standard feed posts and Reels. Picking the right one matters for discovery — Reels surface in the dedicated tab and get separate recommendation treatment, while feed videos appear inline in followers' timelines. Posta exposes this choice as a simple toggle in the composer, so the same video can go out to feed today and Reels next week without re-uploading.
+        Threads supports two video placements: standard Timeline posts and Reels. Picking the right one matters for discovery — Reels surface in the dedicated tab and get separate recommendation treatment, while Timeline videos appear inline in followers' feeds. Posta exposes this choice as a simple radio toggle in the composer, so the same video can go out to Timeline today and Reels next week without re-uploading.
       </p>
     </section>
 
