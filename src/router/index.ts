@@ -69,6 +69,11 @@ const routes: RouteRecordRaw[] = [
     name: 'buffer-alternative',
     component: () => import('@/views/seo/BufferAlternativeView.vue'),
   },
+  {
+    path: '/hootsuite-alternative',
+    name: 'hootsuite-alternative',
+    component: () => import('@/views/seo/HootsuiteAlternativeView.vue'),
+  },
 
   {
     path: '/login',
