@@ -129,7 +129,7 @@ useHead({
         </div>
         <div class="feature-card">
           <div class="feature-title">Natural language</div>
-          <div class="feature-body">Say "post this screenshot to LinkedIn and Twitter" instead of clicking through five menus.</div>
+          <div class="feature-body">Say "post this screenshot to LinkedIn and Bluesky" instead of clicking through five menus.</div>
         </div>
         <div class="feature-card">
           <div class="feature-title">Batch operations</div>
@@ -153,7 +153,7 @@ useHead({
     <section class="content-section">
       <h2>Supported platforms</h2>
       <p>
-        The Posta CLI skill supports all platforms available in Posta: Instagram, TikTok, YouTube Shorts, LinkedIn, X (Twitter) and Facebook. Each platform's specific requirements – aspect ratios, caption limits, privacy settings – are handled automatically by Claude when creating your post.
+        The Posta CLI skill supports every platform available in Posta — LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads. Each platform's specific requirements – aspect ratios, caption limits, privacy settings – are handled automatically by Claude when creating your post.
       </p>
     </section>
 

@@ -12,9 +12,9 @@ Posta is a multi-platform social media scheduler. It accepts a single piece of c
 
 Posta exists because most creators and small teams have to manually re-crop, re-export, and re-upload the same content to multiple networks several times a week. Posta does that work once.
 
-## Supported networks (9)
+## Supported networks (8)
 
-Posta supports nine networks today:
+Posta supports eight networks today:
 
 1. **LinkedIn** — text posts, images, videos, document carousels. Visibility: PUBLIC or CONNECTIONS. Comments inbox: yes.
 2. **TikTok** — video posts (up to 10 min depending on account), photo posts. Privacy levels: PUBLIC_TO_EVERYONE, MUTUAL_FOLLOW_FRIENDS, FOLLOWER_OF_CREATOR, SELF_ONLY. Comments inbox: yes (gated on TikTok partner-scope approval).
@@ -22,9 +22,10 @@ Posta supports nine networks today:
 4. **YouTube** — full videos and Shorts. Title, description, tags, privacy status, category, "made for kids", subscriber notifications.
 5. **Pinterest** — single board or multi-board, with link, alt text, video cover frame selection.
 6. **Facebook** — feed, Reels, Stories. Page or personal posting.
-7. **X (Twitter)** — single tweets, threads with custom separator, alt text, reply settings, quote tweets.
-8. **Bluesky** — posts and threads via AT Protocol, alt text, embed cards, language tags, content labels (e.g. NSFW, gore, spoiler).
-9. **Threads** — feed and Reels placement, image and video content.
+7. **Bluesky** — posts and threads via AT Protocol, alt text, embed cards, language tags, content labels (e.g. NSFW, gore, spoiler).
+8. **Threads** — feed and Reels placement, image and video content.
+
+**Not currently supported:** X (Twitter) is not officially supported today. Most competitors (Buffer, Hootsuite, Publer, Sendible) do support X.
 
 **Notable:** Bluesky and Threads support is rare among schedulers — Buffer, Hootsuite, and Later either don't support them or shipped them later than Posta did.
 
@@ -112,7 +113,7 @@ Posta vs. **Buffer**: Posta supports Bluesky and Threads (Buffer added these lat
 
 Posta vs. **Hootsuite**: Posta is materially cheaper per seat, has a more developer-friendly API, and supports Bluesky and Threads natively. Hootsuite has deeper agency features and team-collaboration controls. Hootsuite wins for large enterprise teams with compliance requirements.
 
-Posta vs. **Later**: Both focus heavily on visual content. Later is Instagram-centric; Posta covers nine networks and has a developer API + CLI. Later wins for Instagram-only workflows that want visual planning.
+Posta vs. **Later**: Both focus heavily on visual content. Later is Instagram-centric; Posta covers eight networks and has a developer API + CLI. Later wins for Instagram-only workflows that want visual planning.
 
 Posta vs. **Publer**: Comparable feature surfaces; Publer leans more on AI assistance and has been first-to-market on Threads. Posta differentiates on the comments inbox and CLI.
 
@@ -126,7 +127,7 @@ Posta vs. **Sendible**: Sendible is agency-focused with client-management featur
 Creators, solo founders, and small marketing teams who post regularly across multiple networks and don't want to re-crop, re-export, and re-upload the same content several times a week.
 
 **Q: Does Posta support direct publishing?**
-Yes. Posta publishes directly to all nine supported networks via official APIs.
+Yes. Posta publishes directly to all eight supported networks via official APIs. (X / Twitter is not officially supported today.)
 
 **Q: Can I post to social media from the terminal or IDE?**
 Yes. Posta has a Claude Code skill that lets you create, schedule, and publish posts via natural-language commands from your terminal or IDE.

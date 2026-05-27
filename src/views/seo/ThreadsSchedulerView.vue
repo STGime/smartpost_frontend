@@ -39,7 +39,7 @@ const threadsFaq = [
   },
   {
     q: 'Is there a free Threads scheduler?',
-    a: 'Posta\'s 14-day trial includes Threads scheduling at no cost, no credit card required. The same trial covers LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X (Twitter), and Bluesky.',
+    a: 'Posta\'s 14-day trial includes Threads scheduling at no cost, no credit card required. The same trial covers LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, and Bluesky.',
   },
 ]
 
@@ -115,7 +115,7 @@ useHead({
     <section class="hero">
       <h1>Schedule Threads posts on autopilot</h1>
       <p class="hero-sub">
-        Posta is a native Threads scheduler. Publish posts, carousels (up to 10 items), and videos (up to 5 minutes) via Meta's official Threads API — alongside LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X, and Bluesky.
+        Posta is a native Threads scheduler. Publish posts, carousels (up to 10 items), and videos (up to 5 minutes) via Meta's official Threads API — alongside LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, and Bluesky.
       </p>
     </section>
 

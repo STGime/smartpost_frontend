@@ -11,7 +11,7 @@ const waitingListSource = ref<WaitingListSource>('seo-buffer-alt')
 const bufferFaq = [
   {
     q: 'Is Posta a Buffer alternative?',
-    a: 'Yes. Posta covers the same nine networks Buffer publishes to and adds Bluesky and Threads (which Buffer also added recently but not all comparable alternatives do), plus a comments inbox for LinkedIn and TikTok, a public REST API with OpenAPI spec, outbound HMAC-signed webhooks, and a Claude Code CLI skill — none of which Buffer ships.',
+    a: 'Yes. Posta covers eight networks — LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads — overlapping heavily with Buffer\'s line-up (Buffer also supports X / Twitter, which Posta does not officially support today). Where Posta differentiates: a comments inbox for LinkedIn and TikTok, a public REST API with OpenAPI spec, outbound HMAC-signed webhooks, and a Claude Code CLI skill — none of which Buffer ships.',
   },
   {
     q: 'Is Posta cheaper than Buffer?',
@@ -46,17 +46,17 @@ const bufferFaq = [
 useHead({
   title: 'Buffer Alternative – Compare Posta vs Buffer (2026)',
   meta: [
-    { name: 'description', content: 'An honest Buffer alternative: Posta covers the same 9 networks plus a comments inbox, a public REST API, outbound webhooks, and a CLI for terminal posting. Includes a feature-by-feature comparison table and a "when Buffer is still the right choice" section.' },
+    { name: 'description', content: 'An honest Buffer alternative: Posta covers 8 networks (X/Twitter excepted) plus a comments inbox, a public REST API, outbound webhooks, and a CLI for terminal posting. Includes a feature-by-feature comparison table and a "when Buffer is still the right choice" section.' },
     { name: 'keywords', content: 'buffer alternative, alternative to buffer, posta vs buffer, buffer vs posta, social media scheduler alternative, cheaper than buffer' },
     { name: 'robots', content: 'index, follow' },
     { property: 'og:type', content: 'website' },
     { property: 'og:url', content: 'https://getposta.app/buffer-alternative' },
     { property: 'og:title', content: 'Buffer Alternative – Compare Posta vs Buffer (2026) | Posta' },
-    { property: 'og:description', content: 'An honest Buffer alternative: same 9 networks, plus a comments inbox, public API, webhooks, and a CLI. Feature-by-feature table + a "when Buffer is still right" section.' },
+    { property: 'og:description', content: 'An honest Buffer alternative: 8 networks (X/Twitter excepted) plus a comments inbox, public API, webhooks, and a CLI. Feature-by-feature table + a "when Buffer is still right" section.' },
     { property: 'og:image', content: 'https://getposta.app/assets/posta_og_image.png' },
     { name: 'twitter:card', content: 'summary_large_image' },
     { name: 'twitter:title', content: 'Buffer Alternative – Compare Posta vs Buffer (2026) | Posta' },
-    { name: 'twitter:description', content: 'An honest Buffer alternative: same 9 networks, plus a comments inbox, public API, webhooks, and a CLI. Feature-by-feature table + a "when Buffer is still right" section.' },
+    { name: 'twitter:description', content: 'An honest Buffer alternative: 8 networks (X/Twitter excepted) plus a comments inbox, public API, webhooks, and a CLI. Feature-by-feature table + a "when Buffer is still right" section.' },
     { name: 'twitter:image', content: 'https://getposta.app/assets/posta_og_image.png' },
   ],
   link: [
@@ -107,7 +107,7 @@ useHead({
     <section class="hero">
       <h1>Posta vs Buffer: an honest Buffer alternative for 2026</h1>
       <p class="hero-sub">
-        Posta is a multi-platform social media scheduler covering LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X (Twitter), Bluesky, and Threads — the same networks Buffer publishes to, plus a comments inbox, a public REST API, outbound webhooks, and a Claude Code CLI. This page is an honest comparison: what Posta does better, what Buffer still does better, and which one is right for you.
+        Posta is a multi-platform social media scheduler covering LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads — overlapping with most of Buffer's line-up (Buffer also covers X / Twitter, which Posta does not officially support today), plus a comments inbox, a public REST API, outbound webhooks, and a Claude Code CLI. This page is an honest comparison: what Posta does better, what Buffer still does better, and which one is right for you.
       </p>
     </section>
 
@@ -146,8 +146,8 @@ useHead({
           <tbody>
             <tr>
               <th scope="row">Networks supported</th>
-              <td>9 (incl. native Bluesky &amp; Threads)</td>
-              <td>9 (Bluesky &amp; Threads added more recently)</td>
+              <td>8 (no X / Twitter)</td>
+              <td>9 (incl. X / Twitter)</td>
             </tr>
             <tr>
               <th scope="row">Free trial</th>
@@ -252,7 +252,7 @@ useHead({
 
     <CtaSection
       heading="Try Posta as your Buffer alternative"
-      subtext="14-day free trial, no credit card. Publish to all 9 networks from one workflow."
+      subtext="14-day free trial, no credit card. Publish to 8 networks from one workflow."
       :source="waitingListSource"
     />
   </SeoPageLayout>

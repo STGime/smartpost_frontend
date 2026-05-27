@@ -11,7 +11,7 @@ const waitingListSource = ref<WaitingListSource>('seo-scheduler')
 const schedulerFaq = [
   {
     q: 'Which social media platforms does Posta support?',
-    a: 'Nine networks: LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X (Twitter), Bluesky, and Threads. Bluesky and Threads support is rare among schedulers — most competitors either don\'t support them or shipped them later than Posta did.',
+    a: 'Eight networks: LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads. Bluesky and Threads support is rare among schedulers — most competitors either don\'t support them or shipped them later than Posta did.',
   },
   {
     q: 'How is Posta different from Buffer or Hootsuite?',
@@ -31,7 +31,7 @@ const schedulerFaq = [
   },
   {
     q: 'Is there a free trial?',
-    a: 'Yes — 14 days, no credit card required. The trial includes scheduling to all 9 supported networks.',
+    a: 'Yes — 14 days, no credit card required. The trial includes scheduling to all 8 supported networks.',
   },
   {
     q: 'Can I use Posta as an API or CLI?',
@@ -95,7 +95,7 @@ useHead({
     </section>
 
     <section class="content-section">
-      <h2>One workflow, nine platforms</h2>
+      <h2>One workflow, eight platforms</h2>
       <p>
         Most schedulers treat every platform the same. Posta understands the differences. Each platform has its own aspect ratios, resolution limits and compression quirks. Posta handles all of it behind the scenes so your posts look native on every feed. Connect your accounts, set your schedule, and let Posta do the heavy lifting.
       </p>
@@ -108,7 +108,6 @@ useHead({
         <span class="pill">Pinterest</span>
         <span class="pill">Bluesky</span>
         <span class="pill">Threads</span>
-        <span class="pill">X (Twitter)</span>
       </div>
     </section>
 

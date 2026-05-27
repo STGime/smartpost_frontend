@@ -35,7 +35,7 @@ const instagramFaq = [
   },
   {
     q: 'Is Posta a cheaper alternative to Later for Instagram?',
-    a: 'Posta\'s tiers start at a lower entry price than Later\'s comparable plans, and the same subscription also covers TikTok, LinkedIn, YouTube, Pinterest, Facebook, X, Bluesky and Threads — not just Instagram.',
+    a: 'Posta\'s tiers start at a lower entry price than Later\'s comparable plans, and the same subscription also covers TikTok, LinkedIn, YouTube, Pinterest, Facebook, Bluesky and Threads — not just Instagram.',
   },
 ]
 

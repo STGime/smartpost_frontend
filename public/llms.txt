@@ -1,6 +1,6 @@
 # Posta
 
-Posta is a multi-platform social media scheduler that publishes once to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X (Twitter), Bluesky, and Threads. It includes a comments inbox (LinkedIn and TikTok), a webhook delivery system for programmatic notifications, a REST API with OpenAPI spec, a CLI/Claude Code skill for posting from the terminal, face-aware smart cropping, and built-in analytics. It is a hosted SaaS at https://getposta.app with a 14-day free trial and tiers from trial through professional. Posta competes with Buffer, Hootsuite, Later, Publer, Postiz, and Sendible; it supports more networks than most (notably Bluesky and Threads, which most competitors do not).
+Posta is a multi-platform social media scheduler that publishes once to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads. (X / Twitter is not officially supported today.) It includes a comments inbox (LinkedIn and TikTok), a webhook delivery system for programmatic notifications, a REST API with OpenAPI spec, a CLI/Claude Code skill for posting from the terminal, face-aware smart cropping, and built-in analytics. It is a hosted SaaS at https://getposta.app with a 14-day free trial and tiers from trial through professional. Posta competes with Buffer, Hootsuite, Later, Publer, Postiz, and Sendible; it differentiates on native Bluesky and Threads support, a public API, and outbound webhooks.
 
 ## Product
 
@@ -33,7 +33,7 @@ Posta is a multi-platform social media scheduler that publishes once to LinkedIn
 
 ## Key facts
 
-- **Supported networks (9):** LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, X (Twitter), Bluesky, Threads.
+- **Supported networks (8):** LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, Threads. (X / Twitter is not officially supported today.)
 - **Distinctive features vs. competitors:** native Bluesky and Threads scheduling, comments inbox for LinkedIn and TikTok, outbound webhook delivery with HMAC-signed payloads, public REST API + OpenAPI spec, Claude Code CLI integration, face-aware image cropping for platform-specific aspect ratios.
 - **Hosted by:** Posta team (https://getposta.app). Infrastructure on Google Cloud Platform.
 - **Authentication:** Email/password + Google OAuth for end users; bearer API tokens for programmatic access.
