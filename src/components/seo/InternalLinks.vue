@@ -11,6 +11,7 @@ const links = [
   { path: '/tiktok-scheduler', label: 'TikTok Scheduler' },
   { path: '/bluesky-scheduler', label: 'Bluesky Scheduler' },
   { path: '/threads-scheduler', label: 'Threads Scheduler' },
+  { path: '/buffer-alternative', label: 'Buffer Alternative' },
   { path: '/auto-post-social-media', label: 'Auto Post Social Media' },
   { path: '/social-media-tools', label: 'Social Media Tools' },
   { path: '/cli-social-media-posting', label: 'CLI Social Media Posting' },

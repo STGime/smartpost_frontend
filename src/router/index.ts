@@ -64,6 +64,11 @@ const routes: RouteRecordRaw[] = [
     name: 'threads-scheduler',
     component: () => import('@/views/seo/ThreadsSchedulerView.vue'),
   },
+  {
+    path: '/buffer-alternative',
+    name: 'buffer-alternative',
+    component: () => import('@/views/seo/BufferAlternativeView.vue'),
+  },
 
   {
     path: '/login',
