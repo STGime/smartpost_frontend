@@ -14,6 +14,7 @@ const ROUTES = [
   '/bluesky-scheduler',
   '/threads-scheduler',
   '/buffer-alternative',
+  '/hootsuite-alternative',
   '/terms',
   '/privacy',
   '/impressum',
