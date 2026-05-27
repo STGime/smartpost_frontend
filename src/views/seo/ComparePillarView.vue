@@ -166,11 +166,11 @@ useHead({
               <th scope="row">Native Threads</th>
               <td>Yes</td>
               <td>Yes</td>
+              <td>Partial</td>
               <td>Yes</td>
               <td>Yes</td>
-              <td>Yes</td>
-              <td>Yes</td>
-              <td>Yes</td>
+              <td>Plugin-dependent</td>
+              <td>Yes (recently added)</td>
             </tr>
             <tr>
               <th scope="row">Free tier</th>
@@ -206,7 +206,7 @@ useHead({
               <th scope="row">Outbound webhooks</th>
               <td>HMAC-signed, retried</td>
               <td>No</td>
-              <td>Enterprise only</td>
+              <td>No (not in published feature list)</td>
               <td>No</td>
               <td>No</td>
               <td>Self-built</td>
@@ -266,7 +266,7 @@ useHead({
         </table>
       </div>
       <p class="compare-footnote">
-        Comparison based on each competitor's publicly published feature list and pricing page at the time of writing (May 2026). If a row is out of date, <a href="mailto:hi@getposta.app">tell us</a>.
+        Comparison based on each competitor's publicly published feature list and pricing page at the time of writing (May 2026). If a row is out of date, the contact link in the intro reaches us directly.
       </p>
     </section>
 
