@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { webhooksService } from '@/services'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import type { WebhookEndpoint, WebhookDelivery } from '@/types'
@@ -177,10 +177,11 @@ async function handleDelete() {
   if (!endpointToDelete.value) return
   isDeleting.value = true
   try {
-    await webhooksService.deleteEndpoint(endpointToDelete.value.id)
+    const deletingId = endpointToDelete.value.id
+    await webhooksService.deleteEndpoint(deletingId)
     showDeleteModal.value = false
     endpointToDelete.value = null
-    if (selectedEndpoint.value?.id === endpointToDelete.value?.id) {
+    if (selectedEndpoint.value?.id === deletingId) {
       closeDetail()
     }
     await fetchEndpoints()
@@ -237,11 +238,6 @@ function toggleEvent(event: string) {
   }
 }
 
-function isEventSelected(event: string): boolean {
-  const arr = showCreateForm.value ? selectedEvents : editEvents
-  return arr.value.includes(event)
-}
-
 function isEventAvailable(event: string): boolean {
   return availableEvents.value.includes(event)
 }
@@ -295,7 +291,7 @@ onMounted(fetchEndpoints)
         </RouterLink>
       </div>
       <h1>Webhooks</h1>
-      <p>Receive HTTP notifications when your posts are published, fail, or change status.</p>
+      <p>Receive HTTP notifications when your posts are published, fail, or change status. <a href="https://api.getposta.app/docs#/Webhook%20Endpoints" target="_blank" rel="noopener noreferrer" class="docs-link">View API docs &rarr;</a></p>
     </div>
 
     <div v-if="error" class="alert-error">
@@ -559,6 +555,16 @@ onMounted(fetchEndpoints)
 .page-header p {
   font-size: 14px;
   color: var(--muted);
+}
+
+.docs-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.docs-link:hover {
+  text-decoration: underline;
 }
 
 .alert-error {
