@@ -17,4 +17,8 @@ export { feedbackService } from './feedback'
 export type { FeedbackCategory } from './feedback'
 export { webhooksService } from './webhooks'
 export { commentsService } from './comments'
-export type { ListCommentsParams } from './comments'
+export type {
+  ListCommentsParams,
+  ListCommentsResponse,
+  PlatformCommentStatus,
+} from './comments'

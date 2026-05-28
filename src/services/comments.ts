@@ -13,12 +13,27 @@ export interface ListCommentsParams {
   unreadOnly?: boolean
 }
 
+/**
+ * Per-platform polling status sent by the backend on every list response.
+ * Lets the UI distinguish "no comments yet" from "the polling API is blocked".
+ */
+export interface PlatformCommentStatus {
+  platform: CommentPlatform
+  pollingEnabled: boolean
+  unsupportedReason: string | null
+  lastFetchedAt: string | null
+}
+
+export interface ListCommentsResponse extends PaginatedResponse<PostComment> {
+  platformStatus: PlatformCommentStatus[]
+}
+
 export const commentsService = {
   async list(
     postId: string,
     params?: ListCommentsParams,
-  ): Promise<PaginatedResponse<PostComment>> {
-    const response = await api.get<PaginatedResponse<PostComment>>(
+  ): Promise<ListCommentsResponse> {
+    const response = await api.get<ListCommentsResponse>(
       `/posts/${postId}/comments`,
       { params },
     )
