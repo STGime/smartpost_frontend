@@ -1,6 +1,10 @@
 import { defineStore } from 'pinia'
 import { reactive, ref } from 'vue'
-import { commentsService, type ListCommentsParams } from '@/services'
+import {
+  commentsService,
+  type ListCommentsParams,
+  type PlatformCommentStatus,
+} from '@/services'
 import type { PostComment } from '@/types'
 import { usePostsStore } from './posts'
 
@@ -11,6 +15,9 @@ interface PostCommentsState {
   loadingMore: boolean
   replying: Record<string, boolean> // commentId -> in-flight
   error: string | null
+  // Per-platform polling status from the API (LinkedIn disabled, TikTok
+  // pending partner approval, etc.). Drives the empty-state UI.
+  platformStatus: PlatformCommentStatus[]
 }
 
 const PAGE_SIZE = 20
@@ -23,6 +30,7 @@ function newState(): PostCommentsState {
     loadingMore: false,
     replying: {},
     error: null,
+    platformStatus: [],
   }
 }
 
@@ -53,6 +61,7 @@ export const useCommentsStore = defineStore('comments', () => {
       })
       state.items = response.items
       state.total = response.total
+      state.platformStatus = response.platformStatus ?? []
     } catch (err) {
       state.error = readError(err)
     } finally {
@@ -74,6 +83,7 @@ export const useCommentsStore = defineStore('comments', () => {
       const known = new Set(state.items.map((c) => c.id))
       state.items.push(...response.items.filter((c) => !known.has(c.id)))
       state.total = response.total
+      state.platformStatus = response.platformStatus ?? state.platformStatus
     } catch (err) {
       state.error = readError(err)
     } finally {

@@ -29,17 +29,25 @@ const isLoading = computed(() => state.value?.loading ?? false)
 const isLoadingMore = computed(() => state.value?.loadingMore ?? false)
 const error = computed(() => state.value?.error)
 
-// Detect "comments unsupported" for any TikTok account on this post
-const tiktokUnsupported = computed(() => {
-  const tiktokResults = (props.post.results || []).filter((r) => r.platform === 'tiktok')
-  if (tiktokResults.length === 0) return false
-  // If the only TikTok comments we have are from unsupported scope, the polling
-  // job will return zero items; we can also surface a clearer message based on
-  // platform — for v1 we show a non-blocking banner when TikTok results exist
-  // but no TikTok comments have arrived yet (TikTok comment scopes are partner-
-  // gated and may not be approved for this account).
-  return tiktokResults.length > 0 && !items.value.some((c) => c.platform === 'tiktok')
-})
+// Per-platform polling status now comes directly from the API response
+// (platformStatus on the comments list endpoint). The frontend no longer
+// needs to guess from "no comments returned" — the backend tells us
+// whether polling is enabled, why it was disabled, and when it last ran.
+const platformStatus = computed(() => state.value?.platformStatus ?? [])
+
+const linkedinStatus = computed(() =>
+  platformStatus.value.find((p) => p.platform === 'linkedin') ?? null,
+)
+const tiktokStatus = computed(() =>
+  platformStatus.value.find((p) => p.platform === 'tiktok') ?? null,
+)
+
+const linkedinUnsupported = computed(
+  () => linkedinStatus.value !== null && !linkedinStatus.value.pollingEnabled,
+)
+const tiktokUnsupported = computed(
+  () => tiktokStatus.value !== null && !tiktokStatus.value.pollingEnabled,
+)
 
 const platforms = computed(() => {
   const seen = new Set<CommentPlatform>()
@@ -169,9 +177,14 @@ onMounted(loadInitial)
       </div>
     </div>
 
+    <div v-if="linkedinUnsupported" class="banner banner-warning">
+      <strong>LinkedIn comments aren't available yet.</strong>
+      LinkedIn's read-comments API requires Marketing Developer Platform partner approval beyond the standard posting scope. Posta has applied; comments will start populating here automatically once approval lands. Replying still works once a comment is loaded.
+    </div>
+
     <div v-if="tiktokUnsupported" class="banner banner-warning">
-      Comments for TikTok require additional permissions. Reconnect your TikTok
-      account once the comment scopes are approved to start seeing replies here.
+      <strong>TikTok comments aren't available yet.</strong>
+      TikTok comment access requires the <code>comment.list</code> and <code>comment.list.manage</code> scopes, which are partner-gated. Once TikTok approves the scope expansion, reconnect your TikTok account here to start seeing replies.
     </div>
 
     <div v-if="isLoading && items.length === 0" class="state-empty">
@@ -347,6 +360,25 @@ onMounted(loadInitial)
   background: var(--warning-soft);
   color: #fde68a;
   border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.banner-warning strong {
+  color: #fef3c7;
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.banner-warning code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  background: rgba(245, 158, 11, 0.18);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: #fde68a;
+}
+
+.banner + .banner {
+  margin-top: 8px;
 }
 
 .state-empty,
