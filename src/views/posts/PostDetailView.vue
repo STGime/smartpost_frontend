@@ -16,6 +16,10 @@ const postsStore = usePostsStore()
 const postId = route.params.id as string
 const scheduledAt = ref<string | null>(null)
 const isRescheduling = ref(false)
+// Last (re)schedule attempt error, surfaced inline next to the picker. Without
+// this the store swallows backend rejections (e.g. wrong status, past time)
+// silently — the Save button just stops doing anything.
+const scheduleError = ref<string | null>(null)
 
 // Tabs
 const activeTab = ref<DetailTab>('details')
@@ -72,29 +76,53 @@ const openPublishModal = (forScheduling: boolean = false) => {
   showPublishModal.value = true
 }
 
+function readError(err: unknown, fallback: string): string {
+  const e = err as { response?: { data?: { error?: string } } }
+  return e.response?.data?.error || fallback
+}
+
 const confirmPublishOrSchedule = async () => {
   showPublishModal.value = false
 
   if (isSchedulingAction.value && pendingScheduleTime.value) {
-    await postsStore.schedulePost(postId, pendingScheduleTime.value)
-    scheduledAt.value = null
-    pendingScheduleTime.value = null
-    isRescheduling.value = false
+    scheduleError.value = null
+    try {
+      await postsStore.schedulePost(postId, pendingScheduleTime.value)
+      scheduledAt.value = null
+      pendingScheduleTime.value = null
+      isRescheduling.value = false
+    } catch (err) {
+      scheduleError.value = readError(err, 'Failed to schedule post')
+    }
   } else {
-    await postsStore.publishPost(postId)
+    scheduleError.value = null
+    try {
+      await postsStore.publishPost(postId)
+    } catch (err) {
+      // Reuse the same inline alert slot — only one form is visible at a
+      // time via v-if, so there's no collision with the schedule path.
+      scheduleError.value = readError(err, 'Failed to publish post')
+    }
   }
 }
 
 const handleSchedule = async () => {
   if (!scheduledAt.value) return
 
+  scheduleError.value = null
+
   // Show consent modal for TikTok posts
   if (hasTikTokAccount.value) {
     openPublishModal(true)
-  } else {
+    return
+  }
+
+  try {
     await postsStore.schedulePost(postId, scheduledAt.value)
     scheduledAt.value = null
     isRescheduling.value = false
+  } catch (err) {
+    scheduleError.value = readError(err, 'Failed to schedule post')
   }
 }
 
@@ -117,11 +145,13 @@ const startRescheduling = () => {
   if (post.value?.scheduledAt) {
     scheduledAt.value = post.value.scheduledAt
   }
+  scheduleError.value = null
   isRescheduling.value = true
 }
 
 const cancelRescheduling = () => {
   scheduledAt.value = null
+  scheduleError.value = null
   isRescheduling.value = false
 }
 
@@ -272,6 +302,9 @@ const useAsTemplate = () => {
                 Cancel
               </button>
             </div>
+            <p v-if="scheduleError" class="schedule-error" role="alert">
+              {{ scheduleError }}
+            </p>
           </div>
         </div>
 
@@ -298,6 +331,9 @@ const useAsTemplate = () => {
             </button>
           </div>
           <p class="schedule-hint">Select a date and time to schedule this post for automatic publishing.</p>
+          <p v-if="scheduleError" class="schedule-error" role="alert">
+            {{ scheduleError }}
+          </p>
         </div>
 
         <!-- Not schedulable message for other statuses -->
@@ -1329,6 +1365,16 @@ const useAsTemplate = () => {
 .schedule-hint {
   font-size: 12px;
   color: var(--muted);
+}
+
+.schedule-error {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #fca5a5;
+  background: rgba(127, 29, 29, 0.25);
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
 }
 
 .not-schedulable {
