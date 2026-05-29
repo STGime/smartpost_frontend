@@ -95,7 +95,14 @@ const confirmPublishOrSchedule = async () => {
       scheduleError.value = readError(err, 'Failed to schedule post')
     }
   } else {
-    await postsStore.publishPost(postId)
+    scheduleError.value = null
+    try {
+      await postsStore.publishPost(postId)
+    } catch (err) {
+      // Reuse the same inline alert slot — only one form is visible at a
+      // time via v-if, so there's no collision with the schedule path.
+      scheduleError.value = readError(err, 'Failed to publish post')
+    }
   }
 }
 
