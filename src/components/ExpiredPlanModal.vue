@@ -9,8 +9,13 @@ defineProps<{
 const router = useRouter()
 const authStore = useAuthStore()
 
+const emit = defineEmits<{ choosePlan: [] }>()
+
 const goToPlans = () => {
+  // Navigate to billing (no-op if already there) and dismiss the overlay so the
+  // "Available Plans" cards underneath become reachable for checkout.
   router.push({ name: 'billing' })
+  emit('choosePlan')
 }
 
 const signOut = () => {

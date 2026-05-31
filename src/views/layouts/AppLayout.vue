@@ -30,7 +30,9 @@ const showTrialBanner = computed(() => {
   return trialDaysRemaining.value !== null && trialDaysRemaining.value <= 3
 })
 
+const expiredModalDismissed = ref(false)
 const showExpiredPlanModal = computed(() => {
+  if (expiredModalDismissed.value) return false
   const planData = userStore.plan?.plan
   if (!planData) return false
   return planData.is_active === false
@@ -194,7 +196,7 @@ onMounted(() => {
       @close="authStore.closeReauthModal()"
     />
 
-    <ExpiredPlanModal :show="showExpiredPlanModal" />
+    <ExpiredPlanModal :show="showExpiredPlanModal" @choose-plan="expiredModalDismissed = true" />
 
     <!-- Feedback FAB -->
     <button class="feedback-fab" @click="showFeedbackModal = true" aria-label="Send feedback" title="Send feedback">
