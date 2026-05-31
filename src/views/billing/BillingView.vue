@@ -62,6 +62,12 @@ const getCurrencySymbol = (currency: string) => {
   return currency === 'eur' ? '€' : '$'
 }
 
+// Monthly-equivalent price from the DB (yearly plans divide the annual total by 12)
+const monthlyPrice = (plan: PricingPlan) => {
+  const cents = plan.billingInterval === 'year' ? plan.priceCents / 12 : plan.priceCents
+  return Math.round(cents / 100)
+}
+
 const isUnlimited = (value: number | null | undefined) => value == null || value >= 100000
 const formatLimit = (value: number | null | undefined) => isUnlimited(value) ? 'Unlimited*' : (value ?? 0)
 
@@ -200,9 +206,12 @@ const handleManageSubscription = async () => {
           <div class="plan-header">
             <h3>{{ getPlanDisplayName(plan.planType) }}</h3>
             <div class="plan-price">
-              <span class="price-amount">{{ getCurrencySymbol(plan.currency) }}{{ (plan.priceCents / 100).toFixed(0) }}</span>
-              <span class="price-period">/{{ plan.billingInterval === 'year' ? 'yr' : 'mo' }}</span>
+              <span class="price-amount">{{ getCurrencySymbol(plan.currency) }}{{ monthlyPrice(plan) }}</span>
+              <span class="price-period">/mo</span>
             </div>
+            <p v-if="plan.billingInterval === 'year'" class="price-billed">
+              billed {{ getCurrencySymbol(plan.currency) }}{{ (plan.priceCents / 100).toFixed(0) }}/year
+            </p>
           </div>
           <ul class="plan-features">
             <li>
@@ -506,6 +515,12 @@ const handleManageSubscription = async () => {
 
 .price-period {
   font-size: 14px;
+  color: var(--muted);
+}
+
+.price-billed {
+  margin-top: 4px;
+  font-size: 12px;
   color: var(--muted);
 }
 
