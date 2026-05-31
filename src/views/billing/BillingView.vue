@@ -31,10 +31,12 @@ const filteredPlans = computed(() => {
   return plans.value.filter(p => p.billingInterval === billingInterval.value && (p.planType as string) !== 'trial')
 })
 
-// Check if a plan is the user's current plan (trial counts as starter)
+// Check if a plan is the user's current PAID plan.
+// A trial is NOT a paid plan, so trial users (including expired trials) can
+// purchase either Starter or Professional — neither card is "current".
 const isCurrentPlan = (planType: string) => {
   const userType = currentPlan.value?.plan?.type
-  if (userType === 'trial' && planType === 'starter') return true
+  if (userType === 'trial') return false
   return userType === planType
 }
 
@@ -245,7 +247,7 @@ const handleManageSubscription = async () => {
             @click="handleSubscribe(plan.planType)"
             class="plan-btn btn-primary"
           >
-            {{ isOnTrial ? 'Upgrade' : 'Subscribe' }}
+            {{ plan.planType === 'professional' ? 'Upgrade' : 'Subscribe' }}
           </button>
         </div>
       </div>
