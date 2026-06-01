@@ -669,7 +669,31 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               <div class="api-card-content">
                 <div class="api-card-label">OpenClaw</div>
                 <div class="api-card-title">Posta on ClawHub</div>
-                <div class="api-card-body">Use Posta as an MCP tool from any AI agent — Claude, Cursor, Windsurf, or your own. One-click install, zero config.</div>
+                <div class="api-card-body">Install the Posta skill on ClawHub and run it from any OpenClaw agent — generate content and post from your terminal. One-click install, zero config.</div>
+              </div>
+              <span class="api-card-arrow">→</span>
+            </a>
+
+            <a href="https://github.com/STGime/posta-skill" target="_blank" rel="noopener noreferrer" class="api-card api-card-claude">
+              <div class="api-card-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+              </div>
+              <div class="api-card-content">
+                <div class="api-card-label">Claude Code</div>
+                <div class="api-card-title">Claude Code skill</div>
+                <div class="api-card-body">Add the Posta skill to Claude Code — generate content and post straight from your editor or terminal. Installs from the GitHub repo.</div>
+              </div>
+              <span class="api-card-arrow">→</span>
+            </a>
+
+            <a href="https://www.npmjs.com/package/posta-mcp" target="_blank" rel="noopener noreferrer" class="api-card api-card-mcp">
+              <div class="api-card-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+              </div>
+              <div class="api-card-content">
+                <div class="api-card-label">MCP</div>
+                <div class="api-card-title">MCP server</div>
+                <div class="api-card-body">One npm install adds Posta's tools to Claude Desktop, Cursor, Windsurf, VS Code, and Zed — schedule and publish from any MCP client.</div>
               </div>
               <span class="api-card-arrow">→</span>
             </a>
@@ -736,6 +760,10 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
             </a>
             <a href="https://clawhub.ai/STGime/posta" target="_blank" rel="noopener noreferrer" class="btn-ghost">
               <span>Install on ClawHub</span>
+              <span class="arrow">→</span>
+            </a>
+            <a href="https://github.com/STGime/posta-skill" target="_blank" rel="noopener noreferrer" class="btn-ghost">
+              <span>Get it for Claude Code</span>
               <span class="arrow">→</span>
             </a>
           </div>
@@ -2922,14 +2950,17 @@ h1 {
 
 /* OpenClaw & API Section */
 .api-cards {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 16px;
   max-width: 960px;
   margin: 0 auto 32px;
 }
 
 .api-card {
+  flex: 1 1 280px;
+  max-width: 300px;
   display: flex;
   align-items: flex-start;
   gap: 14px;
@@ -2958,6 +2989,10 @@ h1 {
 .api-card-openclaw .api-card-icon { color: #34d399; }
 .api-card-n8n .api-card-icon { color: #ff6d5a; }
 .api-card-n8n .api-card-label { color: #ff6d5a; }
+.api-card-mcp .api-card-icon { color: #a78bfa; }
+.api-card-mcp .api-card-label { color: #a78bfa; }
+.api-card-claude .api-card-icon { color: #d97757; }
+.api-card-claude .api-card-label { color: #d97757; }
 
 .api-card-content {
   flex: 1;
@@ -3075,7 +3110,11 @@ h1 {
     flex-direction: column;
   }
   .api-cards {
-    grid-template-columns: minmax(0, 1fr);
+    max-width: 420px;
+  }
+  .api-card {
+    flex-basis: 100%;
+    max-width: none;
   }
   .api-features {
     flex-direction: column;
