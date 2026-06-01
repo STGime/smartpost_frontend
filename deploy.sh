@@ -61,6 +61,15 @@ for dir in social-media-scheduler instagram-scheduler tiktok-scheduler auto-post
     fi
 done
 
+# Blog: index + every pre-rendered post (slugs are dynamic, so glob them).
+for f in dist/blog/index.html dist/blog/*/index.html; do
+    if [ -f "$f" ]; then
+        rel="${f#dist/}"
+        gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" \
+            "gs://$GCS_BUCKET/$rel" 2>/dev/null || true
+    fi
+done
+
 # Set headers for llms.txt / llms-full.txt (LLM crawler hints).
 # Markdown content-type so LLM tooling parses them, short cache so updates surface fast.
 log_info "Setting headers for llms.txt and llms-full.txt..."

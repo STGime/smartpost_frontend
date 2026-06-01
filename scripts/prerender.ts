@@ -2,6 +2,7 @@ import { chromium } from 'playwright'
 import { preview } from 'vite'
 import { writeFileSync, mkdirSync, existsSync } from 'fs'
 import { resolve, dirname } from 'path'
+import { sortedPosts } from '../src/data/blog'
 
 const ROUTES = [
   '/',
@@ -20,6 +21,9 @@ const ROUTES = [
   '/terms',
   '/privacy',
   '/impressum',
+  // Blog: index + one route per post, derived from src/data/blog.ts
+  '/blog',
+  ...sortedPosts.map((p) => `/blog/${p.slug}`),
 ]
 
 const DIST_DIR = resolve(process.cwd(), 'dist')

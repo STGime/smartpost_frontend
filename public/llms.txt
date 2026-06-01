@@ -31,6 +31,9 @@ Posta is a multi-platform social media scheduler that publishes once to LinkedIn
 - [Impressum](https://getposta.app/impressum)
 - [Full content for LLMs](https://getposta.app/llms-full.txt) — Concatenated product documentation as Markdown.
 
+<!-- BLOG:START -->
+<!-- BLOG:END -->
+
 ## Key facts
 
 - **Supported networks (8):** LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, Threads. (X / Twitter is not officially supported today.)

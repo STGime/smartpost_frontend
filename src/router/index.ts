@@ -84,6 +84,17 @@ const routes: RouteRecordRaw[] = [
     name: 'developers',
     component: () => import('@/views/seo/ApiView.vue'),
   },
+  {
+    path: '/blog',
+    name: 'blog-index',
+    component: () => import('@/views/seo/BlogIndexView.vue'),
+  },
+  {
+    path: '/blog/:slug',
+    name: 'blog-post',
+    component: () => import('@/views/seo/BlogPostView.vue'),
+    props: true,
+  },
 
   {
     path: '/login',

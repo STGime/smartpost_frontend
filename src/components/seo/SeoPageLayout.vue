@@ -62,6 +62,7 @@ const openWaitingList = (source: WaitingListSource) => {
       <div class="footer-inner">
         <div>&copy; {{ currentYear }} Posta. All rights reserved.</div>
         <div class="footer-links">
+          <RouterLink to="/blog">Blog</RouterLink>
           <a href="mailto:hello@getposta.app">Contact</a>
           <RouterLink to="/terms">Terms of Service</RouterLink>
           <RouterLink to="/privacy">Privacy Policy</RouterLink>

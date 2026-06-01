@@ -309,6 +309,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
           </div>
         </div>
         <div class="header-actions">
+          <RouterLink to="/blog" class="nav-link">Blog</RouterLink>
           <template v-if="!isAuthenticated">
             <button class="btn-login" @click="showLoginModal = true">
               Log in
@@ -1305,6 +1306,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
       <div class="footer-inner">
         <div>© {{ currentYear }} Posta. Operated by Stefan Gimeson. All rights reserved.</div>
         <div class="footer-links">
+          <RouterLink to="/blog">Blog</RouterLink>
           <a href="mailto:hello@getposta.app">Contact</a>
           <RouterLink to="/terms">Terms of Service</RouterLink>
           <RouterLink to="/privacy">Privacy Policy</RouterLink>
@@ -1429,6 +1431,19 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
 .btn-login:hover {
   border-color: rgba(148, 163, 184, 0.9);
   background: rgba(15, 23, 42, 0.9);
+}
+
+.nav-link {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 8px 4px;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: var(--text);
 }
 
 .btn-header {
