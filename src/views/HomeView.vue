@@ -22,20 +22,20 @@ const { setRef: faqRef, isVisible: faqVisible } = useScrollReveal()
 useHead({
   title: 'Smart Social Media Posting for Creators & Teams',
   meta: [
-    { name: 'description', content: 'Posta lets you create once and publish everywhere. Dashboard, visual calendar, analytics, AI-powered smart cropping and CLI posting for TikTok, Instagram, YouTube Shorts and more.' },
+    { name: 'description', content: 'Posta is the multi-platform social scheduler you can run from your terminal, IDE, or any AI agent — a Claude Code skill, an MCP server, and a public REST API, plus face-aware cropping and a comments inbox. Publish once to 8 networks.' },
     { name: 'keywords', content: 'social media scheduler, auto post, TikTok scheduling, Instagram scheduler, smart cropping, face detection, multi-platform posting, content creator tools, social media automation, cli social media posting, post from terminal, claude code social media, developer social media tools, IDE social media posting' },
     { name: 'robots', content: 'index, follow' },
     { property: 'og:type', content: 'website' },
     { property: 'og:url', content: 'https://getposta.app/' },
     { property: 'og:title', content: 'Posta – Smart Social Media Posting for Creators & Teams' },
-    { property: 'og:description', content: 'Create once, publish everywhere. Dashboard, visual calendar, analytics, AI-powered smart cropping and CLI posting for TikTok, Instagram, YouTube Shorts and more.' },
+    { property: 'og:description', content: 'The social scheduler you can drive from your terminal or any AI agent — a Claude Code skill, MCP server, and public REST API, plus face-aware cropping and a comments inbox. Publish once to 8 networks: LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, Threads.' },
     { property: 'og:image', content: 'https://getposta.app/assets/posta_og_image.png' },
     { property: 'og:site_name', content: 'Posta' },
     { property: 'og:locale', content: 'en_US' },
     { name: 'twitter:card', content: 'summary_large_image' },
     { name: 'twitter:url', content: 'https://getposta.app/' },
     { name: 'twitter:title', content: 'Posta – Smart Social Media Posting for Creators & Teams' },
-    { name: 'twitter:description', content: 'Create once, publish everywhere. Dashboard, visual calendar, analytics, AI-powered smart cropping and CLI posting for TikTok, Instagram, YouTube Shorts and more.' },
+    { name: 'twitter:description', content: 'The social scheduler you can drive from your terminal or any AI agent — a Claude Code skill, MCP server, and public REST API, plus face-aware cropping and a comments inbox. Publish once to 8 networks: LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, Threads.' },
     { name: 'twitter:image', content: 'https://getposta.app/assets/posta_og_image.png' },
   ],
   link: [
@@ -333,28 +333,28 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
           <div class="hero-content">
             <div class="eyebrow">
               <span class="eyebrow-pill">Multi-channel</span>
-              <span>One workflow for all your socials</span>
+              <span>Post from the dashboard, your terminal, or an AI agent</span>
             </div>
             <h1>
               Create once, <span class="gradient-text">post everywhere</span>.
             </h1>
             <p class="hero-sub">
-              Posta is a multi-platform social media scheduler that publishes once to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads. Face-aware cropping, smart compression, a comments inbox, a public REST API, and a CLI for terminal posting — all in one workflow.
+              Posta is the multi-platform scheduler you can drive from anywhere — the dashboard, your terminal, or an AI agent. Publish once to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads through a Claude Code skill, an MCP server, a public REST API, or the visual calendar. Face-aware cropping and a comments inbox come built in.
             </p>
 
             <div class="hero-bullets">
               <div class="chip">
                 <span class="chip-dot"></span>
-                Face-aware framing & smart crops
+                Claude Code skill — post from your terminal
               </div>
               <div class="chip">
-                Auto-format for Reels, Shorts & feed
+                MCP server for Claude Desktop, Cursor & Zed
               </div>
               <div class="chip">
-                Creator-friendly pricing
+                Public REST API & webhooks on every plan
               </div>
               <div class="chip">
-                Full REST API & agent support
+                Face-aware crops, auto-format for Reels & Shorts
               </div>
             </div>
 

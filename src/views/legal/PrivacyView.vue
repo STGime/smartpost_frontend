@@ -80,42 +80,46 @@ const currentYear = new Date().getFullYear()
         <h2>2. How We Use Your Information</h2>
         <p>We use the collected information to:</p>
         <table class="data-table">
-          <tr>
-            <th>Purpose</th>
-            <th>Legal Basis</th>
-          </tr>
-          <tr>
-            <td>Provide and maintain the Service</td>
-            <td>Contract performance</td>
-          </tr>
-          <tr>
-            <td>Process media (cropping, compression, face detection)</td>
-            <td>Contract performance</td>
-          </tr>
-          <tr>
-            <td>Publish content to connected social platforms</td>
-            <td>Contract performance</td>
-          </tr>
-          <tr>
-            <td>Process payments and manage subscriptions</td>
-            <td>Contract performance</td>
-          </tr>
-          <tr>
-            <td>Send service-related communications</td>
-            <td>Legitimate interest</td>
-          </tr>
-          <tr>
-            <td>Improve and optimize the Service</td>
-            <td>Legitimate interest</td>
-          </tr>
-          <tr>
-            <td>Detect and prevent fraud or abuse</td>
-            <td>Legitimate interest</td>
-          </tr>
-          <tr>
-            <td>Comply with legal obligations</td>
-            <td>Legal obligation</td>
-          </tr>
+          <thead>
+            <tr>
+              <th>Purpose</th>
+              <th>Legal Basis</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Provide and maintain the Service</td>
+              <td>Contract performance</td>
+            </tr>
+            <tr>
+              <td>Process media (cropping, compression, face detection)</td>
+              <td>Contract performance</td>
+            </tr>
+            <tr>
+              <td>Publish content to connected social platforms</td>
+              <td>Contract performance</td>
+            </tr>
+            <tr>
+              <td>Process payments and manage subscriptions</td>
+              <td>Contract performance</td>
+            </tr>
+            <tr>
+              <td>Send service-related communications</td>
+              <td>Legitimate interest</td>
+            </tr>
+            <tr>
+              <td>Improve and optimize the Service</td>
+              <td>Legitimate interest</td>
+            </tr>
+            <tr>
+              <td>Detect and prevent fraud or abuse</td>
+              <td>Legitimate interest</td>
+            </tr>
+            <tr>
+              <td>Comply with legal obligations</td>
+              <td>Legal obligation</td>
+            </tr>
+          </tbody>
         </table>
 
         <h2>3. Data Storage and Security</h2>
