@@ -9,7 +9,7 @@
  * empty marker blocks, so git stays clean and the blog data stays the single
  * source of truth.
  */
-import { readFileSync, writeFileSync, existsSync } from 'fs'
+import { readFileSync, writeFileSync, existsSync, statSync } from 'fs'
 import { resolve } from 'path'
 import { sortedPosts, postPlainText, SITE_URL } from '../src/data/blog'
 
@@ -98,9 +98,35 @@ const escapeXml = (s: string): string =>
 
 const rfc822 = (iso: string): string => new Date(`${iso}T00:00:00Z`).toUTCString()
 
+const MIME_BY_EXT: Record<string, string> = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+  '.gif': 'image/gif',
+}
+
+// A post's dedicated image, if it has one (the default brand OG image is not
+// treated as "available" — the feed only carries real per-post artwork).
+function imageInfo(ogImage?: string): { url: string; type: string; length: number } | null {
+  if (!ogImage) return null
+  const ext = (ogImage.toLowerCase().match(/\.[a-z0-9]+(?:\?|$)/)?.[0] || '').replace(/\?.*/, '')
+  const type = MIME_BY_EXT[ext] || 'image/png'
+  let length = 0
+  if (ogImage.startsWith(`${SITE_URL}/`)) {
+    try {
+      length = statSync(resolve(DIST, ogImage.slice(SITE_URL.length + 1))).size
+    } catch {
+      length = 0
+    }
+  }
+  return { url: ogImage, type, length }
+}
+
 const feedItems = sortedPosts
-  .map((p) =>
-    [
+  .map((p) => {
+    const img = imageInfo(p.ogImage)
+    return [
       '    <item>',
       `      <title>${escapeXml(p.title)}</title>`,
       `      <link>${SITE_URL}/blog/${p.slug}</link>`,
@@ -108,14 +134,20 @@ const feedItems = sortedPosts
       `      <pubDate>${rfc822(p.updated || p.date)}</pubDate>`,
       `      <description>${escapeXml(p.description)}</description>`,
       ...p.tags.map((t) => `      <category>${escapeXml(t)}</category>`),
+      ...(img
+        ? [
+            `      <enclosure url="${escapeXml(img.url)}" type="${img.type}" length="${img.length}" />`,
+            `      <media:content url="${escapeXml(img.url)}" medium="image" type="${img.type}" />`,
+          ]
+        : []),
       `      <content:encoded><![CDATA[${postPlainText(p)}]]></content:encoded>`,
       '    </item>',
-    ].join('\n'),
-  )
+    ].join('\n')
+  })
   .join('\n')
 
 const feed = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:media="http://search.yahoo.com/mrss/">
   <channel>
     <title>Posta Blog</title>
     <link>${SITE_URL}/blog</link>

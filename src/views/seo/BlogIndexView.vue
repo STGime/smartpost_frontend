@@ -103,6 +103,15 @@ useHead({
         :to="`/blog/${post.slug}`"
         class="post-card"
       >
+        <img
+          v-if="post.ogImage"
+          :src="post.ogImage"
+          :alt="post.title"
+          class="post-card-img"
+          loading="lazy"
+          width="1200"
+          height="630"
+        />
         <div class="post-card-meta">
           <span class="post-date">{{ formatDate(post.date) }}</span>
           <span v-for="tag in post.tags.slice(0, 2)" :key="tag" class="post-tag">{{ tag }}</span>
@@ -165,6 +174,15 @@ h1 {
   border-color: rgba(165, 180, 252, 0.4);
   box-shadow: 0 0 24px rgba(99, 102, 241, 0.12);
   transform: translateY(-2px);
+}
+
+.post-card-img {
+  width: 100%;
+  aspect-ratio: 1200 / 630;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  margin-bottom: 2px;
 }
 
 .post-card-meta {

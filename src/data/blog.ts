@@ -52,6 +52,7 @@ export const blogPosts: BlogPost[] = [
     updated: '2026-06-01',
     author: 'Posta Team',
     tags: ['Developers', 'CLI', 'Automation', 'MCP'],
+    ogImage: 'https://getposta.app/assets/blog/post-to-social-media-from-your-terminal.jpg',
     body: [
       {
         type: 'p',

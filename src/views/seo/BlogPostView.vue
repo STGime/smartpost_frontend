@@ -117,6 +117,15 @@ if (post) {
           </div>
         </header>
 
+        <img
+          v-if="post.ogImage"
+          :src="post.ogImage"
+          :alt="post.title"
+          class="post-cover"
+          width="1200"
+          height="630"
+        />
+
         <div class="post-body">
           <template v-for="(block, i) in post.body" :key="i">
             <h2 v-if="block.type === 'h2'">{{ block.text }}</h2>
@@ -173,6 +182,17 @@ if (post) {
 }
 
 .post-header {
+  margin-bottom: 24px;
+}
+
+.post-cover {
+  display: block;
+  width: 100%;
+  max-width: 820px;
+  aspect-ratio: 1200 / 630;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 1px solid var(--border, rgba(148, 163, 184, 0.18));
   margin-bottom: 32px;
 }
 
