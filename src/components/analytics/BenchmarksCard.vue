@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { BenchmarkData } from '@/types'
 
 const props = defineProps<{
@@ -23,6 +24,11 @@ const getUserRate = (platform: string): number => {
   const rate = props.platformEngagementRates?.[platform]
   return rate ?? props.userEngagementRate
 }
+
+// The source line is identical across rows, so show it once in a footer.
+const sources = computed(() =>
+  Array.from(new Set(props.benchmarks.map((b) => b.source).filter(Boolean))),
+)
 </script>
 
 <template>
@@ -32,71 +38,73 @@ const getUserRate = (platform: string): number => {
       <span class="pro-badge">Pro</span>
     </div>
     <div class="card-body">
-      <div v-if="benchmarks.length" class="benchmarks-list">
-        <div
-          v-for="benchmark in benchmarks"
-          :key="benchmark.platform + '-' + benchmark.contentType"
-          class="benchmark-item"
-        >
-          <div class="benchmark-header">
-            <span class="benchmark-platform">
-              {{ platformLabels[benchmark.platform] || benchmark.platform }}
-            </span>
-            <span
-              v-if="benchmark.contentType !== 'all'"
-              class="benchmark-type"
-            >
-              {{ benchmark.contentType }}
-            </span>
-          </div>
-          <div class="benchmark-comparison">
-            <div class="benchmark-bar-container">
-              <div class="benchmark-bar-label">Industry avg</div>
-              <div class="benchmark-bar-track">
-                <div
-                  class="benchmark-bar benchmark-bar-industry"
-                  :style="{ width: `${Math.min(benchmark.avgEngagementRate / Math.max(benchmark.avgEngagementRate, userEngagementRate) * 100, 100)}%` }"
-                ></div>
-              </div>
-              <span class="benchmark-bar-value">{{ benchmark.avgEngagementRate.toFixed(2) }}%</span>
-            </div>
-            <div class="benchmark-bar-container">
-              <div class="benchmark-bar-label">Your rate</div>
-              <div class="benchmark-bar-track">
-                <div
-                  class="benchmark-bar benchmark-bar-user"
-                  :style="{ width: `${Math.min(getUserRate(benchmark.platform) / Math.max(benchmark.avgEngagementRate, getUserRate(benchmark.platform)) * 100, 100)}%` }"
-                ></div>
-              </div>
-              <span class="benchmark-bar-value">{{ getUserRate(benchmark.platform).toFixed(2) }}%</span>
-            </div>
-          </div>
-          <div class="benchmark-indicator">
-            <template v-if="getUserRate(benchmark.platform) > benchmark.avgEngagementRate">
-              <span class="indicator-up">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-                </svg>
-                {{ ((getUserRate(benchmark.platform) - benchmark.avgEngagementRate) / benchmark.avgEngagementRate * 100).toFixed(0) }}% above average
+      <template v-if="benchmarks.length">
+        <div class="benchmarks-grid">
+          <div
+            v-for="benchmark in benchmarks"
+            :key="benchmark.platform + '-' + benchmark.contentType"
+            class="benchmark-item"
+          >
+            <div class="benchmark-header">
+              <span class="benchmark-platform">
+                {{ platformLabels[benchmark.platform] || benchmark.platform }}
               </span>
-            </template>
-            <template v-else-if="getUserRate(benchmark.platform) < benchmark.avgEngagementRate">
-              <span class="indicator-down">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
-                {{ ((benchmark.avgEngagementRate - getUserRate(benchmark.platform)) / benchmark.avgEngagementRate * 100).toFixed(0) }}% below average
+              <span
+                v-if="benchmark.contentType !== 'all'"
+                class="benchmark-type"
+              >
+                {{ benchmark.contentType }}
               </span>
-            </template>
-            <template v-else>
-              <span class="indicator-equal">At industry average</span>
-            </template>
-          </div>
-          <div v-if="benchmark.source" class="benchmark-source">
-            Source: {{ benchmark.source }}
+            </div>
+            <div class="benchmark-comparison">
+              <div class="benchmark-bar-container">
+                <div class="benchmark-bar-label">Industry</div>
+                <div class="benchmark-bar-track">
+                  <div
+                    class="benchmark-bar benchmark-bar-industry"
+                    :style="{ width: `${Math.min(benchmark.avgEngagementRate / Math.max(benchmark.avgEngagementRate, getUserRate(benchmark.platform)) * 100, 100)}%` }"
+                  ></div>
+                </div>
+                <span class="benchmark-bar-value">{{ benchmark.avgEngagementRate.toFixed(2) }}%</span>
+              </div>
+              <div class="benchmark-bar-container">
+                <div class="benchmark-bar-label">You</div>
+                <div class="benchmark-bar-track">
+                  <div
+                    class="benchmark-bar benchmark-bar-user"
+                    :style="{ width: `${Math.min(getUserRate(benchmark.platform) / Math.max(benchmark.avgEngagementRate, getUserRate(benchmark.platform)) * 100, 100)}%` }"
+                  ></div>
+                </div>
+                <span class="benchmark-bar-value">{{ getUserRate(benchmark.platform).toFixed(2) }}%</span>
+              </div>
+            </div>
+            <div class="benchmark-indicator">
+              <template v-if="getUserRate(benchmark.platform) > benchmark.avgEngagementRate">
+                <span class="indicator-up">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="13" height="13">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                  </svg>
+                  {{ ((getUserRate(benchmark.platform) - benchmark.avgEngagementRate) / benchmark.avgEngagementRate * 100).toFixed(0) }}% above
+                </span>
+              </template>
+              <template v-else-if="getUserRate(benchmark.platform) < benchmark.avgEngagementRate">
+                <span class="indicator-down">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="13" height="13">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                  {{ ((benchmark.avgEngagementRate - getUserRate(benchmark.platform)) / benchmark.avgEngagementRate * 100).toFixed(0) }}% below
+                </span>
+              </template>
+              <template v-else>
+                <span class="indicator-equal">At industry average</span>
+              </template>
+            </div>
           </div>
         </div>
-      </div>
+        <p v-if="sources.length" class="benchmarks-source">
+          Source: {{ sources.join(' · ') }}
+        </p>
+      </template>
       <div v-else class="no-data">
         <p>No benchmark data available</p>
       </div>
@@ -105,15 +113,19 @@ const getUserRate = (platform: string): number => {
 </template>
 
 <style scoped>
-.benchmarks-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.benchmarks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
 }
 
 .benchmark-item {
-  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
   background: rgba(15, 23, 42, 0.5);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
 }
 
@@ -121,16 +133,15 @@ const getUserRate = (platform: string): number => {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 10px;
 }
 
 .benchmark-platform {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .benchmark-type {
-  font-size: 11px;
+  font-size: 10px;
   padding: 1px 6px;
   background: rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-sm);
@@ -141,8 +152,7 @@ const getUserRate = (platform: string): number => {
 .benchmark-comparison {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: 5px;
 }
 
 .benchmark-bar-container {
@@ -152,9 +162,9 @@ const getUserRate = (platform: string): number => {
 }
 
 .benchmark-bar-label {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--muted);
-  width: 72px;
+  width: 52px;
   flex-shrink: 0;
 }
 
@@ -182,15 +192,15 @@ const getUserRate = (platform: string): number => {
 }
 
 .benchmark-bar-value {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
-  width: 52px;
+  width: 46px;
   text-align: right;
   flex-shrink: 0;
 }
 
 .benchmark-indicator {
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .indicator-up {
@@ -211,8 +221,8 @@ const getUserRate = (platform: string): number => {
   color: var(--muted);
 }
 
-.benchmark-source {
-  margin-top: 6px;
+.benchmarks-source {
+  margin-top: 14px;
   font-size: 10px;
   color: var(--muted);
 }
