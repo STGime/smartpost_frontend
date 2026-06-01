@@ -41,7 +41,10 @@ useHead({
     { name: 'twitter:description', content: description },
     { name: 'twitter:image', content: `${SITE_URL}/assets/posta_og_image.png` },
   ],
-  link: [{ rel: 'canonical', href: `${SITE_URL}/blog` }],
+  link: [
+    { rel: 'canonical', href: `${SITE_URL}/blog` },
+    { rel: 'alternate', type: 'application/rss+xml', title: 'Posta Blog', href: `${SITE_URL}/feed.xml` },
+  ],
   script: [
     {
       type: 'application/ld+json',

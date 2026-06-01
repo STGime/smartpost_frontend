@@ -81,6 +81,13 @@ for f in llms.txt llms-full.txt; do
     fi
 done
 
+# Blog RSS feed (polled by automation/workflow tools — short cache for freshness).
+if [ -f "dist/feed.xml" ]; then
+    gsutil setmeta -h "Content-Type:application/rss+xml; charset=utf-8" \
+        -h "Cache-Control:public, max-age=3600" \
+        "gs://$GCS_BUCKET/feed.xml" 2>/dev/null || true
+fi
+
 # Refresh openapi.yaml from the live backend before serving it, then set headers.
 # The in-tree public/openapi.yaml acts as the fallback: Vite copies public/ → dist/
 # at build time, and the prior `gsutil rsync` step above already uploaded

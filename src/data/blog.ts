@@ -164,7 +164,8 @@ export function postPlainText(post: BlogPost): string {
   return post.body
     .map((b) => {
       if (b.type === 'code') return b.code ?? ''
-      if (b.type === 'ul' || b.type === 'ol') return (b.items ?? []).join('\n')
+      if (b.type === 'ul' || b.type === 'ol')
+        return (b.items ?? []).map((i) => i.replace(/<[^>]+>/g, '')).join('\n')
       return (b.text ?? '').replace(/<[^>]+>/g, '')
     })
     .filter(Boolean)

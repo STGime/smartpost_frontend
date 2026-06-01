@@ -40,6 +40,7 @@ useHead({
   ],
   link: [
     { rel: 'canonical', href: 'https://getposta.app/' },
+    { rel: 'alternate', type: 'application/rss+xml', title: 'Posta Blog', href: 'https://getposta.app/feed.xml' },
   ],
   script: [
     {

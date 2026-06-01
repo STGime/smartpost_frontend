@@ -45,7 +45,10 @@ if (post) {
       { name: 'twitter:description', content: post.description },
       { name: 'twitter:image', content: ogImage },
     ],
-    link: [{ rel: 'canonical', href: url }],
+    link: [
+      { rel: 'canonical', href: url },
+      { rel: 'alternate', type: 'application/rss+xml', title: 'Posta Blog', href: `${SITE_URL}/feed.xml` },
+    ],
     script: [
       {
         type: 'application/ld+json',
