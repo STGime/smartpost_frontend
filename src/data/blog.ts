@@ -149,6 +149,140 @@ export const blogPosts: BlogPost[] = [
       },
     ],
   },
+  {
+    slug: 'article-to-linkedin-carousel',
+    title: 'From article to LinkedIn carousel: how Posta builds document posts from text',
+    description:
+      'How Posta turns plain text into a polished LinkedIn carousel PDF — AI-written slides, AI-generated backgrounds, and crisp text rendered on top, in one API call.',
+    date: '2026-06-04',
+    updated: '2026-06-04',
+    author: 'Posta Team',
+    tags: ['Product', 'LinkedIn', 'Automation', 'AI'],
+    ogImage: 'https://getposta.app/assets/blog/article-to-linkedin-carousel.jpg',
+    body: [
+      {
+        type: 'p',
+        text: 'LinkedIn carousels — the swipeable PDF “document” posts — are some of the highest-engagement content on the platform. They’re also tedious to make: design each slide in a tool like Canva, export a PDF, and upload it by hand. Posta now does the whole thing from text, in a single API call.',
+      },
+      {
+        type: 'h2',
+        text: 'Why carousels punch above their weight',
+      },
+      {
+        type: 'p',
+        text: 'A carousel turns one idea into a sequence of swipes, so a reader spends more time on your post — and dwell time is exactly what the feed rewards. The catch has always been production cost: every slide is a small design job. That friction is why most people post a plain text update instead. Remove the friction and carousels become a default format, not a special occasion.',
+      },
+      {
+        type: 'h2',
+        text: 'What Posta automates',
+      },
+      {
+        type: 'p',
+        text: 'Give Posta the slide copy and a background image per slide, and it returns a ready-to-post PDF. Paired with an LLM and a cheap image model, the whole pipeline runs unattended:',
+      },
+      {
+        type: 'ul',
+        items: [
+          'An <strong>LLM</strong> turns your article into 5–10 punchy slides — a hook, the key points, and a call to action — plus hashtags for the caption.',
+          'A fast <strong>image model</strong> generates an on-brand background for each slide.',
+          'Posta <strong>composites the slide text over each background</strong> and stitches the slides into a PDF.',
+          'The PDF is attached to a <strong>scheduled LinkedIn document post</strong>.',
+        ],
+      },
+      {
+        type: 'h2',
+        text: 'How it works under the hood',
+      },
+      {
+        type: 'h3',
+        text: '1. The LLM writes the slides',
+      },
+      {
+        type: 'p',
+        text: 'Long-form prose doesn’t fit a carousel — you need short, scannable lines. An LLM (we use DeepSeek, but any model works) condenses the source article into a structured list of slides, each with a title and a one- or two-line body. This very post is the kind of input that flows in at the top of the pipeline.',
+      },
+      {
+        type: 'h3',
+        text: '2. Cheap backgrounds, not stock photos',
+      },
+      {
+        type: 'p',
+        text: 'Each slide gets an abstract background from a fast text-to-image model (for example fal.ai’s FLUX schnell). Backgrounds are deliberately decorative — dark gradients and soft shapes — so they set a mood without fighting the text, and they cost a fraction of a cent each.',
+      },
+      {
+        type: 'h3',
+        text: '3. Rendering readable text on top — the hard part',
+      },
+      {
+        type: 'p',
+        text: 'Diffusion models can’t draw legible text, so Posta renders it separately and composites it. It builds an SVG text layer — title up top, body below — with a white fill, a dark outline, and a subtle top-and-bottom gradient scrim, then rasterizes it with <code>sharp</code> and lays it over the background. The outline and scrim are what keep text readable no matter what colors the background throws at it. No headless browser, no external rendering service — just image processing.',
+      },
+      {
+        type: 'h3',
+        text: '4. Assembled into a PDF',
+      },
+      {
+        type: 'p',
+        text: 'Each finished slide becomes one 1080×1080 page in a PDF — LinkedIn’s document/carousel format. Posta stores it as a document media item and hands back a media ID you attach to a post, exactly like any other media.',
+      },
+      {
+        type: 'h2',
+        text: 'One API call',
+      },
+      {
+        type: 'p',
+        text: 'Once the backgrounds are uploaded, the whole deck is a single request to the <a href="/developers">REST API</a>:',
+      },
+      {
+        type: 'code',
+        lang: 'bash',
+        code: `curl -X POST https://api.getposta.app/v1/media/generate-text-carousel-pdf \\
+  -H "Authorization: Bearer posta_your_token" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "slides": [
+      { "media_id": "<bg-1>", "title": "Turn articles into carousels", "body": "AI writes the slides, Posta builds the PDF." },
+      { "media_id": "<bg-2>", "title": "Readable on any background", "body": "Outlined text + a scrim keep it legible." },
+      { "media_id": "<bg-3>", "title": "Create once. Post everywhere.", "body": "Start free at getposta.app" }
+    ],
+    "title": "Launch deck"
+  }'`,
+      },
+      {
+        type: 'p',
+        text: 'You get back a <code>media_id</code> for the generated PDF, plus a thumbnail and a download URL. Attach that media ID to a LinkedIn post and you’re done.',
+      },
+      {
+        type: 'h2',
+        text: 'Wire it up in n8n (no code)',
+      },
+      {
+        type: 'p',
+        text: 'The Posta <a href="https://www.npmjs.com/package/n8n-nodes-posta">n8n community node</a> exposes this as a <strong>Media → Generate Text Carousel PDF</strong> operation, so you can build the whole pipeline visually:',
+      },
+      {
+        type: 'ul',
+        items: [
+          'Read an article (RSS or HTTP).',
+          'Generate the slide copy with your LLM of choice.',
+          'Generate a background per slide and upload each to Posta.',
+          'Generate Text Carousel PDF → Create Post on LinkedIn.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'The same capability is available three ways: the <a href="/developers">REST API</a>, the Posta <a href="/cli-social-media-posting">Claude Code skill</a>, and the n8n node — so it fits whether you’re scripting, prompting, or building no-code flows.',
+      },
+      {
+        type: 'h2',
+        text: 'Try it',
+      },
+      {
+        type: 'p',
+        text: 'Carousels stop being a chore the moment they’re one API call away. Point Posta at your next blog post and let it build the deck. Start with a <a href="/signup">14-day free trial</a> — no credit card required.',
+      },
+    ],
+  },
 ]
 
 /** Posts newest-first — used by the index and SEO generators. */
