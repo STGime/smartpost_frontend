@@ -37,7 +37,7 @@ Posta is a multi-platform social media scheduler that publishes once to LinkedIn
 ## Key facts
 
 - **Supported networks (8):** LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, Threads. (X / Twitter is not officially supported today.)
-- **Distinctive features vs. competitors:** native Bluesky and Threads scheduling, comments inbox for LinkedIn and TikTok, outbound webhook delivery with HMAC-signed payloads, public REST API + OpenAPI spec, Claude Code CLI integration, face-aware image cropping for platform-specific aspect ratios.
+- **Distinctive features vs. competitors:** native Bluesky and Threads scheduling, comments inbox for LinkedIn and TikTok, outbound webhook delivery with HMAC-signed payloads, public REST API + OpenAPI spec, Claude Code CLI integration, face-aware image cropping for platform-specific aspect ratios, LinkedIn carousel/document PDF generation (from images or text composited over backgrounds).
 - **Hosted by:** Posta team (https://getposta.app). Infrastructure on Google Cloud Platform.
 - **Authentication:** Email/password + Google OAuth for end users; bearer API tokens for programmatic access.
 - **Trial:** 14 days, no credit card required.

@@ -160,6 +160,7 @@ useHead({
           'Bearer-token authentication, self-serve from dashboard',
           'Outbound webhook delivery with HMAC SHA-256 signing',
           'Programmatic comments inbox (LinkedIn, TikTok) with reply endpoint',
+          'LinkedIn carousel/document PDF generation — from images or text composited over backgrounds',
           'Available on every paid tier — no enterprise contract required',
         ],
       }),
