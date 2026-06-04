@@ -119,7 +119,7 @@ if (post) {
 
         <img
           v-if="post.ogImage"
-          :src="post.ogImage"
+          :src="post.ogImage?.replace(SITE_URL, '')"
           :alt="post.title"
           class="post-cover"
           width="1200"

@@ -105,7 +105,7 @@ useHead({
       >
         <img
           v-if="post.ogImage"
-          :src="post.ogImage"
+          :src="post.ogImage?.replace(SITE_URL, '')"
           :alt="post.title"
           class="post-card-img"
           loading="lazy"
