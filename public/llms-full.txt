@@ -78,6 +78,9 @@ Major endpoints:
 - `GET /v1/social-accounts` — list connected accounts.
 - `POST /v1/webhook-endpoints` — register a webhook URL.
 - `GET /v1/analytics/posts` — engagement metrics.
+- `POST /v1/media/create-upload-url` — start a media upload (3-step signed-URL flow).
+- `POST /v1/media/generate-carousel-pdf` — build a LinkedIn carousel PDF from uploaded images.
+- `POST /v1/media/generate-text-carousel-pdf` — build a LinkedIn carousel PDF by compositing slide text (title + body) over uploaded background images (e.g. AI-generated); 2–20 slides.
 
 ## Webhook events
 
