@@ -16,11 +16,13 @@
  */
 
 export interface BlogBlock {
-  type: 'h2' | 'h3' | 'p' | 'ul' | 'ol' | 'quote' | 'code'
-  text?: string // h2 | h3 | p | quote
+  type: 'h2' | 'h3' | 'p' | 'ul' | 'ol' | 'quote' | 'code' | 'pdf'
+  text?: string // h2 | h3 | p | quote | pdf (caption)
   items?: string[] // ul | ol
   code?: string // code
   lang?: string // code (display hint)
+  src?: string // pdf (file path)
+  poster?: string // pdf (preview image)
 }
 
 export interface BlogPost {
@@ -251,6 +253,12 @@ export const blogPosts: BlogPost[] = [
       {
         type: 'p',
         text: 'You get back a <code>media_id</code> for the generated PDF, plus a thumbnail and a download URL. Attach that media ID to a LinkedIn post and you’re done.',
+      },
+      {
+        type: 'pdf',
+        src: '/assets/blog/linkedin-carousel-example.pdf',
+        poster: '/assets/blog/linkedin-carousel-example-thumb.jpg',
+        text: 'A real 5-slide carousel produced by this exact endpoint — swipe through it or download the PDF.',
       },
       {
         type: 'h2',

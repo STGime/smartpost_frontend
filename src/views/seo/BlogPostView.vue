@@ -140,6 +140,20 @@ if (post) {
               <li v-for="(item, j) in block.items" :key="j" v-html="item" />
             </ol>
             <pre v-else-if="block.type === 'code'" class="code-block"><code>{{ block.code }}</code></pre>
+            <figure v-else-if="block.type === 'pdf' && block.src" class="post-pdf">
+              <iframe
+                :src="`${block.src}#view=FitH`"
+                :title="block.text || 'Example PDF'"
+                class="post-pdf-frame"
+                loading="lazy"
+              ></iframe>
+              <figcaption class="post-pdf-caption">
+                <span v-if="block.text">{{ block.text }}</span>
+                <a :href="block.src" target="_blank" rel="noopener" class="post-pdf-link">
+                  Open / download PDF →
+                </a>
+              </figcaption>
+            </figure>
           </template>
         </div>
       </article>
@@ -316,6 +330,42 @@ ol.body-list {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   color: #e2e8f0;
   white-space: pre;
+}
+
+.post-pdf {
+  margin: 8px 0 28px;
+  max-width: 620px;
+}
+
+.post-pdf-frame {
+  display: block;
+  width: 100%;
+  height: 680px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 12px;
+  background: #1e293b;
+}
+
+.post-pdf-caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.post-pdf-link {
+  color: var(--accent-light);
+  text-decoration: none;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.post-pdf-link:hover {
+  text-decoration: underline;
 }
 
 .not-found {
