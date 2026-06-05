@@ -247,12 +247,13 @@ export const blogPosts: BlogPost[] = [
       { "media_id": "<bg-2>", "title": "Readable on any background", "body": "Outlined text + a scrim keep it legible." },
       { "media_id": "<bg-3>", "title": "Create once. Post everywhere.", "body": "Start free at getposta.app" }
     ],
-    "title": "Launch deck"
+    "title": "Launch deck",
+    "logo_media_id": "<logo>"
   }'`,
       },
       {
         type: 'p',
-        text: 'You get back a <code>media_id</code> for the generated PDF, plus a thumbnail and a download URL. Attach that media ID to a LinkedIn post and you’re done.',
+        text: 'The optional <code>logo_media_id</code> is another uploaded image you own — it’s rendered in the bottom-right of every slide. You get back a <code>media_id</code> for the generated PDF, plus a thumbnail and a download URL. Attach that media ID to a LinkedIn post and you’re done.',
       },
       {
         type: 'pdf',
