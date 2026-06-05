@@ -72,7 +72,7 @@ export const workflows: Workflow[] = [
     difficulty: 'Beginner',
     setupTime: '~10 min',
     requiredCredentials: [POSTA_CRED],
-    jsonFile: '/assets/workflows/blog-to-social-media.json?v=1',
+    jsonFile: '/assets/workflows/blog-to-social-media.json?v=2',
     body: [
       {
         type: 'p',
@@ -115,7 +115,7 @@ export const workflows: Workflow[] = [
     setupTime: '~20 min',
     requiredCredentials: [POSTA_CRED, DEEPSEEK_CRED, FAL_CRED],
     requiredPlan: 'Professional',
-    jsonFile: '/assets/workflows/blog-to-linkedin-carousel.json?v=1',
+    jsonFile: '/assets/workflows/blog-to-linkedin-carousel.json?v=2',
     relatedBlogSlug: 'article-to-linkedin-carousel',
     body: [
       {
@@ -164,7 +164,7 @@ export const workflows: Workflow[] = [
     difficulty: 'Intermediate',
     setupTime: '~20 min',
     requiredCredentials: [POSTA_CRED, DEEPSEEK_CRED],
-    jsonFile: '/assets/workflows/product-launch-campaign.json?v=1',
+    jsonFile: '/assets/workflows/product-launch-campaign.json?v=2',
     body: [
       {
         type: 'p',
@@ -206,7 +206,7 @@ export const workflows: Workflow[] = [
     difficulty: 'Intermediate',
     setupTime: '~20 min',
     requiredCredentials: [POSTA_CRED, DEEPSEEK_CRED],
-    jsonFile: '/assets/workflows/youtube-to-social-media.json?v=1',
+    jsonFile: '/assets/workflows/youtube-to-social-media.json?v=2',
     body: [
       {
         type: 'p',
