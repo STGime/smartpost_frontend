@@ -258,6 +258,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
         { feature: 'Face-aware cropping', starter: true, professional: true },
         { feature: 'Smart compression', starter: true, professional: true },
         { feature: 'Video processing', starter: true, professional: true },
+        { feature: 'LinkedIn carousel maker (text-over-image PDF)', starter: false, professional: true },
       ],
     },
     {
@@ -265,7 +266,6 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
       rows: [
         { feature: 'Calendar view', starter: true, professional: true },
         { feature: 'Timezone-safe scheduling', starter: true, professional: true },
-        { feature: 'Batch scheduling', starter: false, professional: true },
       ],
     },
     {
@@ -579,7 +579,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
                 Approve the posts, set dates and times, and let Posta take care of the publishing calendar.
               </div>
               <div class="pill-row">
-                <span class="pill">Batch scheduling</span>
+                <span class="pill">Calendar view</span>
                 <span class="pill">Timezone safe</span>
               </div>
             </div>
