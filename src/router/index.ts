@@ -245,6 +245,15 @@ let onboardingStatus: { checked: boolean; completed: boolean } = { checked: fals
 
 // Navigation guard for authentication and onboarding
 router.beforeEach(async (to, _from, next) => {
+  // GCS static hosting serves prerendered pages at "<path>/index.html" and
+  // 301-redirects clean URLs there, so a deep link or hard reload lands on a
+  // URL ending in "/index.html" — which no SPA route matches, triggering the
+  // 404 view. Strip the suffix and re-route to the clean path.
+  if (to.path !== '/' && to.path.endsWith('/index.html')) {
+    next({ path: to.path.slice(0, -'/index.html'.length) || '/', query: to.query, hash: to.hash, replace: true })
+    return
+  }
+
   const accessToken = localStorage.getItem('access_token')
   const isAuthenticated = !!accessToken
 
