@@ -38,6 +38,8 @@ const openWaitingList = (source: WaitingListSource) => {
           </div>
         </RouterLink>
         <div class="header-actions">
+          <RouterLink to="/workflows" class="nav-link">Workflows</RouterLink>
+          <RouterLink to="/blog" class="nav-link">Blog</RouterLink>
           <template v-if="!isAuthenticated">
             <button class="btn-login" @click="showLoginModal = true">Log in</button>
             <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary btn-header">
@@ -161,6 +163,18 @@ const openWaitingList = (source: WaitingListSource) => {
   gap: 12px;
 }
 
+.nav-link {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 8px 4px;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: var(--text);
+}
 
 .btn-login {
   border: 1px solid rgba(148, 163, 184, 0.6);
