@@ -256,8 +256,10 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'pdf',
-        src: '/assets/blog/linkedin-carousel-example.pdf',
-        poster: '/assets/blog/linkedin-carousel-example-thumb.jpg',
+        // ?v bump busts the immutable CDN/browser cache when the file is swapped
+        // in place (same filename). Increment when replacing the PDF/thumbnail.
+        src: '/assets/blog/linkedin-carousel-example.pdf?v=2',
+        poster: '/assets/blog/linkedin-carousel-example-thumb.jpg?v=2',
         text: 'A real 5-slide carousel produced by this exact endpoint — swipe through it or download the PDF.',
       },
       {
