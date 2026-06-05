@@ -13,6 +13,7 @@ const ROUTES = [
   '/auto-post-social-media',
   '/social-media-tools',
   '/cli-social-media-posting',
+  '/agents',
   '/bluesky-scheduler',
   '/threads-scheduler',
   '/buffer-alternative',

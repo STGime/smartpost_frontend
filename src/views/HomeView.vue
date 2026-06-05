@@ -310,6 +310,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
           </div>
         </div>
         <div class="header-actions">
+          <RouterLink to="/agents" class="nav-link">Agents</RouterLink>
           <RouterLink to="/workflows" class="nav-link">Workflows</RouterLink>
           <RouterLink to="/blog" class="nav-link">Blog</RouterLink>
           <template v-if="!isAuthenticated">

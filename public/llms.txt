@@ -18,6 +18,7 @@ Posta is a multi-platform social media scheduler that publishes once to LinkedIn
 
 ## Developers
 
+- [Social Media for AI Agents](https://getposta.app/agents) — Let agents create, schedule & publish via MCP, Claude Code, n8n, and the REST API.
 - [API and Webhooks landing](https://getposta.app/developers) — Auth, top endpoints with curl, webhook signing, OpenAPI links.
 - [CLI Social Media Posting](https://getposta.app/cli-social-media-posting) — Post from your terminal via the Claude Code skill.
 - [API Documentation (Swagger UI)](https://api.getposta.app/docs) — Interactive REST API reference.

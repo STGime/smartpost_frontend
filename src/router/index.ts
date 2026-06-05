@@ -85,6 +85,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/seo/ApiView.vue'),
   },
   {
+    path: '/agents',
+    name: 'agents',
+    component: () => import('@/views/seo/AgentsView.vue'),
+  },
+  {
     path: '/blog',
     name: 'blog-index',
     component: () => import('@/views/seo/BlogIndexView.vue'),
