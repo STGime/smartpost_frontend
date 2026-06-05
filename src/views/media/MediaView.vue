@@ -18,6 +18,29 @@ const showPreviewModal = ref(false)
 const mediaToPreview = ref<MediaListItem | null>(null)
 const isLoadingPreview = ref(false)
 const isLoadingMore = ref(false)
+const copiedId = ref(false)
+
+function formatDate(iso?: string): string {
+  if (!iso) return ''
+  return new Date(iso).toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+async function copyMediaId(id?: string) {
+  if (!id) return
+  try {
+    await navigator.clipboard.writeText(id)
+    copiedId.value = true
+    setTimeout(() => (copiedId.value = false), 1500)
+  } catch {
+    // Clipboard unavailable (e.g. insecure context) — ignore.
+  }
+}
 
 // Filters
 const mediaTypeFilter = ref<'all' | 'image' | 'video' | 'document'>('all')
@@ -439,7 +462,19 @@ const closePreviewModal = () => {
           <p class="preview-meta">
             {{ mediaToPreview?.width }} × {{ mediaToPreview?.height }}
             <span v-if="mediaToPreview?.duration"> · {{ Math.round(mediaToPreview.duration) }}s</span>
+            <span v-if="mediaToPreview?.created_at"> · {{ formatDate(mediaToPreview.created_at) }}</span>
           </p>
+          <button
+            v-if="mediaToPreview?.id"
+            type="button"
+            class="preview-id"
+            :title="copiedId ? 'Copied!' : 'Click to copy media ID'"
+            @click="copyMediaId(mediaToPreview.id)"
+          >
+            <span class="preview-id-label">ID</span>
+            <code>{{ mediaToPreview.id }}</code>
+            <span class="preview-id-copy">{{ copiedId ? '✓ Copied' : 'Copy' }}</span>
+          </button>
         </div>
       </div>
     </Teleport>
@@ -990,6 +1025,42 @@ const closePreviewModal = () => {
 .preview-meta {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.6);
+}
+
+.preview-id {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 5px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.preview-id:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.preview-id-label {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.preview-id code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: white;
+}
+
+.preview-id-copy {
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .preview-loading {
