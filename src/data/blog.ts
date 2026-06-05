@@ -282,6 +282,10 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'p',
+        text: 'Don’t build it from scratch — <a href="/workflows/blog-to-linkedin-carousel">import the ready-made workflow</a> (download the JSON or use n8n’s “Import from URL”), connect your credentials, and run it. Browse all our <a href="/workflows">n8n templates</a>.',
+      },
+      {
+        type: 'p',
         text: 'The same capability is available three ways: the <a href="/developers">REST API</a>, the Posta <a href="/cli-social-media-posting">Claude Code skill</a>, and the n8n node — so it fits whether you’re scripting, prompting, or building no-code flows.',
       },
       {
