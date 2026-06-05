@@ -325,6 +325,19 @@ a {
   color: #e5e7eb;
 }
 
+/* Use the real brand logo image for the mark site-wide. !important overrides
+   the component-scoped .logo-mark rules in HomeView/SeoPageLayout/etc.
+   ?v= cache-busts the immutable-cached asset when the logo changes. */
+.logo-mark {
+  background: url('/assets/posta_logo_512.png?v=2') center / cover no-repeat !important;
+  padding: 0 !important;
+  border-radius: 22% !important;
+}
+
+.logo-inner {
+  display: none !important;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
