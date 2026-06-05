@@ -153,7 +153,7 @@ export const blogPosts: BlogPost[] = [
     slug: 'article-to-linkedin-carousel',
     title: 'From article to LinkedIn carousel: how Posta builds document posts from text',
     description:
-      'How Posta turns plain text into a polished LinkedIn carousel PDF — AI-written slides, AI-generated backgrounds, and crisp text rendered on top, in one API call.',
+      'How to turn an article into a polished LinkedIn carousel PDF — AI-written slides and AI-generated backgrounds from your own pipeline (the Posta Claude Code skill, or an n8n workflow), with Posta rendering crisp text over each background and assembling the PDF in one API call.',
     date: '2026-06-04',
     updated: '2026-06-04',
     author: 'Posta Team',
@@ -162,7 +162,7 @@ export const blogPosts: BlogPost[] = [
     body: [
       {
         type: 'p',
-        text: 'LinkedIn carousels — the swipeable PDF “document” posts — are some of the highest-engagement content on the platform. They’re also tedious to make: design each slide in a tool like Canva, export a PDF, and upload it by hand. Posta now does the whole thing from text, in a single API call.',
+        text: 'LinkedIn carousels — the swipeable PDF “document” posts — are some of the highest-engagement content on the platform. They’re also tedious to make: design each slide in a tool like Canva, export a PDF, and upload it by hand. Posta removes the hardest part: hand it slide copy and a background image per slide, and it renders the text on top and returns a ready-to-post PDF in one API call. Pair that with an LLM and an image model — wired up in the Posta Claude Code skill or an n8n workflow — and the whole article-to-carousel pipeline runs end to end.',
       },
       {
         type: 'h2',
@@ -174,19 +174,19 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'h2',
-        text: 'What Posta automates',
+        text: 'Where Posta fits in the pipeline',
       },
       {
         type: 'p',
-        text: 'Give Posta the slide copy and a background image per slide, and it returns a ready-to-post PDF. Paired with an LLM and a cheap image model, the whole pipeline runs unattended:',
+        text: 'Posta handles the one genuinely hard step: compositing readable slide text over each background and stitching the slides into a PDF. The AI pieces run in your own automation — the Posta Claude Code skill, or an n8n workflow — which hands Posta the finished slide copy and backgrounds. End to end, the pipeline looks like this:',
       },
       {
         type: 'ul',
         items: [
-          'An <strong>LLM</strong> turns your article into 5–10 punchy slides — a hook, the key points, and a call to action — plus hashtags for the caption.',
-          'A fast <strong>image model</strong> generates an on-brand background for each slide.',
-          'Posta <strong>composites the slide text over each background</strong> and stitches the slides into a PDF.',
-          'The PDF is attached to a <strong>scheduled LinkedIn document post</strong>.',
+          'In your workflow, an <strong>LLM</strong> turns your article into 5–10 punchy slides — a hook, the key points, and a call to action — plus hashtags for the caption.',
+          'In your workflow, a fast <strong>image model</strong> generates an on-brand background for each slide, which you upload to Posta.',
+          '<strong>Posta composites the slide text over each background</strong> and stitches the slides into a PDF — this is the part Posta does.',
+          'Your workflow attaches the PDF to a <strong>scheduled LinkedIn document post</strong> (also via Posta).',
         ],
       },
       {
@@ -279,7 +279,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'p',
-        text: 'Carousels stop being a chore the moment they’re one API call away. Point Posta at your next blog post and let it build the deck. Start with a <a href="/signup">14-day free trial</a> — no credit card required.',
+        text: 'Carousels stop being a chore once the rendering is one API call away. Wire up your pipeline — in the Posta Claude Code skill or an n8n workflow — and let it turn your next blog post into a deck. Start with a <a href="/signup">14-day free trial</a> — no credit card required.',
       },
     ],
   },
