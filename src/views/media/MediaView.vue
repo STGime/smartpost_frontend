@@ -386,7 +386,12 @@ const closePreviewModal = () => {
           <div class="spinner"></div>
         </div>
 
-        <div v-else class="preview-container" @click.stop>
+        <div
+          v-else
+          class="preview-container"
+          :class="{ 'preview-container-doc': mediaToPreview?.type === 'document' }"
+          @click.stop
+        >
           <!-- Image preview -->
           <img
             v-if="mediaToPreview?.type === 'image'"
@@ -910,6 +915,13 @@ const closePreviewModal = () => {
   justify-content: center;
 }
 
+/* PDFs/documents need far more room than images — let them fill the viewport. */
+.preview-container-doc {
+  width: 95vw;
+  max-width: 1200px;
+  max-height: 85vh;
+}
+
 .preview-image {
   max-width: 100%;
   max-height: 80vh;
@@ -926,8 +938,7 @@ const closePreviewModal = () => {
 
 .preview-document {
   width: 100%;
-  max-width: 800px;
-  height: 80vh;
+  height: 85vh;
   border: none;
   border-radius: var(--radius-md);
   background: white;
