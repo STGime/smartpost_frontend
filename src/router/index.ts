@@ -95,6 +95,17 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/seo/BlogPostView.vue'),
     props: true,
   },
+  {
+    path: '/workflows',
+    name: 'workflows-index',
+    component: () => import('@/views/seo/WorkflowIndexView.vue'),
+  },
+  {
+    path: '/workflows/:slug',
+    name: 'workflow-detail',
+    component: () => import('@/views/seo/WorkflowDetailView.vue'),
+    props: true,
+  },
 
   {
     path: '/login',

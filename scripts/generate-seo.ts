@@ -12,29 +12,33 @@
 import { readFileSync, writeFileSync, existsSync, statSync } from 'fs'
 import { resolve } from 'path'
 import { sortedPosts, postPlainText, SITE_URL } from '../src/data/blog'
+import { sortedWorkflows } from '../src/data/workflows'
 
 const DIST = resolve(process.cwd(), 'dist')
 const START = '<!-- BLOG:START -->'
 const END = '<!-- BLOG:END -->'
 
-function injectBetweenMarkers(file: string, block: string): void {
+function injectBetweenMarkers(file: string, block: string, start = START, end = END): void {
   const path = resolve(DIST, file)
   if (!existsSync(path)) {
     console.warn(`[generate-seo] skip (missing): ${file}`)
     return
   }
   const content = readFileSync(path, 'utf-8')
-  const s = content.indexOf(START)
-  const e = content.indexOf(END)
+  const s = content.indexOf(start)
+  const e = content.indexOf(end)
   if (s === -1 || e === -1 || e < s) {
-    console.warn(`[generate-seo] markers not found in ${file}; leaving unchanged`)
+    console.warn(`[generate-seo] markers (${start}) not found in ${file}; leaving unchanged`)
     return
   }
-  const before = content.slice(0, s + START.length)
+  const before = content.slice(0, s + start.length)
   const after = content.slice(e)
   writeFileSync(path, `${before}\n${block}\n${after}`, 'utf-8')
-  console.log(`[generate-seo] updated ${file} (${sortedPosts.length} post(s))`)
+  console.log(`[generate-seo] updated ${file} between ${start}`)
 }
+
+const WF_START = '<!-- WORKFLOWS:START -->'
+const WF_END = '<!-- WORKFLOWS:END -->'
 
 const newest = sortedPosts[0]?.date ?? '2026-06-01'
 
@@ -86,6 +90,52 @@ const llmsFullBlock = [
 injectBetweenMarkers('sitemap.xml', sitemapBlock)
 injectBetweenMarkers('llms.txt', llmsBlock)
 injectBetweenMarkers('llms-full.txt', llmsFullBlock)
+
+// === Workflows ============================================================
+const wfNewest = sortedWorkflows[0]?.updated ?? newest
+
+const wfSitemapBlock = [
+  '  <url>',
+  `    <loc>${SITE_URL}/workflows</loc>`,
+  `    <lastmod>${wfNewest}</lastmod>`,
+  '    <changefreq>weekly</changefreq>',
+  '    <priority>0.8</priority>',
+  '  </url>',
+  ...sortedWorkflows.flatMap((w) => [
+    '  <url>',
+    `    <loc>${SITE_URL}/workflows/${w.slug}</loc>`,
+    `    <lastmod>${w.updated}</lastmod>`,
+    '    <changefreq>monthly</changefreq>',
+    '    <priority>0.7</priority>',
+    '  </url>',
+  ]),
+].join('\n')
+
+const wfLlmsBlock = [
+  '## n8n Workflows',
+  '',
+  `- [n8n Workflows](${SITE_URL}/workflows) — Ready-to-import n8n templates for automating Posta.`,
+  ...sortedWorkflows.map((w) => `- [${w.title}](${SITE_URL}/workflows/${w.slug}) — ${w.description}`),
+].join('\n')
+
+const wfLlmsFullBlock = [
+  '## n8n Workflows',
+  '',
+  'Ready-to-import n8n workflow templates that automate Posta (downloadable JSON).',
+  '',
+  ...sortedWorkflows.flatMap((w) => [
+    `### ${w.title}`,
+    w.description,
+    `URL: ${SITE_URL}/workflows/${w.slug} — JSON: ${SITE_URL}${w.jsonFile} — Difficulty: ${w.difficulty}. Tags: ${w.tags.join(', ')}.`,
+    '',
+  ]),
+]
+  .join('\n')
+  .trimEnd()
+
+injectBetweenMarkers('sitemap.xml', wfSitemapBlock, WF_START, WF_END)
+injectBetweenMarkers('llms.txt', wfLlmsBlock, WF_START, WF_END)
+injectBetweenMarkers('llms-full.txt', wfLlmsFullBlock, WF_START, WF_END)
 
 // --- feed.xml: RSS 2.0 feed of blog posts (for automation/workflows) ------
 const escapeXml = (s: string): string =>

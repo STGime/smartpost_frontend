@@ -61,8 +61,8 @@ for dir in social-media-scheduler instagram-scheduler tiktok-scheduler auto-post
     fi
 done
 
-# Blog: index + every pre-rendered post (slugs are dynamic, so glob them).
-for f in dist/blog/index.html dist/blog/*/index.html; do
+# Blog + Workflows: index + every pre-rendered slug (slugs are dynamic, so glob them).
+for f in dist/blog/index.html dist/blog/*/index.html dist/workflows/index.html dist/workflows/*/index.html; do
     if [ -f "$f" ]; then
         rel="${f#dist/}"
         gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" \

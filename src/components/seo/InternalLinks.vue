@@ -18,6 +18,7 @@ const links = [
   { path: '/auto-post-social-media', label: 'Auto Post Social Media' },
   { path: '/social-media-tools', label: 'Social Media Tools' },
   { path: '/cli-social-media-posting', label: 'CLI Social Media Posting' },
+  { path: '/workflows', label: 'n8n Workflows' },
   { path: '/blog', label: 'Blog' },
 ]
 

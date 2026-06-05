@@ -3,6 +3,7 @@ import { preview } from 'vite'
 import { writeFileSync, mkdirSync, existsSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { sortedPosts } from '../src/data/blog'
+import { sortedWorkflows } from '../src/data/workflows'
 
 const ROUTES = [
   '/',
@@ -24,6 +25,9 @@ const ROUTES = [
   // Blog: index + one route per post, derived from src/data/blog.ts
   '/blog',
   ...sortedPosts.map((p) => `/blog/${p.slug}`),
+  // Workflows: index + one route per workflow, derived from src/data/workflows.ts
+  '/workflows',
+  ...sortedWorkflows.map((w) => `/workflows/${w.slug}`),
 ]
 
 const DIST_DIR = resolve(process.cwd(), 'dist')
