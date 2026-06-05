@@ -73,6 +73,7 @@ export const workflows: Workflow[] = [
     setupTime: '~10 min',
     requiredCredentials: [POSTA_CRED],
     jsonFile: '/assets/workflows/blog-to-social-media.json?v=2',
+    ogImage: 'https://getposta.app/assets/workflows/og/blog-to-social-media.jpg',
     body: [
       {
         type: 'p',
@@ -116,6 +117,7 @@ export const workflows: Workflow[] = [
     requiredCredentials: [POSTA_CRED, DEEPSEEK_CRED, FAL_CRED],
     requiredPlan: 'Professional',
     jsonFile: '/assets/workflows/blog-to-linkedin-carousel.json?v=2',
+    ogImage: 'https://getposta.app/assets/workflows/og/blog-to-linkedin-carousel.jpg',
     relatedBlogSlug: 'article-to-linkedin-carousel',
     body: [
       {
@@ -165,6 +167,7 @@ export const workflows: Workflow[] = [
     setupTime: '~20 min',
     requiredCredentials: [POSTA_CRED, DEEPSEEK_CRED],
     jsonFile: '/assets/workflows/product-launch-campaign.json?v=2',
+    ogImage: 'https://getposta.app/assets/workflows/og/product-launch-campaign.jpg',
     body: [
       {
         type: 'p',
@@ -207,6 +210,7 @@ export const workflows: Workflow[] = [
     setupTime: '~20 min',
     requiredCredentials: [POSTA_CRED, DEEPSEEK_CRED],
     jsonFile: '/assets/workflows/youtube-to-social-media.json?v=2',
+    ogImage: 'https://getposta.app/assets/workflows/og/youtube-to-social-media.jpg',
     body: [
       {
         type: 'p',
