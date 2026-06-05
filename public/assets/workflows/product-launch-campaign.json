@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Launch a new product\nThis workflow creates a 5-day product launch campaign for a new product on you active social media accounts linked in the Posta app. Each account type (Thread, TikTok etc) gets its own caption and tags to fit the format. ",
+        "content": "## 5-day product launch campaign\n\n**Who it's for:** e-commerce teams launching a product across every channel.\n**What it does:** turns one product into a 5-day, multi-platform campaign with per-platform captions, scheduled via Posta.\n\n**How it works:**\n1. Fetch the product and its image.\n2. Get active accounts; keep one post per platform type.\n3. DeepSeek writes captions + tags per platform.\n4. Expand across 5 days and schedule a post for every account.\n\n**Setup:** add your Posta and DeepSeek (or any LLM) credentials. Sign up at https://www.getposta.app (14 days free, no credit card).",
         "height": 240,
         "color": 5
       },
@@ -19,7 +19,8 @@
     {
       "parameters": {
         "content": "You need a token to use the Posta functions. Get one at https://www.getposta.app (14 days free, no credit card required)\n\nYou also need an API key for an LLM, in this example we use DeepSeek.",
-        "height": 208
+        "height": 208,
+        "color": 3
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -53,7 +54,7 @@
         -224
       ],
       "id": "95935938-a652-4bff-b5ec-5ef6801aa73c",
-      "name": "HTTP Request"
+      "name": "Fetch product"
     },
     {
       "parameters": {
@@ -185,7 +186,7 @@
         80
       ],
       "id": "886cbb0c-d24a-4344-a2d7-e9652ba78d56",
-      "name": "Filter"
+      "name": "Keep active accounts"
     },
     {
       "parameters": {
@@ -214,7 +215,7 @@
         160
       ],
       "id": "40308f8a-15ff-4eaf-a450-2f8db59ea539",
-      "name": "Remove Duplicates"
+      "name": "One post per platform"
     },
     {
       "parameters": {
@@ -244,7 +245,7 @@
         -208
       ],
       "id": "a12e72fe-1ba7-4895-b419-097d34ca44ed",
-      "name": "Merge"
+      "name": "Combine product + platforms"
     },
     {
       "parameters": {
@@ -285,7 +286,7 @@
         -208
       ],
       "id": "70a87504-d83b-4a22-b4d3-ada5dcc09b30",
-      "name": "Code in JavaScript"
+      "name": "Parse LLM captions"
     },
     {
       "parameters": {
@@ -327,7 +328,7 @@
         16
       ],
       "id": "1447b440-295f-4586-b626-04641c2979bb",
-      "name": "Merge1"
+      "name": "Merge captions per account"
     },
     {
       "parameters": {
@@ -401,7 +402,7 @@
         -224
       ],
       "id": "d1f45c2b-c557-48da-b10a-708491d81c70",
-      "name": "HTTP Request1"
+      "name": "Download product image"
     },
     {
       "parameters": {
@@ -434,25 +435,25 @@
             {
               "id": "7addd58f-f2da-4dbb-8865-cfaa061de77d",
               "name": "title",
-              "value": "={{ $('HTTP Request').first().json.title }}",
+              "value": "={{ $('Fetch product').first().json.title }}",
               "type": "string"
             },
             {
               "id": "ddbf23e7-facd-4b29-8406-d9c39d4d8f20",
               "name": "description",
-              "value": "={{ $('HTTP Request').first().json.description }}",
+              "value": "={{ $('Fetch product').first().json.description }}",
               "type": "string"
             },
             {
               "id": "ad5022e7-ddf4-48c6-9aa0-6f80b9cc5f31",
               "name": "price",
-              "value": "={{ $('HTTP Request').first().json.price }}",
+              "value": "={{ $('Fetch product').first().json.price }}",
               "type": "string"
             },
             {
               "id": "775e372b-c120-4ab2-ac72-c23527ca7dc2",
               "name": "image",
-              "value": "={{ $('HTTP Request').first().json.image }}",
+              "value": "={{ $('Fetch product').first().json.image }}",
               "type": "string"
             }
           ]
@@ -466,7 +467,7 @@
         -224
       ],
       "id": "205d4483-bb45-4bd1-bcf7-525fd22f56eb",
-      "name": "Edit Fields"
+      "name": "Attach product media id"
     },
     {
       "parameters": {
@@ -533,7 +534,7 @@
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "Fetch product",
             "type": "main",
             "index": 0
           },
@@ -556,11 +557,11 @@
         ]
       ]
     },
-    "HTTP Request": {
+    "Fetch product": {
       "main": [
         [
           {
-            "node": "HTTP Request1",
+            "node": "Download product image",
             "type": "main",
             "index": 0
           }
@@ -571,41 +572,41 @@
       "main": [
         [
           {
-            "node": "Filter",
+            "node": "Keep active accounts",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Filter": {
+    "Keep active accounts": {
       "main": [
         [
           {
-            "node": "Remove Duplicates",
+            "node": "One post per platform",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Remove Duplicates": {
+    "One post per platform": {
       "main": [
         [
           {
-            "node": "Merge",
+            "node": "Combine product + platforms",
             "type": "main",
             "index": 1
           },
           {
-            "node": "Merge1",
+            "node": "Merge captions per account",
             "type": "main",
             "index": 1
           }
         ]
       ]
     },
-    "Merge": {
+    "Combine product + platforms": {
       "main": [
         [
           {
@@ -620,7 +621,7 @@
       "main": [
         [
           {
-            "node": "Code in JavaScript",
+            "node": "Parse LLM captions",
             "type": "main",
             "index": 0
           }
@@ -638,18 +639,18 @@
         ]
       ]
     },
-    "Code in JavaScript": {
+    "Parse LLM captions": {
       "main": [
         [
           {
-            "node": "Merge1",
+            "node": "Merge captions per account",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Merge1": {
+    "Merge captions per account": {
       "main": [
         [
           {
@@ -660,7 +661,7 @@
         ]
       ]
     },
-    "HTTP Request1": {
+    "Download product image": {
       "main": [
         [
           {
@@ -675,18 +676,18 @@
       "main": [
         [
           {
-            "node": "Edit Fields",
+            "node": "Attach product media id",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Edit Fields": {
+    "Attach product media id": {
       "main": [
         [
           {
-            "node": "Merge",
+            "node": "Combine product + platforms",
             "type": "main",
             "index": 0
           }

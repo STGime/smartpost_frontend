@@ -61,7 +61,8 @@
     {
       "parameters": {
         "content": "You need to tell the workflow where to post - call this to get a list of connected social accounts. To sign-up and connect social accounts, visit https://www.getposta.app (14 days free, no credit card required)",
-        "height": 480
+        "height": 480,
+        "color": 3
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -75,7 +76,8 @@
     {
       "parameters": {
         "content": "You need a token to use the Posta functions. Get one at https://www.getposta.app (14 days free, no credit card required)",
-        "height": 128
+        "height": 128,
+        "color": 3
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -88,7 +90,7 @@
     },
     {
       "parameters": {
-        "content": "## **Youtube video to social media post**\nLet your users know about your new youtube video.\nThis workflow reads from your Youtube account RSS feed, creates posts for all your active social accounts and creates draft post through the Posta app.",
+        "content": "## YouTube video → social media\n\n**Who it's for:** creators who want to promote each new video everywhere automatically.\n**What it does:** reads your YouTube feed, grabs the latest video + thumbnail, and drafts promo posts for every platform via Posta.\n\n**How it works:**\n1. Download the YouTube channel feed and parse the latest video.\n2. Upload the thumbnail to Posta (auto-scaled per platform).\n3. Get active accounts; keep one post per platform type.\n4. DeepSeek writes a caption per platform; create draft posts to review.\n\n**Setup:** add your Posta and DeepSeek credentials, and set your channel feed URL. Sign up at https://www.getposta.app (14 days free, no credit card).",
         "height": 240,
         "color": 5
       },
@@ -137,7 +139,7 @@
         -32
       ],
       "id": "6518497f-ad13-4b04-8208-bdedc0c6378c",
-      "name": "HTTP Request"
+      "name": "Download thumbnail"
     },
     {
       "parameters": {
@@ -152,7 +154,7 @@
         32
       ],
       "id": "b35f43aa-662f-4d34-923c-dd9bee67fb6e",
-      "name": "Merge"
+      "name": "Combine thumbnail + video data"
     },
     {
       "parameters": {
@@ -221,7 +223,7 @@
         96
       ],
       "id": "17c8f927-4708-4b2c-a91f-13bea3a82dea",
-      "name": "XML"
+      "name": "Parse feed XML"
     },
     {
       "parameters": {
@@ -241,7 +243,7 @@
         16
       ],
       "id": "104ab147-429a-42a1-a26e-250d6a4d6e64",
-      "name": "HTTP Request1"
+      "name": "Download YouTube feed"
     },
     {
       "parameters": {
@@ -254,7 +256,7 @@
         80
       ],
       "id": "a0247b4b-55c4-40a4-8af4-fe76eda01adc",
-      "name": "Code in JavaScript"
+      "name": "Latest video"
     },
     {
       "parameters": {
@@ -340,7 +342,7 @@
         544
       ],
       "id": "214f8125-bd77-40d0-b2b6-5d83dc672e5a",
-      "name": "Filter"
+      "name": "Keep active accounts"
     },
     {
       "parameters": {
@@ -369,7 +371,7 @@
         544
       ],
       "id": "d2ba6b8c-5b56-4235-8017-4638ef8dd54d",
-      "name": "Remove Duplicates"
+      "name": "One post per platform"
     },
     {
       "parameters": {
@@ -399,7 +401,7 @@
         32
       ],
       "id": "4ab71d12-58c4-4ff6-a09c-7335ed70b9d2",
-      "name": "Merge1"
+      "name": "Combine video + platforms"
     },
     {
       "parameters": {
@@ -459,7 +461,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('Merge1').all();   // ← your cross-join node's name\n  return $input.all().map((item, i) => {\n    const videoUrl = `https://www.youtube.com/watch?v=${ctx[i].json.videoId}`;\n    return {\n      json: {\n        platform: ctx[i].json.platform,\n        videoId:  ctx[i].json.videoId,\n        mediaId:  ctx[i].json.mediaId,\n        url:      videoUrl,\n        caption:  `${item.json.text}\\n\\n▶️  Watch: ${videoUrl}`,\n      },\n    };\n  });"
+        "jsCode": "const ctx = $('Combine video + platforms').all();   // ← your cross-join node's name\n  return $input.all().map((item, i) => {\n    const videoUrl = `https://www.youtube.com/watch?v=${ctx[i].json.videoId}`;\n    return {\n      json: {\n        platform: ctx[i].json.platform,\n        videoId:  ctx[i].json.videoId,\n        mediaId:  ctx[i].json.mediaId,\n        url:      videoUrl,\n        caption:  `${item.json.text}\\n\\n▶️  Watch: ${videoUrl}`,\n      },\n    };\n  });"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -468,7 +470,7 @@
         32
       ],
       "id": "4099d081-9007-4aba-a633-352acb376558",
-      "name": "Code in JavaScript1"
+      "name": "Tag captions with platform"
     },
     {
       "parameters": {
@@ -497,7 +499,7 @@
         32
       ],
       "id": "2989b183-7287-457c-82f8-0c879465e8af",
-      "name": "Merge2"
+      "name": "Post per active account"
     },
     {
       "parameters": {
@@ -525,14 +527,14 @@
             "index": 0
           },
           {
-            "node": "HTTP Request1",
+            "node": "Download YouTube feed",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "HTTP Request": {
+    "Download thumbnail": {
       "main": [
         [
           {
@@ -547,7 +549,7 @@
       "main": [
         [
           {
-            "node": "Merge",
+            "node": "Combine thumbnail + video data",
             "type": "main",
             "index": 0
           }
@@ -559,49 +561,49 @@
         []
       ]
     },
-    "Merge": {
+    "Combine thumbnail + video data": {
       "main": [
         [
           {
-            "node": "Merge1",
+            "node": "Combine video + platforms",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "HTTP Request1": {
+    "Download YouTube feed": {
       "main": [
         [
           {
-            "node": "XML",
+            "node": "Parse feed XML",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "XML": {
+    "Parse feed XML": {
       "main": [
         [
           {
-            "node": "Code in JavaScript",
+            "node": "Latest video",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code in JavaScript": {
+    "Latest video": {
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "Download thumbnail",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Merge",
+            "node": "Combine thumbnail + video data",
             "type": "main",
             "index": 1
           }
@@ -612,34 +614,34 @@
       "main": [
         [
           {
-            "node": "Filter",
+            "node": "Keep active accounts",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Filter": {
+    "Keep active accounts": {
       "main": [
         [
           {
-            "node": "Remove Duplicates",
+            "node": "One post per platform",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Merge2",
+            "node": "Post per active account",
             "type": "main",
             "index": 1
           }
         ]
       ]
     },
-    "Remove Duplicates": {
+    "One post per platform": {
       "main": [
         [
           {
-            "node": "Merge1",
+            "node": "Combine video + platforms",
             "type": "main",
             "index": 1
           }
@@ -657,7 +659,7 @@
         ]
       ]
     },
-    "Merge1": {
+    "Combine video + platforms": {
       "main": [
         [
           {
@@ -672,25 +674,25 @@
       "main": [
         [
           {
-            "node": "Code in JavaScript1",
+            "node": "Tag captions with platform",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code in JavaScript1": {
+    "Tag captions with platform": {
       "main": [
         [
           {
-            "node": "Merge2",
+            "node": "Post per active account",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Merge2": {
+    "Post per active account": {
       "main": [
         [
           {

@@ -91,7 +91,8 @@
     {
       "parameters": {
         "content": "You need to tell the workflow where to post - call this to get a list of connected social accounts. You need to take the id value and feed into the next step. IDs are preserved in Posta until you delete the connected account. To sign-up and connect social accounts, visit https://www.getposta.app (14 days free, no credit card required)",
-        "height": 240
+        "height": 240,
+        "color": 3
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -105,7 +106,8 @@
     {
       "parameters": {
         "content": "You need a token to use the Posta functions. Get one at https://www.getposta.app (14 days free, no credit card required)",
-        "height": 128
+        "height": 128,
+        "color": 3
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -118,7 +120,7 @@
     },
     {
       "parameters": {
-        "content": "## **Blog to social media**\nLet your users know about your new blog post.\nThis workflow reads a blog feed, creates posts for (multiple) social account and schedules posting through the Posta app.",
+        "content": "## Blog post → social media\n\n**Who it's for:** anyone with a blog who wants every new post announced across their socials automatically.\n**What it does:** reads your blog RSS feed and schedules a social post (with the article image) to your connected accounts via Posta.\n\n**How it works:**\n1. Read the blog RSS feed.\n2. Get your connected social accounts.\n3. Download the article image and upload it to Posta (auto-scaled per platform).\n4. Combine image + text, create the post, and schedule it.\n\n**Setup:** add your Posta API token credential, set your RSS feed URL, and pick the account IDs to post to. Sign up at https://www.getposta.app (14 days free, no credit card).",
         "height": 240,
         "color": 5
       },
@@ -181,7 +183,7 @@
         -160
       ],
       "id": "3dae8df0-04bb-4da6-b3d3-d0381db68ba2",
-      "name": "HTTP Request"
+      "name": "Download article image"
     },
     {
       "parameters": {
@@ -222,7 +224,7 @@
         -16
       ],
       "id": "c458d1d9-6d69-44fa-b2b4-48153513cc9f",
-      "name": "Merge"
+      "name": "Combine image + article text"
     },
     {
       "parameters": {
@@ -306,19 +308,19 @@
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "Download article image",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Merge",
+            "node": "Combine image + article text",
             "type": "main",
             "index": 1
           }
         ]
       ]
     },
-    "HTTP Request": {
+    "Download article image": {
       "main": [
         [
           {
@@ -333,7 +335,7 @@
       "main": [
         [
           {
-            "node": "Merge",
+            "node": "Combine image + article text",
             "type": "main",
             "index": 0
           }
@@ -351,7 +353,7 @@
         ]
       ]
     },
-    "Merge": {
+    "Combine image + article text": {
       "main": [
         [
           {

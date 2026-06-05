@@ -45,9 +45,9 @@
     {
       "parameters": {
         "socialAccountIds": "35",
-        "caption": "={{ $('Code in JavaScript').item.json.caption }}{{ $('Latest post').item.json.link }}",
+        "caption": "={{ $('Parse slides JSON').item.json.caption }}{{ $('Latest post').item.json.link }}",
         "additionalFields": {
-          "hashtags": "={{ $('Code in JavaScript').item.json.tags }}",
+          "hashtags": "={{ $('Parse slides JSON').item.json.tags }}",
           "mediaIds": "={{ $json.media_id }}"
         },
         "platformConfigurations": {
@@ -91,7 +91,8 @@
     {
       "parameters": {
         "content": "You need to tell the workflow where to post - call this to get a list of connected social accounts. You need to take the id value and feed into the next step. IDs are preserved in Posta until you delete the connected account. To sign-up and connect social accounts, visit https://www.getposta.app (14 days free, no credit card required)",
-        "height": 240
+        "height": 240,
+        "color": 3
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -105,7 +106,8 @@
     {
       "parameters": {
         "content": "You need a token to use the Posta functions. Get one at https://www.getposta.app (14 days free, no credit card required)",
-        "height": 128
+        "height": 128,
+        "color": 3
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -118,7 +120,7 @@
     },
     {
       "parameters": {
-        "content": "## **Create LinkedIn carousel post from blog post**\nDid you write a new blog post? This workflow summarizes it and creates a LinkedIn carousel post - know for high engagement - though the Posta platform. We use DeepSeek for text and a fal.ai model for background generation. PDF generation is handled by the Posta platform.",
+        "content": "## Blog post → LinkedIn carousel\n\n**Who it's for:** creators who want high-engagement LinkedIn carousels from their articles without designing slides.\n**What it does:** summarizes a new blog post into a 5-slide carousel PDF — AI text over AI backgrounds — and posts it to LinkedIn via Posta.\n\n**How it works:**\n1. Read the blog feed and pick the latest post.\n2. DeepSeek writes 5 slides (title + body); split them out.\n3. fal.ai generates a background per slide; upload each to Posta.\n4. Posta composites the text and builds the PDF; create the LinkedIn post.\n\n**Setup:** add Posta (Professional plan), DeepSeek, and fal.ai credentials. Sign up at https://www.getposta.app (14 days free, no credit card).",
         "height": 320,
         "color": 5
       },
@@ -181,7 +183,7 @@
         -96
       ],
       "id": "6589116c-f42b-4354-8e0f-e358b133d62c",
-      "name": "HTTP Request"
+      "name": "Download generated background"
     },
     {
       "parameters": {
@@ -307,7 +309,7 @@
         -176
       ],
       "id": "0ef31a8f-a23e-452f-8a44-bdb887a57057",
-      "name": "Split Out"
+      "name": "Split into slides"
     },
     {
       "parameters": {
@@ -320,7 +322,7 @@
         -176
       ],
       "id": "3a3361fd-dfd8-4b57-96e4-648e8f0d6cb7",
-      "name": "Code in JavaScript"
+      "name": "Parse slides JSON"
     },
     {
       "parameters": {
@@ -408,7 +410,7 @@
     },
     {
       "parameters": {
-        "jsCode": "\n  const text = $('Split Out').all();  \n\n  return [{\n    json: {\n      slides: $input.all().map((up, i) => ({\n        media_id: up.json.media?.id ?? up.json.media_id ?? up.json.id,\n        title: text[i].json.title,\n        body: text[i].json.body,\n      })),\n    },\n  }];"
+        "jsCode": "\n  const text = $('Split into slides').all();  \n\n  return [{\n    json: {\n      slides: $input.all().map((up, i) => ({\n        media_id: up.json.media?.id ?? up.json.media_id ?? up.json.id,\n        title: text[i].json.title,\n        body: text[i].json.body,\n      })),\n    },\n  }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -417,7 +419,7 @@
         -96
       ],
       "id": "54b17e8d-38c1-4fa8-9bf7-a59ce2611c7e",
-      "name": "Code in JavaScript1"
+      "name": "Re-assemble slides"
     },
     {
       "parameters": {
@@ -554,7 +556,7 @@
         ]
       ]
     },
-    "HTTP Request": {
+    "Download generated background": {
       "main": [
         [
           {
@@ -569,7 +571,7 @@
       "main": [
         [
           {
-            "node": "Code in JavaScript1",
+            "node": "Re-assemble slides",
             "type": "main",
             "index": 0
           }
@@ -607,25 +609,25 @@
       "main": [
         [
           {
-            "node": "Code in JavaScript",
+            "node": "Parse slides JSON",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code in JavaScript": {
+    "Parse slides JSON": {
       "main": [
         [
           {
-            "node": "Split Out",
+            "node": "Split into slides",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Split Out": {
+    "Split into slides": {
       "main": [
         [
           {
@@ -640,14 +642,14 @@
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "Download generated background",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code in JavaScript1": {
+    "Re-assemble slides": {
       "main": [
         [
           {
