@@ -294,6 +294,135 @@ export const blogPosts: BlogPost[] = [
       },
     ],
   },
+  {
+    slug: 'share-blog-posts-to-social-media-automatically',
+    title: 'Share every new blog post to social media automatically (n8n + Posta)',
+    description:
+      'Build an n8n workflow that reads your blog RSS feed and schedules a social post — with the article image — across all your channels through Posta.',
+    date: '2026-06-05',
+    updated: '2026-06-05',
+    author: 'Posta Team',
+    tags: ['Automation', 'n8n', 'RSS', 'Scheduling'],
+    ogImage: 'https://getposta.app/assets/blog/share-blog-posts-to-social.jpg',
+    body: [
+      {
+        type: 'p',
+        text: 'You just hit publish on a new article — now you have to tell everyone, on every network, one post at a time. This n8n workflow does it for you: it watches your blog’s RSS feed and, for each new post, builds and schedules a social update with the article’s image across all your connected accounts via <a href="/developers">Posta</a>. It’s the simplest automation to set up and a great first taste of pairing n8n with Posta.',
+      },
+      { type: 'h2', text: 'What it does' },
+      {
+        type: 'ul',
+        items: [
+          'Reads your blog <strong>RSS feed</strong> and picks up new articles.',
+          'Downloads the article image and uploads it to Posta, which <strong>auto-scales it per platform</strong> (e.g. 9:16 for TikTok) with face-aware cropping.',
+          'Creates one post across one or many accounts and <strong>schedules</strong> it for the time you choose.',
+        ],
+      },
+      { type: 'h2', text: 'How it works' },
+      {
+        type: 'ol',
+        items: [
+          '<strong>RSS Read</strong> — point it at your feed (e.g. <code>https://getposta.app/feed.xml</code>).',
+          '<strong>Get many social accounts</strong> (Posta) — grab the account IDs you want to post to.',
+          '<strong>HTTP Request</strong> — download the article image as a file.',
+          '<strong>Upload media</strong> (Posta) — upload it; per-platform scaling starts automatically.',
+          '<strong>Merge</strong> — combine the media ID with the article text by position.',
+          '<strong>Create a post</strong> → <strong>Schedule a post</strong> (Posta) — set caption, accounts, and a publish time.',
+        ],
+      },
+      { type: 'h2', text: 'Get the template' },
+      {
+        type: 'p',
+        text: 'Don’t build it by hand — <a href="/workflows/blog-to-social-media">import the ready-made workflow</a> (download the JSON or use n8n’s “Import from URL”), connect your <a href="/signup">Posta account</a>, and you’re live. Swap the manual trigger for a Schedule Trigger to run it on autopilot. Browse all our <a href="/workflows">n8n templates</a> for more.',
+      },
+    ],
+  },
+  {
+    slug: 'automate-a-product-launch-campaign',
+    title: 'Automate a 5-day product launch campaign across every platform',
+    description:
+      'An n8n workflow that turns a single product into a 5-day, multi-platform launch campaign — AI writes per-network captions and Posta schedules them all.',
+    date: '2026-06-05',
+    updated: '2026-06-05',
+    author: 'Posta Team',
+    tags: ['Automation', 'n8n', 'E-commerce', 'AI'],
+    ogImage: 'https://getposta.app/assets/blog/product-launch-campaign.jpg',
+    body: [
+      {
+        type: 'p',
+        text: 'A launch isn’t one post — it’s a drumbeat across several days and every channel, each with copy that fits the platform. Doing that by hand is a chore. This n8n workflow takes a single product and spins up a <strong>5-day launch campaign</strong> across all your connected accounts, with captions tailored per network, all scheduled in advance through <a href="/developers">Posta</a>.',
+      },
+      { type: 'h2', text: 'What it does' },
+      {
+        type: 'ul',
+        items: [
+          'Pulls in a product (poll an endpoint, or trigger from a store webhook).',
+          'Uses an <strong>LLM to write captions + hashtags per platform type</strong>, so TikTok and LinkedIn each read right.',
+          'Posts to <strong>one post per platform</strong> across your active accounts, scheduled over the next 5 days.',
+        ],
+      },
+      { type: 'h2', text: 'How it works' },
+      {
+        type: 'ol',
+        items: [
+          '<strong>HTTP Request</strong> — fetch the product details.',
+          '<strong>LLM (DeepSeek)</strong> — generate platform-specific captions and tags.',
+          '<strong>Get accounts → Filter → Remove Duplicates</strong> — one post per platform type across active accounts.',
+          '<strong>Expand to days</strong> (Code) — fan the campaign out over 5 days.',
+          '<strong>Upload media</strong> (Posta) — attach the product image (auto-scaled per platform).',
+          '<strong>Create a post</strong> (Posta) — schedule each post for its day.',
+        ],
+      },
+      { type: 'h2', text: 'Get the template' },
+      {
+        type: 'p',
+        text: '<a href="/workflows/product-launch-campaign">Import the ready-made workflow</a>, add your Posta and LLM credentials, and adjust the day count or cadence in one Code node. Hook it to a store webhook (Shopify, etc.) so a new product kicks off the campaign automatically. See all our <a href="/workflows">n8n templates</a>. New here? <a href="/signup">Start free</a>.',
+      },
+    ],
+  },
+  {
+    slug: 'promote-youtube-videos-on-social-media',
+    title: 'Promote your latest YouTube video everywhere, automatically',
+    description:
+      'An n8n workflow that reads your YouTube feed, grabs the newest video and thumbnail, and drafts AI-written promo posts across every platform via Posta.',
+    date: '2026-06-05',
+    updated: '2026-06-05',
+    author: 'Posta Team',
+    tags: ['Automation', 'n8n', 'YouTube', 'AI'],
+    ogImage: 'https://getposta.app/assets/blog/youtube-video-promotion.jpg',
+    body: [
+      {
+        type: 'p',
+        text: 'A new video deserves more than one post on one network. This n8n workflow reads your YouTube channel feed, pulls the latest video and its thumbnail, writes a promo caption for each platform, and creates <strong>draft posts</strong> across all your connected accounts via <a href="/developers">Posta</a> — so you review and publish instead of starting from a blank box.',
+      },
+      { type: 'h2', text: 'What it does' },
+      {
+        type: 'ul',
+        items: [
+          'Reads your YouTube channel <strong>RSS feed</strong> and picks the newest video.',
+          'Downloads the <strong>thumbnail</strong> and uploads it to Posta (auto-scaled per platform).',
+          'Uses an <strong>LLM</strong> to write a promo caption per platform, created as drafts for review.',
+        ],
+      },
+      { type: 'h2', text: 'How it works' },
+      {
+        type: 'ol',
+        items: [
+          '<strong>HTTP Request</strong> — fetch the channel feed <code>https://www.youtube.com/feeds/videos.xml?channel_id=YOUR_CHANNEL_ID</code> (HTTP, since n8n’s RSS node strips fields).',
+          '<strong>XML → Code</strong> — parse to JSON and build a structured object for the latest video.',
+          '<strong>HTTP → Upload media</strong> (Posta) — download and upload the thumbnail.',
+          '<strong>Get accounts → Filter → Remove Duplicates</strong> — one post per platform type.',
+          '<strong>LLM (DeepSeek)</strong> — write a promo caption per platform.',
+          '<strong>Create a post</strong> (Posta) — created as drafts so you can review before publishing.',
+        ],
+      },
+      { type: 'h2', text: 'Get the template' },
+      {
+        type: 'p',
+        text: '<a href="/workflows/youtube-to-social-media">Import the ready-made workflow</a>, connect your Posta and LLM credentials, and set your channel feed URL. Flip the posts out of draft (and add a Schedule step) to fully automate it. Explore all our <a href="/workflows">n8n templates</a> — or <a href="/signup">start a free trial</a>.',
+      },
+    ],
+  },
 ]
 
 /** Posts newest-first — used by the index and SEO generators. */
