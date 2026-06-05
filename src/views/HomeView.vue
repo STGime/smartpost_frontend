@@ -20,22 +20,22 @@ const { setRef: platformsRef, isVisible: platformsVisible } = useScrollReveal()
 const { setRef: faqRef, isVisible: faqVisible } = useScrollReveal()
 
 useHead({
-  title: 'Smart Social Media Posting for Creators & Teams',
+  title: 'Social Media Automation for AI Agents',
   meta: [
-    { name: 'description', content: 'Posta is the multi-platform social scheduler you can run from your terminal, IDE, or any AI agent — a Claude Code skill, an MCP server, and a public REST API, plus face-aware cropping and a comments inbox. Publish once to 8 networks.' },
-    { name: 'keywords', content: 'social media scheduler, auto post, TikTok scheduling, Instagram scheduler, smart cropping, face detection, multi-platform posting, content creator tools, social media automation, cli social media posting, post from terminal, claude code social media, developer social media tools, IDE social media posting' },
+    { name: 'description', content: 'Give any AI agent the power to manage social media. Posta lets agents and automations create, schedule, and publish to 8 networks via MCP, a Claude Code skill, an n8n node, and a REST API — with webhooks and auto-formatting built in.' },
+    { name: 'keywords', content: 'social media automation, AI agent social media, MCP social media, agent automation, autonomous posting, n8n social media, claude code social media, social media API, multi-platform posting, schedule posts API, post from terminal, webhooks social media' },
     { name: 'robots', content: 'index, follow' },
     { property: 'og:type', content: 'website' },
     { property: 'og:url', content: 'https://getposta.app/' },
-    { property: 'og:title', content: 'Posta – Smart Social Media Posting for Creators & Teams' },
-    { property: 'og:description', content: 'The social scheduler you can drive from your terminal or any AI agent — a Claude Code skill, MCP server, and public REST API, plus face-aware cropping and a comments inbox. Publish once to 8 networks: LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, Threads.' },
+    { property: 'og:title', content: 'Posta – Social Media Automation for AI Agents' },
+    { property: 'og:description', content: 'Give any AI agent or automation the power to create, schedule, and publish across 8 networks — via MCP, a Claude Code skill, the n8n node, or the REST API. Webhooks and per-platform auto-formatting included.' },
     { property: 'og:image', content: 'https://getposta.app/assets/posta_og_image.png' },
     { property: 'og:site_name', content: 'Posta' },
     { property: 'og:locale', content: 'en_US' },
     { name: 'twitter:card', content: 'summary_large_image' },
     { name: 'twitter:url', content: 'https://getposta.app/' },
-    { name: 'twitter:title', content: 'Posta – Smart Social Media Posting for Creators & Teams' },
-    { name: 'twitter:description', content: 'The social scheduler you can drive from your terminal or any AI agent — a Claude Code skill, MCP server, and public REST API, plus face-aware cropping and a comments inbox. Publish once to 8 networks: LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, Threads.' },
+    { name: 'twitter:title', content: 'Posta – Social Media Automation for AI Agents' },
+    { name: 'twitter:description', content: 'Give any AI agent or automation the power to create, schedule, and publish across 8 networks — via MCP, a Claude Code skill, the n8n node, or the REST API. Webhooks and per-platform auto-formatting included.' },
     { name: 'twitter:image', content: 'https://getposta.app/assets/posta_og_image.png' },
   ],
   link: [
@@ -334,29 +334,29 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
         <section class="hero">
           <div class="hero-content">
             <div class="eyebrow">
-              <span class="eyebrow-pill">Multi-channel</span>
-              <span>Post from the dashboard, your terminal, or an AI agent</span>
+              <span class="eyebrow-pill">For agents &amp; automation</span>
+              <span>MCP · Claude Code · n8n · REST API</span>
             </div>
             <h1>
-              Create once, <span class="gradient-text">post everywhere</span>.
+              Social media automation for <span class="gradient-text">your agents</span>.
             </h1>
             <p class="hero-sub">
-              Posta is the multi-platform scheduler you can drive from anywhere — the dashboard, your terminal, or an AI agent. Publish once to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads through a Claude Code skill, an MCP server, a public REST API, or the visual calendar. Face-aware cropping and a comments inbox come built in.
+              Give any AI agent or automation the power to run your social media. Posta lets agents create, schedule, and publish across LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads — through an MCP server, a Claude Code skill, the n8n node, or a public REST API. Media auto-formats per platform and webhooks report back when posts go live.
             </p>
 
             <div class="hero-bullets">
               <div class="chip">
                 <span class="chip-dot"></span>
+                MCP server — Claude Desktop, Cursor, Zed
+              </div>
+              <div class="chip">
                 Claude Code skill — post from your terminal
               </div>
               <div class="chip">
-                MCP server for Claude Desktop, Cursor & Zed
+                n8n community node — drag-and-drop automation
               </div>
               <div class="chip">
-                Public REST API & webhooks on every plan
-              </div>
-              <div class="chip">
-                Face-aware crops, auto-format for Reels & Shorts
+                REST API &amp; webhooks on every plan
               </div>
             </div>
 
@@ -369,8 +369,8 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
                 <span>Join waiting list</span>
                 <span class="arrow">→</span>
               </button>
-              <a href="#how" class="btn-ghost">
-                See how it works
+              <a href="#api" class="btn-ghost">
+                See how agents use it
               </a>
             </div>
             <p class="small-note">
@@ -382,278 +382,36 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
             <div class="card">
               <div class="card-header">
                 <div>
-                  <div class="card-label">Sample campaign · Weekly highlights</div>
-                  <div class="card-title">1 asset → 8 posts scheduled</div>
+                  <div class="card-label">Your agent · one instruction</div>
+                  <div class="card-title">“Post our launch everywhere”</div>
                 </div>
-                <span class="pill-green">Smart automation</span>
+                <span class="pill-green">Agent-driven</span>
               </div>
 
-              <div class="timeline">
-                <div class="timeline-row">
-                  <span class="timeline-label">Source video</span>
-                  <span class="timeline-value">Square · 1080×1080</span>
-                </div>
-                <div class="timeline-row">
-                  <span class="timeline-label">Outputs</span>
-                  <span class="timeline-value">Reels, Shorts, TikTok, feed</span>
-                </div>
-                <div class="timeline-bar">
-                  <div class="timeline-fill"></div>
-                </div>
+              <div class="agent-steps">
+                <div class="agent-step"><span class="agent-check">✓</span> 8 posts drafted across every network</div>
+                <div class="agent-step"><span class="agent-check">✓</span> Media auto-formatted per platform</div>
+                <div class="agent-step"><span class="agent-check">✓</span> Scheduled — webhook fires on publish</div>
               </div>
 
-              <div class="mini-grid">
-                <div class="mini-card">
-                  <div class="mini-title">Face-aware crops</div>
-                  <div class="mini-main">Keeps faces centered in 9:16 & 16:9</div>
-                  <div class="mini-sub">No more manual reframing for every platform.</div>
-                </div>
-                <div class="mini-card">
-                  <div class="mini-title">Smart compression</div>
-                  <div class="mini-main">Optimized for quality & size</div>
-                  <div class="mini-sub">Ideal for mobile uploads and slower networks.</div>
-                </div>
+              <div class="agent-snippet">
+                <span class="agent-snippet-line"><span class="tok-method">POST</span> /v1/posts</span>
+                <span class="agent-snippet-line tok-muted">{ "caption": "...", "socialAccountIds": [...],</span>
+                <span class="agent-snippet-line tok-muted">&nbsp;&nbsp;"mediaIds": ["..."], "scheduledAt": "..." }</span>
+                <span class="agent-snippet-line"><span class="tok-ok">201</span> Created · 8 posts queued</span>
               </div>
             </div>
 
             <div class="badge-stack">
               <div class="badge">
                 <span class="badge-dot-purple"></span>
-                <span>Detects faces in your creatives</span>
+                <span>Driven by MCP, n8n &amp; REST</span>
               </div>
               <div class="badge">
                 <span class="badge-dot-cyan"></span>
-                <span>Push-ready for TikTok & Instagram</span>
+                <span>Webhooks on every publish</span>
               </div>
             </div>
-          </div>
-        </section>
-
-        <!-- Why Posta Section -->
-        <section :ref="whyRef" class="section" id="features">
-          <h2 :class="whyVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">Why Posta?</h2>
-          <p :class="whyVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
-            Existing social tools are either too simple or too expensive. Posta focuses on what solo builders and lean
-            teams actually need: smart media handling, simple workflows and predictable pricing.
-          </p>
-
-          <div class="feature-grid">
-            <div :class="whyVisible ? 'feature-card feature-card-with-image animate-fade-in-up stagger-2' : 'feature-card feature-card-with-image opacity-0'">
-              <div class="feature-tag">Media intelligence</div>
-              <div class="feature-title">Face detection & smart cropping</div>
-              <div class="feature-body">
-                Automatically detects faces in your photos and videos and keeps them in frame when converting to
-                portrait, landscape or square formats.
-              </div>
-              <img src="/assets/images/Smart crop.png" alt="Smart crop example" class="feature-image" />
-            </div>
-            <div :class="whyVisible ? 'feature-card feature-card-with-image animate-fade-in-up stagger-3' : 'feature-card feature-card-with-image opacity-0'">
-              <div class="feature-tag">Format once</div>
-              <div class="feature-title">Auto layouts for every platform</div>
-              <div class="feature-body">
-                Generate variants tailored for TikTok, Instagram, YouTube Shorts and more – without exporting eight
-                different versions by hand.
-              </div>
-              <div class="platform-previews">
-                <div class="platform-preview tiktok-preview">
-                  <img src="/assets/images/city.png" alt="TikTok format" />
-                  <div class="platform-overlay">
-                    <div class="tiktok-ui">
-                      <div class="tiktok-side">
-                        <div class="tiktok-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></div>
-                        <div class="tiktok-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/></svg></div>
-                        <div class="tiktok-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></div>
-                      </div>
-                      <div class="tiktok-bottom">
-                        <div class="tiktok-user">@posta</div>
-                        <div class="tiktok-desc">City vibes</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="platform-label">TikTok</div>
-                </div>
-                <div class="platform-preview instagram-preview">
-                  <img src="/assets/images/city.png" alt="Instagram format" />
-                  <div class="platform-overlay">
-                    <div class="instagram-ui">
-                      <div class="instagram-header">
-                        <div class="instagram-avatar"></div>
-                        <span>posta</span>
-                      </div>
-                      <div class="instagram-actions">
-                        <div class="instagram-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
-                        <div class="instagram-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
-                        <div class="instagram-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="platform-label">Instagram</div>
-                </div>
-                <div class="platform-preview youtube-preview">
-                  <img src="/assets/images/city.png" alt="YouTube format" />
-                  <div class="platform-overlay">
-                    <div class="youtube-ui">
-                      <div class="youtube-play">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                      </div>
-                      <div class="youtube-progress">
-                        <div class="youtube-progress-fill"></div>
-                      </div>
-                      <div class="youtube-bottom">
-                        <span class="youtube-time">0:15</span>
-                        <span class="youtube-shorts">#Shorts</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="platform-label">YouTube</div>
-                </div>
-              </div>
-            </div>
-            <div :class="whyVisible ? 'feature-card feature-card-with-image animate-fade-in-up stagger-4' : 'feature-card feature-card-with-image opacity-0'">
-              <div class="feature-tag">Performance</div>
-              <div class="feature-title">Smart compression engine</div>
-              <div class="feature-body">
-                Compress images and video so they upload fast and still look good. Keep quality where it matters, save
-                bytes where it doesn't.
-              </div>
-              <div class="compression-demo">
-                <div class="compression-item">
-                  <img src="/assets/images/dog.png" alt="Original" />
-                  <div class="compression-size original">1.4 MB</div>
-                </div>
-                <div class="compression-arrow">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                  </svg>
-                  <div class="compression-icon">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-2 6h-2v2h-2v-2h-2v-2h2v-2h2v2h2v2z"/>
-                    </svg>
-                  </div>
-                  <span class="compression-label">-87%</span>
-                </div>
-                <div class="compression-item">
-                  <img src="/assets/images/dog.png" alt="Compressed" />
-                  <div class="compression-size compressed">182 KB</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- How it Works Section -->
-        <section :ref="howRef" class="section" id="how">
-          <h2 :class="howVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">How it works</h2>
-          <p :class="howVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
-            Posta is designed to fit into your existing workflow. You bring your creative; Posta takes care of formats,
-            variants and timing.
-          </p>
-
-          <div class="how-grid">
-            <div :class="howVisible ? 'step-card animate-fade-in-up stagger-2' : 'step-card opacity-0'">
-              <div class="step-num">Step 1</div>
-              <div class="step-title">Drop in your source asset</div>
-              <div class="step-body">
-                Start with a single image or video in the format you already use today. Posta analyzes subjects, faces
-                and aspect ratio.
-              </div>
-              <div class="pill-row">
-                <span class="pill">Images & short video</span>
-              </div>
-            </div>
-            <div :class="howVisible ? 'step-card animate-fade-in-up stagger-3' : 'step-card opacity-0'">
-              <div class="step-num">Step 2</div>
-              <div class="step-title">Pick platforms & variants</div>
-              <div class="step-body">
-                Choose where you want to post. Posta prepares platform-ready variants with safe framing and compression.
-              </div>
-              <div class="pill-row">
-                <span class="pill">TikTok</span>
-                <span class="pill">Instagram</span>
-                <span class="pill">YouTube Shorts</span>
-              </div>
-            </div>
-            <div :class="howVisible ? 'step-card animate-fade-in-up stagger-4' : 'step-card opacity-0'">
-              <div class="step-num">Step 3</div>
-              <div class="step-title">Schedule & ship</div>
-              <div class="step-body">
-                Approve the posts, set dates and times, and let Posta take care of the publishing calendar.
-              </div>
-              <div class="pill-row">
-                <span class="pill">Calendar view</span>
-                <span class="pill">Timezone safe</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Posta Skill Section -->
-        <section :ref="skillRef" class="section" id="skill">
-          <h2 :class="skillVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">Post from your terminal</h2>
-          <p :class="skillVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
-            Posta has a Claude Code skill that turns your IDE into a social media command center. Create, schedule and publish — without ever leaving your editor.
-          </p>
-
-          <div :class="skillVisible ? 'skill-terminal animate-fade-in-up stagger-2' : 'skill-terminal opacity-0'">
-            <div class="skill-terminal-header">
-              <div class="skill-terminal-dots">
-                <span class="skill-dot skill-dot-red"></span>
-                <span class="skill-dot skill-dot-yellow"></span>
-                <span class="skill-dot skill-dot-green"></span>
-              </div>
-              <span class="skill-terminal-title">claude</span>
-            </div>
-            <div class="skill-terminal-body">
-              <div class="skill-line skill-line-prompt"><span class="skill-prompt-icon">&gt;</span> Show my connected accounts</div>
-              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> 8 active accounts: Instagram, TikTok, LinkedIn, YouTube, Facebook, Pinterest, Bluesky, Threads</div>
-              <div class="skill-line skill-line-spacer"></div>
-              <div class="skill-line skill-line-prompt"><span class="skill-prompt-icon">&gt;</span> Generate an image and schedule a LinkedIn post for 3pm</div>
-              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Image generated with AI</div>
-              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Draft created — "I posted this from VS Code..."</div>
-              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Scheduled for today at 15:00 CET</div>
-              <div class="skill-line skill-line-spacer"></div>
-              <div class="skill-line skill-line-prompt"><span class="skill-prompt-icon">&gt;</span> How did my last 5 posts perform?</div>
-              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Avg. engagement: 4.2% · Best: LinkedIn carousel (8.1%) · Trend: ↑ 12% vs. prior week</div>
-            </div>
-          </div>
-
-          <div :class="skillVisible ? 'skill-features animate-fade-in-up stagger-3' : 'skill-features opacity-0'">
-            <div class="skill-feature-card">
-              <div class="skill-feature-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-              </div>
-              <div class="skill-feature-title">AI content generation</div>
-              <div class="skill-feature-body">Generate images and captions without leaving your editor. AI handles the creative work while you stay in flow.</div>
-            </div>
-            <div class="skill-feature-card">
-              <div class="skill-feature-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>
-              </div>
-              <div class="skill-feature-title">Schedule & publish</div>
-              <div class="skill-feature-body">Create, schedule and post across 8 platforms from the terminal. One prompt replaces an entire dashboard session.</div>
-            </div>
-            <div class="skill-feature-card">
-              <div class="skill-feature-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              </div>
-              <div class="skill-feature-title">Analytics at a glance</div>
-              <div class="skill-feature-body">Check engagement, best times and trends with a single prompt. No dashboards, no tab-switching — just answers.</div>
-            </div>
-          </div>
-
-          <div :class="skillVisible ? 'skill-cta animate-fade-in-up stagger-4' : 'skill-cta opacity-0'">
-            <a href="https://github.com/STGime/posta-skill" target="_blank" rel="noopener noreferrer" class="btn-ghost">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-              <span>View on GitHub</span>
-            </a>
-            <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary">
-              <span>Try free for 14 days</span>
-              <span class="arrow">→</span>
-            </RouterLink>
-            <button v-else class="btn-primary" @click="openWaitingList('skill')">
-              <span>Try free for 14 days</span>
-              <span class="arrow">→</span>
-            </button>
           </div>
         </section>
 
@@ -661,8 +419,35 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
         <section :ref="openclawRef" class="section" id="api">
           <h2 :class="openclawVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">Built for agents & automation</h2>
           <p :class="openclawVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
-            Posta is API-first. Build integrations, automate workflows, and let AI agents manage your social media — programmatically.
+            Posta is API-first, so your agents run the whole loop — generate, schedule, publish, and report back — programmatically. Plug it into whatever your agents already speak.
           </p>
+
+          <div :class="openclawVisible ? 'usecase-grid animate-fade-in-up stagger-1' : 'usecase-grid opacity-0'">
+            <div class="usecase-card">
+              <div class="usecase-title">Autonomous content pipeline</div>
+              <div class="usecase-body">Watch an RSS or blog feed, draft a post with an LLM, and schedule it — hands-off. <RouterLink to="/workflows/blog-to-social-media">See the workflow →</RouterLink></div>
+            </div>
+            <div class="usecase-card">
+              <div class="usecase-title">Launch agent</div>
+              <div class="usecase-body">One instruction turns a product into a multi-day, multi-platform campaign with per-network copy. <RouterLink to="/workflows/product-launch-campaign">See the workflow →</RouterLink></div>
+            </div>
+            <div class="usecase-card">
+              <div class="usecase-title">Repurposing agent</div>
+              <div class="usecase-body">Feed in one asset (or a YouTube video) and let the agent fan it out to Reels, Shorts, TikTok, and feeds. <RouterLink to="/workflows/youtube-to-social-media">See the workflow →</RouterLink></div>
+            </div>
+            <div class="usecase-card">
+              <div class="usecase-title">Carousel generator</div>
+              <div class="usecase-body">Summarize an article into a polished LinkedIn carousel PDF — AI text over AI backgrounds, assembled by Posta. <RouterLink to="/workflows/blog-to-linkedin-carousel">See the workflow →</RouterLink></div>
+            </div>
+            <div class="usecase-card">
+              <div class="usecase-title">Monitor &amp; respond</div>
+              <div class="usecase-body">Pull comments via the API and react to publish/fail events with outbound webhooks — build a closed-loop social agent.</div>
+            </div>
+            <div class="usecase-card">
+              <div class="usecase-title">Agency at scale</div>
+              <div class="usecase-body">Drive dozens of connected accounts from one codebase or n8n flow — consistent scheduling, zero tab-switching.</div>
+            </div>
+          </div>
 
           <div :class="openclawVisible ? 'api-cards animate-fade-in-up stagger-2' : 'api-cards opacity-0'">
             <a href="https://clawhub.ai/STGime/posta" target="_blank" rel="noopener noreferrer" class="api-card api-card-openclaw">
@@ -769,6 +554,235 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               <span>Get it for Claude Code</span>
               <span class="arrow">→</span>
             </a>
+          </div>
+        </section>
+
+        <!-- Posta Skill Section -->
+        <section :ref="skillRef" class="section" id="skill">
+          <h2 :class="skillVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">Post from your terminal</h2>
+          <p :class="skillVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
+            The terminal is one of many agent surfaces. Posta's Claude Code skill turns your IDE into a social media command center — create, schedule, and publish without ever leaving your editor, or hand the same skill to an autonomous agent.
+          </p>
+
+          <div :class="skillVisible ? 'skill-terminal animate-fade-in-up stagger-2' : 'skill-terminal opacity-0'">
+            <div class="skill-terminal-header">
+              <div class="skill-terminal-dots">
+                <span class="skill-dot skill-dot-red"></span>
+                <span class="skill-dot skill-dot-yellow"></span>
+                <span class="skill-dot skill-dot-green"></span>
+              </div>
+              <span class="skill-terminal-title">claude</span>
+            </div>
+            <div class="skill-terminal-body">
+              <div class="skill-line skill-line-prompt"><span class="skill-prompt-icon">&gt;</span> Show my connected accounts</div>
+              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> 8 active accounts: Instagram, TikTok, LinkedIn, YouTube, Facebook, Pinterest, Bluesky, Threads</div>
+              <div class="skill-line skill-line-spacer"></div>
+              <div class="skill-line skill-line-prompt"><span class="skill-prompt-icon">&gt;</span> Generate an image and schedule a LinkedIn post for 3pm</div>
+              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Image generated with AI</div>
+              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Draft created — "I posted this from VS Code..."</div>
+              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Scheduled for today at 15:00 CET</div>
+              <div class="skill-line skill-line-spacer"></div>
+              <div class="skill-line skill-line-prompt"><span class="skill-prompt-icon">&gt;</span> How did my last 5 posts perform?</div>
+              <div class="skill-line skill-line-response"><span class="skill-check">&#10003;</span> Avg. engagement: 4.2% · Best: LinkedIn carousel (8.1%) · Trend: ↑ 12% vs. prior week</div>
+            </div>
+          </div>
+
+          <div :class="skillVisible ? 'skill-features animate-fade-in-up stagger-3' : 'skill-features opacity-0'">
+            <div class="skill-feature-card">
+              <div class="skill-feature-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              </div>
+              <div class="skill-feature-title">AI content generation</div>
+              <div class="skill-feature-body">Generate images and captions without leaving your editor. AI handles the creative work while you stay in flow.</div>
+            </div>
+            <div class="skill-feature-card">
+              <div class="skill-feature-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>
+              </div>
+              <div class="skill-feature-title">Schedule & publish</div>
+              <div class="skill-feature-body">Create, schedule and post across 8 platforms from the terminal. One prompt replaces an entire dashboard session.</div>
+            </div>
+            <div class="skill-feature-card">
+              <div class="skill-feature-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+              <div class="skill-feature-title">Analytics at a glance</div>
+              <div class="skill-feature-body">Check engagement, best times and trends with a single prompt. No dashboards, no tab-switching — just answers.</div>
+            </div>
+          </div>
+
+          <div :class="skillVisible ? 'skill-cta animate-fade-in-up stagger-4' : 'skill-cta opacity-0'">
+            <a href="https://github.com/STGime/posta-skill" target="_blank" rel="noopener noreferrer" class="btn-ghost">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+              <span>View on GitHub</span>
+            </a>
+            <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary">
+              <span>Try free for 14 days</span>
+              <span class="arrow">→</span>
+            </RouterLink>
+            <button v-else class="btn-primary" @click="openWaitingList('skill')">
+              <span>Try free for 14 days</span>
+              <span class="arrow">→</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Why Posta Section -->
+        <section :ref="whyRef" class="section" id="features">
+          <h2 :class="whyVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">Why Posta?</h2>
+          <p :class="whyVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
+            Automations are only as good as the media handling behind them. Posta does the heavy lifting your agents
+            shouldn't have to — smart media processing, one call for every format, and predictable pricing built for
+            high-volume posting.
+          </p>
+
+          <div class="feature-grid">
+            <div :class="whyVisible ? 'feature-card feature-card-with-image animate-fade-in-up stagger-2' : 'feature-card feature-card-with-image opacity-0'">
+              <div class="feature-tag">Media intelligence</div>
+              <div class="feature-title">Faces stay framed — automatically</div>
+              <div class="feature-body">
+                Your agent never has to reframe media. Posta detects faces in photos and videos and keeps them in
+                frame when converting to portrait, landscape, or square — automatically, on every upload.
+              </div>
+              <img src="/assets/images/Smart crop.png" alt="Smart crop example" class="feature-image" />
+            </div>
+            <div :class="whyVisible ? 'feature-card feature-card-with-image animate-fade-in-up stagger-3' : 'feature-card feature-card-with-image opacity-0'">
+              <div class="feature-tag">Format once</div>
+              <div class="feature-title">One call, every format</div>
+              <div class="feature-body">
+                Upload once and Posta generates the variants for TikTok, Instagram, YouTube Shorts and more — so your
+                pipeline never exports eight versions by hand.
+              </div>
+              <div class="platform-previews">
+                <div class="platform-preview tiktok-preview">
+                  <img src="/assets/images/city.png" alt="TikTok format" />
+                  <div class="platform-overlay">
+                    <div class="tiktok-ui">
+                      <div class="tiktok-side">
+                        <div class="tiktok-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></div>
+                        <div class="tiktok-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/></svg></div>
+                        <div class="tiktok-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></div>
+                      </div>
+                      <div class="tiktok-bottom">
+                        <div class="tiktok-user">@posta</div>
+                        <div class="tiktok-desc">City vibes</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="platform-label">TikTok</div>
+                </div>
+                <div class="platform-preview instagram-preview">
+                  <img src="/assets/images/city.png" alt="Instagram format" />
+                  <div class="platform-overlay">
+                    <div class="instagram-ui">
+                      <div class="instagram-header">
+                        <div class="instagram-avatar"></div>
+                        <span>posta</span>
+                      </div>
+                      <div class="instagram-actions">
+                        <div class="instagram-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+                        <div class="instagram-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
+                        <div class="instagram-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="platform-label">Instagram</div>
+                </div>
+                <div class="platform-preview youtube-preview">
+                  <img src="/assets/images/city.png" alt="YouTube format" />
+                  <div class="platform-overlay">
+                    <div class="youtube-ui">
+                      <div class="youtube-play">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                      </div>
+                      <div class="youtube-progress">
+                        <div class="youtube-progress-fill"></div>
+                      </div>
+                      <div class="youtube-bottom">
+                        <span class="youtube-time">0:15</span>
+                        <span class="youtube-shorts">#Shorts</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="platform-label">YouTube</div>
+                </div>
+              </div>
+            </div>
+            <div :class="whyVisible ? 'feature-card feature-card-with-image animate-fade-in-up stagger-4' : 'feature-card feature-card-with-image opacity-0'">
+              <div class="feature-tag">Performance</div>
+              <div class="feature-title">Built for high-volume pipelines</div>
+              <div class="feature-body">
+                Compression that keeps quality where it matters and saves bytes where it doesn't — so automated,
+                high-volume posting uploads fast and stays reliable.
+              </div>
+              <div class="compression-demo">
+                <div class="compression-item">
+                  <img src="/assets/images/dog.png" alt="Original" />
+                  <div class="compression-size original">1.4 MB</div>
+                </div>
+                <div class="compression-arrow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                  <div class="compression-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-2 6h-2v2h-2v-2h-2v-2h2v-2h2v2h2v2z"/>
+                    </svg>
+                  </div>
+                  <span class="compression-label">-87%</span>
+                </div>
+                <div class="compression-item">
+                  <img src="/assets/images/dog.png" alt="Compressed" />
+                  <div class="compression-size compressed">182 KB</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- How it Works Section -->
+        <section :ref="howRef" class="section" id="how">
+          <h2 :class="howVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">How it works</h2>
+          <p :class="howVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
+            Posta is designed to fit into your existing workflow. You bring your creative; Posta takes care of formats,
+            variants and timing.
+          </p>
+
+          <div class="how-grid">
+            <div :class="howVisible ? 'step-card animate-fade-in-up stagger-2' : 'step-card opacity-0'">
+              <div class="step-num">Step 1</div>
+              <div class="step-title">Drop in your source asset</div>
+              <div class="step-body">
+                Start with a single image or video in the format you already use today. Posta analyzes subjects, faces
+                and aspect ratio.
+              </div>
+              <div class="pill-row">
+                <span class="pill">Images & short video</span>
+              </div>
+            </div>
+            <div :class="howVisible ? 'step-card animate-fade-in-up stagger-3' : 'step-card opacity-0'">
+              <div class="step-num">Step 2</div>
+              <div class="step-title">Pick platforms & variants</div>
+              <div class="step-body">
+                Choose where you want to post. Posta prepares platform-ready variants with safe framing and compression.
+              </div>
+              <div class="pill-row">
+                <span class="pill">TikTok</span>
+                <span class="pill">Instagram</span>
+                <span class="pill">YouTube Shorts</span>
+              </div>
+            </div>
+            <div :class="howVisible ? 'step-card animate-fade-in-up stagger-4' : 'step-card opacity-0'">
+              <div class="step-num">Step 3</div>
+              <div class="step-title">Schedule & ship</div>
+              <div class="step-body">
+                Approve the posts, set dates and times, and let Posta take care of the publishing calendar.
+              </div>
+              <div class="pill-row">
+                <span class="pill">Calendar view</span>
+                <span class="pill">Timezone safe</span>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -1166,10 +1180,6 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
           </div>
         </section>
 
-        <!-- Comparison Section -->
-        <!-- Semantic table is the highest-cited content format in LLM grounding.
-             Keep this above the FAQ so it lands in the first viewport of competitor
-             comparison crawls. -->
         <section class="section" id="compare">
           <h2 class="section-title">Posta vs. other social media schedulers</h2>
           <p class="section-sub">
@@ -1683,6 +1693,68 @@ h1 {
   background: rgba(22, 163, 74, 0.16);
   color: #bbf7d0;
   border: 1px solid rgba(22, 163, 74, 0.5);
+}
+
+/* Agent hero card */
+.agent-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.agent-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.agent-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.18);
+  color: #4ade80;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.agent-snippet {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(2, 6, 23, 0.7);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #e2e8f0;
+  overflow-x: auto;
+}
+
+.agent-snippet-line {
+  white-space: nowrap;
+}
+
+.tok-method {
+  color: #a5b4fc;
+  font-weight: 700;
+}
+
+.tok-ok {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.tok-muted {
+  color: rgba(148, 163, 184, 0.8);
 }
 
 .timeline {
@@ -2966,6 +3038,45 @@ h1 {
 }
 
 /* OpenClaw & API Section */
+.usecase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  max-width: 960px;
+  margin: 0 auto 36px;
+}
+
+.usecase-card {
+  text-align: left;
+  padding: 18px 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: linear-gradient(to bottom right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.96));
+}
+
+.usecase-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.usecase-body {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.usecase-body a {
+  color: var(--accent-light);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.usecase-body a:hover {
+  text-decoration: underline;
+}
+
 .api-cards {
   display: flex;
   flex-wrap: wrap;
