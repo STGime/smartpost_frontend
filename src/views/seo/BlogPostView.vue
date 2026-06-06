@@ -154,6 +154,10 @@ if (post) {
                 </a>
               </figcaption>
             </figure>
+            <figure v-else-if="block.type === 'image' && block.src" class="post-figure">
+              <img :src="block.src" :alt="block.alt || block.text || ''" class="post-figure-img" loading="lazy" />
+              <figcaption v-if="block.text" class="post-figure-caption">{{ block.text }}</figcaption>
+            </figure>
           </template>
         </div>
       </article>
@@ -330,6 +334,27 @@ ol.body-list {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   color: #e2e8f0;
   white-space: pre;
+}
+
+.post-figure {
+  margin: 8px 0 28px;
+  max-width: 760px;
+}
+
+.post-figure-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.post-figure-caption {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  text-align: center;
 }
 
 .post-pdf {

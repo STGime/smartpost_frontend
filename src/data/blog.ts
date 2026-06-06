@@ -16,13 +16,14 @@
  */
 
 export interface BlogBlock {
-  type: 'h2' | 'h3' | 'p' | 'ul' | 'ol' | 'quote' | 'code' | 'pdf'
-  text?: string // h2 | h3 | p | quote | pdf (caption)
+  type: 'h2' | 'h3' | 'p' | 'ul' | 'ol' | 'quote' | 'code' | 'pdf' | 'image'
+  text?: string // h2 | h3 | p | quote | pdf/image (caption)
   items?: string[] // ul | ol
   code?: string // code
   lang?: string // code (display hint)
-  src?: string // pdf (file path)
+  src?: string // pdf | image (file path)
   poster?: string // pdf (preview image)
+  alt?: string // image (alt text)
 }
 
 export interface BlogPost {
@@ -45,6 +46,66 @@ export const DEFAULT_OG_IMAGE = 'https://getposta.app/assets/posta_og_image.png'
 export const SITE_URL = 'https://getposta.app'
 
 export const blogPosts: BlogPost[] = [
+  {
+    slug: 'face-aware-smart-cropping',
+    title: 'Face-aware smart cropping: how Posta reframes photos for every platform',
+    description:
+      'Posta detects faces with Google Vision and crops each photo to keep people in frame across 9:16, 1:1, 4:5 and 16:9 — and skips cropping entirely when there are no faces.',
+    date: '2026-06-06',
+    updated: '2026-06-06',
+    author: 'Posta Team',
+    tags: ['Product', 'Media', 'Engineering'],
+    ogImage: 'https://getposta.app/assets/blog/smart-cropping-face-detection.jpg',
+    body: [
+      {
+        type: 'p',
+        text: 'Every network wants a different shape: TikTok and Reels are 9:16, the Instagram feed is 1:1 or 4:5, YouTube is 16:9. Resize one photo to all of them and a naive center crop will happily slice your subject in half. Posta avoids that by <strong>detecting the faces in your media and cropping around them</strong> — automatically, on every upload. Here’s the same photo cropped to 9:16 two ways:',
+      },
+      {
+        type: 'image',
+        src: '/assets/blog/smart-crop-before-after.jpg',
+        alt: 'A wide photo of a person on the right of the frame, cropped to 9:16 two ways: a center crop that cuts the person off, and Posta’s smart crop that keeps them framed.',
+        text: 'Left: a center crop drops the subject entirely. Right: Posta’s face-aware crop keeps her in frame.',
+      },
+      { type: 'h2', text: 'Step 1 — Find the faces' },
+      {
+        type: 'p',
+        text: 'When you upload an image, Posta runs it through <strong>Google Cloud Vision</strong> face detection. For each face it doesn’t just take the raw bounding box — it expands the box using key facial landmarks (chin, jaw, lips, forehead, ears) and adds ~10% padding below the chin, so the <em>whole</em> head is captured rather than a tight rectangle that clips foreheads and chins.',
+      },
+      {
+        type: 'p',
+        text: 'From all detected faces it computes two things: the <strong>center of mass</strong> (the average center of every face) and the <strong>primary face</strong> (the largest one). Those drive the crop.',
+      },
+      { type: 'h2', text: 'Step 2 — Crop around them' },
+      {
+        type: 'p',
+        text: 'For each platform’s target ratio, Posta works out the largest crop of that shape that fits the original, then positions it: instead of the geometric center, it <strong>centers the crop on the faces’ center of mass</strong>. It then nudges the window so that <strong>every face stays inside the frame</strong> (with a 10% safe margin) and clamps it to the image edges. One photo, the right framing for each shape:',
+      },
+      {
+        type: 'ul',
+        items: [
+          '<strong>9:16</strong> — TikTok, Reels, Shorts, Stories',
+          '<strong>1:1</strong> — Instagram, Facebook, Threads, LinkedIn square',
+          '<strong>4:5</strong> — Instagram & LinkedIn portrait',
+          '<strong>16:9 / 1.91:1</strong> — YouTube, X, LinkedIn landscape',
+        ],
+      },
+      { type: 'h2', text: 'No faces? It doesn’t crop at all' },
+      {
+        type: 'p',
+        text: 'Cropping only makes sense when there’s a subject to keep. If Vision finds <strong>no faces</strong>, Posta switches to <strong>resize-to-fit</strong> instead of cropping — so screenshots, product shots, charts, and text graphics keep all their content (nothing important gets sliced off the edges). Pinterest is always treated this way too, since it favors tall, full-image pins over a fixed ratio.',
+      },
+      { type: 'h2', text: 'It happens automatically' },
+      {
+        type: 'p',
+        text: 'You never configure any of this. Upload once — through the dashboard, the <a href="/developers">API</a>, an <a href="/agents">AI agent</a>, or an <a href="/workflows">n8n workflow</a> — and Posta generates every platform variant with the right framing. The same face-aware logic runs for video, so your Reels and Shorts keep people centered too.',
+      },
+      {
+        type: 'p',
+        text: 'Stop reframing the same photo eight times. <a href="/signup">Start a 14-day free trial</a> — no credit card required — and let Posta handle the crops.',
+      },
+    ],
+  },
   {
     slug: 'post-to-social-media-from-your-terminal',
     title: 'How to post to social media from your terminal (Claude Code, MCP & CLI)',
