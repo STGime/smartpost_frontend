@@ -426,19 +426,19 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
           <div :class="openclawVisible ? 'usecase-grid animate-fade-in-up stagger-1' : 'usecase-grid opacity-0'">
             <div class="usecase-card">
               <div class="usecase-title">Autonomous content pipeline</div>
-              <div class="usecase-body">Watch an RSS or blog feed, draft a post with an LLM, and schedule it — hands-off. <RouterLink to="/workflows/blog-to-social-media">See the workflow →</RouterLink></div>
+              <div class="usecase-body">Watch an RSS or blog feed, draft a post with an LLM, and schedule it — hands-off. <RouterLink to="/workflows/blog-to-social-media">See the n8n workflow →</RouterLink></div>
             </div>
             <div class="usecase-card">
               <div class="usecase-title">Launch agent</div>
-              <div class="usecase-body">One instruction turns a product into a multi-day, multi-platform campaign with per-network copy. <RouterLink to="/workflows/product-launch-campaign">See the workflow →</RouterLink></div>
+              <div class="usecase-body">One instruction turns a product into a multi-day, multi-platform campaign with per-network copy. <RouterLink to="/workflows/product-launch-campaign">See the n8n workflow →</RouterLink></div>
             </div>
             <div class="usecase-card">
               <div class="usecase-title">Repurposing agent</div>
-              <div class="usecase-body">Feed in one asset (or a YouTube video) and let the agent fan it out to Reels, Shorts, TikTok, and feeds. <RouterLink to="/workflows/youtube-to-social-media">See the workflow →</RouterLink></div>
+              <div class="usecase-body">Feed in one asset (or a YouTube video) and let the agent fan it out to Reels, Shorts, TikTok, and feeds. <RouterLink to="/workflows/youtube-to-social-media">See the n8n workflow →</RouterLink></div>
             </div>
             <div class="usecase-card">
               <div class="usecase-title">Carousel generator</div>
-              <div class="usecase-body">Summarize an article into a polished LinkedIn carousel PDF — AI text over AI backgrounds, assembled by Posta. <RouterLink to="/workflows/blog-to-linkedin-carousel">See the workflow →</RouterLink></div>
+              <div class="usecase-body">Summarize an article into a polished LinkedIn carousel PDF — AI text over AI backgrounds, assembled by Posta. <RouterLink to="/workflows/blog-to-linkedin-carousel">See the n8n workflow →</RouterLink></div>
             </div>
             <div class="usecase-card">
               <div class="usecase-title">Monitor &amp; respond</div>

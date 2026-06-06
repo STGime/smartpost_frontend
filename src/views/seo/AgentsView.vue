@@ -130,19 +130,19 @@ useHead({
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-title">Autonomous content pipeline</div>
-          <div class="feature-body">Watch an RSS or blog feed, draft a post with an LLM, and schedule it — hands-off. <RouterLink to="/workflows/blog-to-social-media">See the workflow →</RouterLink></div>
+          <div class="feature-body">Watch an RSS or blog feed, draft a post with an LLM, and schedule it — hands-off. <RouterLink to="/workflows/blog-to-social-media">See the n8n workflow →</RouterLink></div>
         </div>
         <div class="feature-card">
           <div class="feature-title">Launch agent</div>
-          <div class="feature-body">One instruction turns a product into a multi-day, multi-platform campaign with per-network copy. <RouterLink to="/workflows/product-launch-campaign">See the workflow →</RouterLink></div>
+          <div class="feature-body">One instruction turns a product into a multi-day, multi-platform campaign with per-network copy. <RouterLink to="/workflows/product-launch-campaign">See the n8n workflow →</RouterLink></div>
         </div>
         <div class="feature-card">
           <div class="feature-title">Repurposing agent</div>
-          <div class="feature-body">Feed in one asset or a YouTube video and fan it out to Reels, Shorts, TikTok, and feeds. <RouterLink to="/workflows/youtube-to-social-media">See the workflow →</RouterLink></div>
+          <div class="feature-body">Feed in one asset or a YouTube video and fan it out to Reels, Shorts, TikTok, and feeds. <RouterLink to="/workflows/youtube-to-social-media">See the n8n workflow →</RouterLink></div>
         </div>
         <div class="feature-card">
           <div class="feature-title">Carousel generator</div>
-          <div class="feature-body">Summarize an article into a polished LinkedIn carousel PDF — AI text over AI backgrounds. <RouterLink to="/workflows/blog-to-linkedin-carousel">See the workflow →</RouterLink></div>
+          <div class="feature-body">Summarize an article into a polished LinkedIn carousel PDF — AI text over AI backgrounds. <RouterLink to="/workflows/blog-to-linkedin-carousel">See the n8n workflow →</RouterLink></div>
         </div>
         <div class="feature-card">
           <div class="feature-title">Monitor &amp; respond</div>
