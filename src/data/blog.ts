@@ -63,7 +63,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'image',
-        src: '/assets/blog/smart-crop-before-after.jpg',
+        src: '/assets/blog/smart-crop-before-after.jpg?v=2',
         alt: 'A wide photo of a person on the right of the frame, cropped to 9:16 two ways: a center crop that cuts the person off, and Posta’s smart crop that keeps them framed.',
         text: 'Left: a center crop drops the subject entirely. Right: Posta’s face-aware crop keeps her in frame.',
       },
