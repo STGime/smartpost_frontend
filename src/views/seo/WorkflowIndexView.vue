@@ -84,7 +84,9 @@ useHead({
         Each template uses the
         <a href="https://www.npmjs.com/package/n8n-nodes-posta" target="_blank" rel="noopener">
           n8n-nodes-posta</a>
-        community node. New to it? Start with a
+        community node. Browse the source
+        <a href="https://github.com/STGime/posta-n8n-workflows" target="_blank" rel="noopener">on GitHub</a>,
+        or start with a
         <RouterLink to="/blog/post-to-social-media-from-your-terminal">free trial</RouterLink>.
       </p>
     </section>
