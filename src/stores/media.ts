@@ -182,6 +182,49 @@ export const useMediaStore = defineStore('media', () => {
     }
   }
 
+  // Bulk-delete several media items. There's no batch endpoint, so we fire the
+  // single-delete calls in parallel and remove whichever succeed; if some fail,
+  // the rest still go through and we surface a count.
+  const deleteMediaBulk = async (ids: string[]) => {
+    error.value = null
+    const results = await Promise.allSettled(ids.map((id) => mediaService.deleteMedia(id)))
+
+    const deleted = new Set<string>()
+    let failed = 0
+    results.forEach((result, i) => {
+      if (result.status === 'fulfilled') deleted.add(ids[i]!)
+      else failed++
+    })
+
+    if (deleted.size > 0) {
+      items.value = items.value.filter((item) => !deleted.has(item.id))
+      total.value -= deleted.size
+      if (currentMedia.value && deleted.has(currentMedia.value.id)) {
+        currentMedia.value = null
+      }
+    }
+
+    if (failed > 0) {
+      error.value = `Failed to delete ${failed} of ${ids.length} item${ids.length === 1 ? '' : 's'}.`
+    }
+
+    return { deleted: deleted.size, failed }
+  }
+
+  // Resolve a freshly-signed original-file URL for download, without disturbing
+  // `currentMedia` (which backs the preview modal).
+  const fetchOriginalUrl = async (id: string): Promise<string | null> => {
+    error.value = null
+    try {
+      const media = await mediaService.getMedia(id)
+      return media.original_url ?? null
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } }
+      error.value = e.response?.data?.error || 'Failed to fetch media'
+      return null
+    }
+  }
+
   const updateMediaStatus = (id: string, status: MediaStatus) => {
     const item = items.value.find((m) => m.id === id)
     if (item) {
@@ -237,6 +280,8 @@ export const useMediaStore = defineStore('media', () => {
     fetchMediaById,
     uploadMedia,
     deleteMedia,
+    deleteMediaBulk,
+    fetchOriginalUrl,
     updateMediaStatus,
     generateCarouselPDF,
     startPollingForProcessing,

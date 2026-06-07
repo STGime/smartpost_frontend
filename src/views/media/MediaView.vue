@@ -22,6 +22,11 @@ const isLoadingPreview = ref(false)
 const isLoadingMore = ref(false)
 const copiedId = ref(false)
 
+// Multi-select for bulk delete
+const selectedIds = ref<Set<string>>(new Set())
+const showBulkDeleteModal = ref(false)
+const isBulkDeleting = ref(false)
+
 function formatDate(iso?: string): string {
   if (!iso) return ''
   return new Date(iso).toLocaleString(undefined, {
@@ -80,6 +85,48 @@ const filteredMedia = computed(() => {
     return mediaSortOrder.value === 'newest' ? dateB - dateA : dateA - dateB
   })
 })
+
+// ── Selection ──────────────────────────────────────────────────────────────
+const selectedCount = computed(() => selectedIds.value.size)
+const isSelectionMode = computed(() => selectedIds.value.size > 0)
+const allFilteredSelected = computed(
+  () =>
+    filteredMedia.value.length > 0 &&
+    filteredMedia.value.every((m) => selectedIds.value.has(m.id))
+)
+
+function isSelected(id: string): boolean {
+  return selectedIds.value.has(id)
+}
+
+function toggleSelect(media: MediaListItem) {
+  const next = new Set(selectedIds.value)
+  if (next.has(media.id)) next.delete(media.id)
+  else next.add(media.id)
+  selectedIds.value = next
+}
+
+function toggleSelectAll() {
+  if (allFilteredSelected.value) {
+    selectedIds.value = new Set()
+  } else {
+    selectedIds.value = new Set(filteredMedia.value.map((m) => m.id))
+  }
+}
+
+function clearSelection() {
+  selectedIds.value = new Set()
+}
+
+// Clicking a tile opens the preview normally, but once a selection is active it
+// toggles selection instead — standard multi-select behaviour.
+function onItemClick(media: MediaListItem) {
+  if (isSelectionMode.value) {
+    toggleSelect(media)
+  } else {
+    openPreviewModal(media)
+  }
+}
 
 const loadMore = async () => {
   isLoadingMore.value = true
@@ -148,6 +195,68 @@ const confirmDelete = async () => {
     // Error handled in store
   } finally {
     isDeleting.value = false
+  }
+}
+
+// Download a single media item's original file. The signed GCS URL opens inline
+// in the browser, so we blob-fetch it to force a real download with the original
+// filename — falling back to opening the URL in a new tab if CORS blocks fetch.
+const downloadingId = ref<string | null>(null)
+const downloadMedia = async (media: MediaListItem) => {
+  if (downloadingId.value) return
+  downloadingId.value = media.id
+  try {
+    const url = await mediaStore.fetchOriginalUrl(media.id)
+    if (!url) return
+
+    let objectUrl: string | null = null
+    try {
+      const res = await fetch(url)
+      if (!res.ok) throw new Error('fetch failed')
+      const blob = await res.blob()
+      objectUrl = URL.createObjectURL(blob)
+    } catch {
+      objectUrl = null // CORS / network — fall back to opening the signed URL
+    }
+
+    const a = document.createElement('a')
+    a.href = objectUrl || url
+    a.download = media.name || 'download'
+    if (!objectUrl) a.target = '_blank'
+    a.rel = 'noopener'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    if (objectUrl) setTimeout(() => URL.revokeObjectURL(objectUrl!), 10_000)
+  } finally {
+    downloadingId.value = null
+  }
+}
+
+const openBulkDeleteModal = () => {
+  if (selectedIds.value.size === 0) return
+  showBulkDeleteModal.value = true
+}
+
+const closeBulkDeleteModal = () => {
+  showBulkDeleteModal.value = false
+}
+
+const confirmBulkDelete = async () => {
+  if (selectedIds.value.size === 0) return
+
+  isBulkDeleting.value = true
+  try {
+    const ids = Array.from(selectedIds.value)
+    await mediaStore.deleteMediaBulk(ids)
+    // Keep only ids that still exist (i.e. failed deletes) selected for retry.
+    const stillPresent = new Set(mediaStore.items.map((m) => m.id))
+    selectedIds.value = new Set(ids.filter((id) => stillPresent.has(id)))
+    if (selectedIds.value.size === 0) closeBulkDeleteModal()
+  } catch {
+    // Error handled in store
+  } finally {
+    isBulkDeleting.value = false
   }
 }
 
@@ -295,6 +404,21 @@ const closePreviewModal = () => {
       </div>
     </div>
 
+    <!-- Bulk selection action bar -->
+    <div v-if="isSelectionMode" class="selection-bar card">
+      <span class="selection-count">{{ selectedCount }} selected</span>
+      <button type="button" class="selection-link" @click="toggleSelectAll">
+        {{ allFilteredSelected ? 'Deselect all' : 'Select all' }}
+      </button>
+      <button type="button" class="selection-link" @click="clearSelection">Clear</button>
+      <button type="button" class="btn-danger selection-delete" @click="openBulkDeleteModal">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="btn-icon-sm">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        Delete selected
+      </button>
+    </div>
+
     <div v-if="mediaStore.isLoading && mediaStore.items.length === 0" class="loading-state">
       <div class="spinner"></div>
     </div>
@@ -328,7 +452,8 @@ const closePreviewModal = () => {
         v-for="media in filteredMedia"
         :key="media.id"
         class="media-item"
-        @click="openPreviewModal(media)"
+        :class="{ selected: isSelected(media.id) }"
+        @click="onItemClick(media)"
       >
         <img v-if="media.type !== 'audio'" :src="media.thumbnail_url || '/placeholder.png'" alt="" />
         <div v-else class="media-audio-tile">
@@ -336,12 +461,41 @@ const closePreviewModal = () => {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l11-2v13M9 19a2 2 0 11-4 0 2 2 0 014 0zm11-2a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
         </div>
-        <!-- Delete button in top right -->
-        <button @click.stop="openDeleteModal(media)" class="delete-btn" title="Delete">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+
+        <!-- Selection checkbox in top left -->
+        <button
+          type="button"
+          class="select-checkbox"
+          :class="{ checked: isSelected(media.id) }"
+          :aria-pressed="isSelected(media.id)"
+          :title="isSelected(media.id) ? 'Deselect' : 'Select'"
+          @click.stop="toggleSelect(media)"
+        >
+          <svg v-if="isSelected(media.id)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
           </svg>
         </button>
+
+        <!-- Action buttons in top right -->
+        <div class="media-actions">
+          <button
+            type="button"
+            class="action-btn download-btn"
+            :disabled="downloadingId === media.id"
+            title="Download"
+            @click.stop="downloadMedia(media)"
+          >
+            <div v-if="downloadingId === media.id" class="spinner spinner-xs"></div>
+            <svg v-else fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+          </button>
+          <button type="button" class="action-btn delete-btn" title="Delete" @click.stop="openDeleteModal(media)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
         <div class="media-type" :class="{ 'media-type-pdf': media.type === 'document' }">
           <svg v-if="media.type === 'video'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -406,6 +560,38 @@ const closePreviewModal = () => {
             </button>
             <button @click="confirmDelete" class="btn-danger" :disabled="isDeleting">
               {{ isDeleting ? 'Deleting...' : 'Delete' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Bulk Delete Confirmation Modal -->
+    <Teleport to="body">
+      <div v-if="showBulkDeleteModal" class="modal-backdrop" @click="closeBulkDeleteModal">
+        <div class="modal-content" @click.stop>
+          <div class="modal-header">
+            <h3>Delete {{ selectedCount }} item{{ selectedCount === 1 ? '' : 's' }}</h3>
+            <button @click="closeBulkDeleteModal" class="modal-close">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p class="delete-message">
+              Are you sure you want to delete
+              <strong>{{ selectedCount }}</strong> selected
+              item{{ selectedCount === 1 ? '' : 's' }}?
+            </p>
+            <p class="delete-warning">This action cannot be undone.</p>
+          </div>
+          <div class="modal-footer">
+            <button @click="closeBulkDeleteModal" class="btn-secondary" :disabled="isBulkDeleting">
+              Cancel
+            </button>
+            <button @click="confirmBulkDelete" class="btn-danger" :disabled="isBulkDeleting">
+              {{ isBulkDeleting ? 'Deleting...' : `Delete ${selectedCount}` }}
             </button>
           </div>
         </div>
@@ -748,28 +934,57 @@ const closePreviewModal = () => {
   color: var(--accent-light, #a5b4fc);
 }
 
-.delete-btn {
+/* Action cluster (download + delete) in the top-right */
+.media-actions {
   position: absolute;
   top: 6px;
   right: 6px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 2;
+}
+
+.media-item:hover .media-actions {
+  opacity: 1;
+}
+
+.action-btn {
   width: 28px;
   height: 28px;
   padding: 0;
   border-radius: var(--radius-full);
   background: rgba(0, 0, 0, 0.7);
   border: none;
-  color: #fca5a5;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
   transition: all 0.15s;
-  z-index: 2;
 }
 
-.media-item:hover .delete-btn {
-  opacity: 1;
+.action-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.download-btn {
+  color: #a5b4fc;
+}
+
+.download-btn:hover:not(:disabled) {
+  background: var(--accent, #6366f1);
+  color: white;
+}
+
+.download-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.delete-btn {
+  color: #fca5a5;
 }
 
 .delete-btn:hover {
@@ -777,9 +992,92 @@ const closePreviewModal = () => {
   color: white;
 }
 
-.delete-btn svg {
+/* Selection checkbox in the top-left */
+.select-checkbox {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.15s;
+  z-index: 3;
+}
+
+.media-item:hover .select-checkbox {
+  opacity: 1;
+}
+
+.select-checkbox.checked {
+  opacity: 1;
+  background: var(--accent, #6366f1);
+  border-color: var(--accent, #6366f1);
+}
+
+.select-checkbox svg {
   width: 14px;
   height: 14px;
+}
+
+.media-item.selected {
+  border-color: var(--accent, #6366f1);
+  box-shadow: 0 0 0 2px var(--accent, #6366f1);
+}
+
+/* Selection action bar */
+.selection-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.selection-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.selection-link {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.selection-link:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+.selection-delete {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-icon-sm {
+  width: 15px;
+  height: 15px;
+}
+
+.spinner-xs {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
 }
 
 .media-type {
