@@ -6,8 +6,10 @@ import type { MediaListItem } from '@/types'
 // File size limits (must match backend)
 const MAX_IMAGE_SIZE_MB = 20
 const MAX_VIDEO_SIZE_MB = 20
+const MAX_AUDIO_SIZE_MB = 50
 const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
 const MAX_VIDEO_SIZE_BYTES = MAX_VIDEO_SIZE_MB * 1024 * 1024
+const MAX_AUDIO_SIZE_BYTES = MAX_AUDIO_SIZE_MB * 1024 * 1024
 
 const mediaStore = useMediaStore()
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -43,7 +45,7 @@ async function copyMediaId(id?: string) {
 }
 
 // Filters
-const mediaTypeFilter = ref<'all' | 'image' | 'video' | 'document'>('all')
+const mediaTypeFilter = ref<'all' | 'image' | 'video' | 'document' | 'audio'>('all')
 const mediaSizeFilter = ref<'all' | 'small' | 'medium' | 'large'>('all')
 const mediaSortOrder = ref<'newest' | 'oldest'>('newest')
 
@@ -103,11 +105,13 @@ const handleFileSelect = async (event: Event) => {
   for (const file of Array.from(files)) {
     // Validate file size before uploading
     const isVideo = file.type.startsWith('video/')
-    const maxSize = isVideo ? MAX_VIDEO_SIZE_BYTES : MAX_IMAGE_SIZE_BYTES
-    const maxSizeMB = isVideo ? MAX_VIDEO_SIZE_MB : MAX_IMAGE_SIZE_MB
+    const isAudio = file.type.startsWith('audio/')
+    const maxSize = isVideo ? MAX_VIDEO_SIZE_BYTES : isAudio ? MAX_AUDIO_SIZE_BYTES : MAX_IMAGE_SIZE_BYTES
+    const maxSizeMB = isVideo ? MAX_VIDEO_SIZE_MB : isAudio ? MAX_AUDIO_SIZE_MB : MAX_IMAGE_SIZE_MB
+    const kind = isVideo ? 'videos' : isAudio ? 'audio' : 'images'
 
     if (file.size > maxSize) {
-      mediaStore.error = `File "${file.name}" is too large. Maximum size is ${maxSizeMB}MB for ${isVideo ? 'videos' : 'images'}.`
+      mediaStore.error = `File "${file.name}" is too large. Maximum size is ${maxSizeMB}MB for ${kind}.`
       continue
     }
 
@@ -174,14 +178,14 @@ const closePreviewModal = () => {
     <div class="page-header">
       <div>
         <h1>Media Library</h1>
-        <p>Upload and manage your images and videos</p>
-        <p class="size-limit-info">Maximum file size: {{ MAX_IMAGE_SIZE_MB }}MB for images, {{ MAX_VIDEO_SIZE_MB }}MB for videos</p>
+        <p>Upload and manage your images, videos, and audio</p>
+        <p class="size-limit-info">Maximum file size: {{ MAX_IMAGE_SIZE_MB }}MB for images, {{ MAX_VIDEO_SIZE_MB }}MB for videos, {{ MAX_AUDIO_SIZE_MB }}MB for audio</p>
       </div>
       <div>
         <input
           ref="fileInput"
           type="file"
-          accept="image/*,video/*"
+          accept="image/*,video/*,audio/*"
           multiple
           class="hidden"
           @change="handleFileSelect"
@@ -236,6 +240,11 @@ const closePreviewModal = () => {
             :class="['filter-pill', { active: mediaTypeFilter === 'document' }]"
             @click="mediaTypeFilter = 'document'"
           >PDFs</button>
+          <button
+            type="button"
+            :class="['filter-pill', { active: mediaTypeFilter === 'audio' }]"
+            @click="mediaTypeFilter = 'audio'"
+          >Audio</button>
         </div>
       </div>
 
@@ -321,7 +330,12 @@ const closePreviewModal = () => {
         class="media-item"
         @click="openPreviewModal(media)"
       >
-        <img :src="media.thumbnail_url || '/placeholder.png'" alt="" />
+        <img v-if="media.type !== 'audio'" :src="media.thumbnail_url || '/placeholder.png'" alt="" />
+        <div v-else class="media-audio-tile">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l11-2v13M9 19a2 2 0 11-4 0 2 2 0 014 0zm11-2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </div>
         <!-- Delete button in top right -->
         <button @click.stop="openDeleteModal(media)" class="delete-btn" title="Delete">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -335,6 +349,9 @@ const closePreviewModal = () => {
           </svg>
           <svg v-else-if="media.type === 'document'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <svg v-else-if="media.type === 'audio'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l11-2v13M9 19a2 2 0 11-4 0 2 2 0 014 0zm11-2a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
           <svg v-else fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -455,6 +472,22 @@ const closePreviewModal = () => {
               target="_blank"
               class="pdf-link"
             >Open in new tab</a>
+          </div>
+          <!-- Audio preview -->
+          <div
+            v-else-if="mediaToPreview?.type === 'audio' && mediaStore.currentMedia?.original_url"
+            class="preview-audio"
+          >
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l11-2v13M9 19a2 2 0 11-4 0 2 2 0 014 0zm11-2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <audio :src="mediaStore.currentMedia.original_url" controls autoplay class="preview-audio-player">
+              Your browser does not support the audio element.
+            </audio>
+          </div>
+          <!-- Audio loading placeholder -->
+          <div v-else-if="mediaToPreview?.type === 'audio'" class="preview-audio">
+            <div class="spinner"></div>
           </div>
         </div>
         <div class="preview-info">
@@ -697,6 +730,22 @@ const closePreviewModal = () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Audio items have no thumbnail — show a centered sound icon instead. */
+.media-audio-tile {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(15, 23, 42, 0.6));
+}
+
+.media-audio-tile svg {
+  width: 38%;
+  height: 38%;
+  color: var(--accent-light, #a5b4fc);
 }
 
 .delete-btn {
@@ -999,6 +1048,28 @@ const closePreviewModal = () => {
 .preview-document-info p {
   font-size: 16px;
   color: var(--text);
+}
+
+.preview-audio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 56px 48px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  min-width: min(480px, 80vw);
+}
+
+.preview-audio svg {
+  width: 72px;
+  height: 72px;
+  color: var(--accent-light, #a5b4fc);
+}
+
+.preview-audio-player {
+  width: 100%;
 }
 
 .pdf-link {

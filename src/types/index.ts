@@ -78,7 +78,7 @@ export interface Plan {
 }
 
 // Media types
-export type MediaType = 'image' | 'video' | 'document'
+export type MediaType = 'image' | 'video' | 'document' | 'audio'
 export type MediaStatus = 'pending' | 'processing' | 'completed' | 'failed'
 export type MimeType = 'image/jpeg' | 'image/png' | 'image/webp' | 'video/mp4' | 'video/quicktime' | 'video/webm' | 'application/pdf'
 
