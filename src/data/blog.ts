@@ -16,14 +16,15 @@
  */
 
 export interface BlogBlock {
-  type: 'h2' | 'h3' | 'p' | 'ul' | 'ol' | 'quote' | 'code' | 'pdf' | 'image'
-  text?: string // h2 | h3 | p | quote | pdf/image (caption)
+  type: 'h2' | 'h3' | 'p' | 'ul' | 'ol' | 'quote' | 'code' | 'pdf' | 'image' | 'video'
+  text?: string // h2 | h3 | p | quote | pdf/image/video (caption)
   items?: string[] // ul | ol
   code?: string // code
   lang?: string // code (display hint)
   src?: string // pdf | image (file path)
   poster?: string // pdf (preview image)
   alt?: string // image (alt text)
+  videoId?: string // video (YouTube video id)
 }
 
 export interface BlogPost {
@@ -228,6 +229,11 @@ export const blogPosts: BlogPost[] = [
         text: 'LinkedIn carousels — the swipeable PDF “document” posts — are some of the highest-engagement content on the platform. They’re also tedious to make: design each slide in a tool like Canva, export a PDF, and upload it by hand. Posta removes the hardest part: hand it slide copy and a background image per slide, and it renders the text on top and returns a ready-to-post PDF in one API call. Pair that with an LLM and an image model — wired up in the Posta Claude Code skill or an n8n workflow — and the whole article-to-carousel pipeline runs end to end.',
       },
       {
+        type: 'video',
+        videoId: 'CC-_i6LanLg',
+        text: 'Watch: from an article to a finished LinkedIn carousel.',
+      },
+      {
         type: 'h2',
         text: 'Why carousels punch above their weight',
       },
@@ -374,6 +380,11 @@ export const blogPosts: BlogPost[] = [
         type: 'p',
         text: 'You just hit publish on a new article — now you have to tell everyone, on every network, one post at a time. This n8n workflow does it for you: it watches your blog’s RSS feed and, for each new post, builds and schedules a social update with the article’s image across all your connected accounts via <a href="/developers">Posta</a>. It’s the simplest automation to set up and a great first taste of pairing n8n with Posta.',
       },
+      {
+        type: 'video',
+        videoId: 'Ra9x57asFnk',
+        text: 'Watch: blog RSS → scheduled social posts everywhere.',
+      },
       { type: 'h2', text: 'What it does' },
       {
         type: 'ul',
@@ -417,6 +428,11 @@ export const blogPosts: BlogPost[] = [
         type: 'p',
         text: 'A launch isn’t one post — it’s a drumbeat across several days and every channel, each with copy that fits the platform. Doing that by hand is a chore. This n8n workflow takes a single product and spins up a <strong>5-day launch campaign</strong> across all your connected accounts, with captions tailored per network, all scheduled in advance through <a href="/developers">Posta</a>.',
       },
+      {
+        type: 'video',
+        videoId: 'ORQZK_oApIQ',
+        text: 'Watch: one product → a scheduled 5-day multi-platform launch.',
+      },
       { type: 'h2', text: 'What it does' },
       {
         type: 'ul',
@@ -459,6 +475,11 @@ export const blogPosts: BlogPost[] = [
       {
         type: 'p',
         text: 'A new video deserves more than one post on one network. This n8n workflow reads your YouTube channel feed, pulls the latest video and its thumbnail, writes a promo caption for each platform, and creates <strong>draft posts</strong> across all your connected accounts via <a href="/developers">Posta</a> — so you review and publish instead of starting from a blank box.',
+      },
+      {
+        type: 'video',
+        videoId: 'tTWaYb71YyA',
+        text: 'Watch: latest YouTube video → AI promo posts on every platform.',
       },
       { type: 'h2', text: 'What it does' },
       {

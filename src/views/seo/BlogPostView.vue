@@ -158,6 +158,19 @@ if (post) {
               <img :src="block.src" :alt="block.alt || block.text || ''" class="post-figure-img" loading="lazy" />
               <figcaption v-if="block.text" class="post-figure-caption">{{ block.text }}</figcaption>
             </figure>
+            <figure v-else-if="block.type === 'video' && block.videoId" class="post-video">
+              <div class="post-video-frame">
+                <iframe
+                  :src="`https://www.youtube-nocookie.com/embed/${block.videoId}`"
+                  :title="block.text || 'Workflow demo video'"
+                  loading="lazy"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen
+                ></iframe>
+              </div>
+              <figcaption v-if="block.text" class="post-figure-caption">{{ block.text }}</figcaption>
+            </figure>
           </template>
         </div>
       </article>
@@ -355,6 +368,29 @@ ol.body-list {
   color: var(--muted);
   line-height: 1.6;
   text-align: center;
+}
+
+.post-video {
+  margin: 8px 0 28px;
+  max-width: 760px;
+}
+
+.post-video-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: #000;
+}
+
+.post-video-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 
 .post-pdf {
