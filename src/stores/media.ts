@@ -70,6 +70,7 @@ export const useMediaStore = defineStore('media', () => {
     offset?: number
     type?: MediaType
     status?: MediaStatus
+    sort?: 'newest' | 'oldest'
   }) => {
     isLoading.value = true
     error.value = null

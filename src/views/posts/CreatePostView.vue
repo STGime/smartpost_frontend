@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePostsStore, useMediaStore, useSocialAccountsStore, useTagsStore } from '@/stores'
 import PlatformIcon from '@/components/PlatformIcon.vue'
@@ -41,6 +41,48 @@ const platformConfigurations = ref<PlatformConfigurations>({})
 const mediaTypeFilter = ref<'all' | 'image' | 'video' | 'document'>('all')
 const mediaSizeFilter = ref<'all' | 'small' | 'medium' | 'large'>('all')
 const mediaSortOrder = ref<'newest' | 'oldest'>('newest')
+
+// Media pagination ("Show more" + infinite scroll). The backend caps a page at
+// 100; we append pages via offset so older media stays reachable.
+const MEDIA_PAGE_SIZE = 100
+const loadMoreSentinel = ref<HTMLElement | null>(null)
+const mediaScrollContainer = ref<HTMLElement | null>(null)
+let mediaObserver: IntersectionObserver | null = null
+
+const loadMedia = async ({ reset }: { reset: boolean }) => {
+  // Reset always reloads page 0; "load more" is guarded against re-entry / running past the end.
+  if (!reset && (mediaStore.isLoading || !mediaStore.hasMore)) return
+  await mediaStore.fetchMedia({
+    limit: MEDIA_PAGE_SIZE,
+    offset: reset ? 0 : mediaStore.items.length,
+    sort: mediaSortOrder.value,
+  })
+}
+
+// Changing sort refetches ordered pages from the server so "Oldest" surfaces the
+// genuinely oldest items immediately (not just a client re-sort of the first page).
+watch(mediaSortOrder, () => {
+  loadMedia({ reset: true })
+})
+
+// Observe the sentinel at the end of the grid; auto-load the next page when it scrolls into view.
+watch(loadMoreSentinel, (el, prev) => {
+  if (!mediaObserver) {
+    mediaObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) loadMedia({ reset: false })
+      },
+      { root: mediaScrollContainer.value, rootMargin: '200px' }
+    )
+  }
+  if (prev) mediaObserver.unobserve(prev)
+  if (el) mediaObserver.observe(el)
+})
+
+onUnmounted(() => {
+  mediaObserver?.disconnect()
+  mediaObserver = null
+})
 
 // File upload
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -266,8 +308,8 @@ const loadedFromTemplate = ref(false)
 const templateMediaMissing = ref<string[]>([])
 
 onMounted(async () => {
-  // Fetch all media items without status filter (matches MediaView behavior)
-  await mediaStore.fetchMedia({ limit: 100 })
+  // Fetch the first page of media (server-ordered; more pages load on demand)
+  await loadMedia({ reset: true })
   await socialAccountsStore.fetchAccounts()
 
   // Edit mode: Load existing post data
@@ -477,7 +519,7 @@ const handleFileSelect = async (event: Event) => {
   }
 
   // Refresh media list to show newly uploaded items
-  await mediaStore.fetchMedia({ limit: 100 })
+  await loadMedia({ reset: true })
 
   if (fileInput.value) {
     fileInput.value.value = ''
@@ -693,7 +735,7 @@ const closePreviewModal = () => {
         <!-- Filter toolbar -->
         <div v-if="mediaStore.items.length > 0" class="filter-toolbar">
           <div class="filter-count">
-            {{ filteredMedia.length }} of {{ mediaStore.items.length }} items
+            {{ filteredMedia.length }} of {{ mediaStore.total }} items
           </div>
           <div class="filter-group">
             <span class="filter-label">Type:</span>
@@ -764,7 +806,8 @@ const closePreviewModal = () => {
           </div>
         </div>
 
-        <div v-if="mediaStore.isLoading" class="loading-state-sm">
+        <!-- Full-area spinner only on the initial load; "Show more" keeps the grid visible -->
+        <div v-if="mediaStore.isLoading && mediaStore.items.length === 0" class="loading-state-sm">
           <div class="spinner"></div>
         </div>
 
@@ -778,7 +821,7 @@ const closePreviewModal = () => {
           <button type="button" @click="mediaTypeFilter = 'all'; mediaSizeFilter = 'all'" class="link-accent">Clear filters</button>
         </div>
 
-        <div v-else class="media-grid-container">
+        <div v-else ref="mediaScrollContainer" class="media-grid-container">
           <div class="media-grid">
             <!-- Processing media items (shown first as placeholders) -->
             <div
@@ -827,6 +870,17 @@ const closePreviewModal = () => {
             </button>
             <span class="media-type-badge" :class="{ 'badge-pdf': media.type === 'document' }">{{ media.type === 'document' ? 'PDF' : media.type }}</span>
             </div>
+          </div>
+          <!-- Load older media: auto-loads on scroll, with an explicit button fallback -->
+          <div v-if="mediaStore.hasMore" ref="loadMoreSentinel" class="media-load-more">
+            <button
+              type="button"
+              class="btn-show-more"
+              :disabled="mediaStore.isLoading"
+              @click="loadMedia({ reset: false })"
+            >
+              {{ mediaStore.isLoading ? 'Loading…' : 'Show more' }}
+            </button>
           </div>
         </div>
       </div>
@@ -1197,6 +1251,33 @@ const closePreviewModal = () => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 10px;
+}
+
+.media-load-more {
+  display: flex;
+  justify-content: center;
+  padding: 14px 0 4px;
+}
+
+.btn-show-more {
+  padding: 8px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(15, 23, 42, 0.4);
+  color: var(--color-text, #e2e8f0);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-show-more:hover:not(:disabled) {
+  background: rgba(148, 163, 184, 0.15);
+  border-color: rgba(148, 163, 184, 0.5);
+}
+
+.btn-show-more:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 @media (min-width: 600px) {

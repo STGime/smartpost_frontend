@@ -14,6 +14,7 @@ interface ListMediaParams {
   offset?: number
   type?: MediaType
   status?: MediaStatus
+  sort?: 'newest' | 'oldest'
 }
 
 export const mediaService = {
