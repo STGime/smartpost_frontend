@@ -2,6 +2,101 @@
   "name": "Create LinkedIn carousel post from blog post",
   "nodes": [
     {
+      "parameters": {
+        "content": "## Create LinkedIn carousel post from blog post\n\n### How it works\n\n1. A manual trigger reads the newest article from your blog's RSS feed.\n2. An LLM turns the article into slide copy, which is parsed and split into individual slides.\n3. For each slide a background image is generated with an AI model, downloaded, and uploaded to Posta.\n4. The slides are re-assembled and rendered into a text carousel PDF.\n5. Posta publishes the carousel to your connected LinkedIn account.\n\n### Setup steps\n\n- [ ] Add your Posta credential (API token) to the Posta nodes\n- [ ] Add your DeepSeek (LLM) credential to the 'Basic LLM Chain' model\n- [ ] Add your fal.ai credential for AI background generation\n- [ ] Set the RSS feed URL and pick the LinkedIn account in 'Get many social accounts'\n\n### Customization\n\nAdjust the number of slides and the 'theme_color' to match your brand styling.",
+        "width": 480,
+        "height": 864
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        -448
+      ],
+      "id": "4e36d194-eb12-48fe-8ffd-09dbc45f5f14",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Fetch latest blog post\n\nStarts the run, reads the RSS feed, and selects the latest post.",
+        "width": 704,
+        "height": 368,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -96
+      ],
+      "id": "a8f16864-4140-4359-86bb-f3aa5e912fac",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Load target accounts\n\nFetches the connected LinkedIn account to publish to.",
+        "width": 240,
+        "height": 320,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        448,
+        96
+      ],
+      "id": "cff07305-37a3-4bd8-b7c6-b1b0d9e2e10b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Write and split slides\n\nAn LLM writes the carousel copy, which is parsed and split into individual slides.",
+        "width": 832,
+        "height": 512,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        528,
+        -448
+      ],
+      "id": "c349713b-94a5-4985-9d16-51e00eda3b25",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Generate slide backgrounds\n\nSets the theme color and generates, downloads, and uploads an AI background per slide.",
+        "width": 1104,
+        "height": 352,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        -288
+      ],
+      "id": "43007709-31a8-4af9-9c38-8ed152ac2d3a",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Assemble and publish carousel\n\nRe-assembles the slides into a text carousel PDF and posts it to LinkedIn.",
+        "width": 720,
+        "height": 272,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2688,
+        -208
+      ],
+      "id": "a6fabe76-fa14-4899-9761-9d80d672b198",
+      "name": "Sticky Note5"
+    },
+    {
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
@@ -29,21 +124,6 @@
     },
     {
       "parameters": {
-        "content": "Add the link to the RSS feed, in this example we use the blog feed from getposta.app (https://getposta.app/feed.xml)",
-        "height": 352,
-        "width": 160
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        32,
-        -192
-      ],
-      "id": "7fde9dfa-159b-453e-8e62-8afcf724e2b3",
-      "name": "Sticky Note"
-    },
-    {
-      "parameters": {
         "socialAccountIds": "35",
         "caption": "={{ $('Parse slides JSON').item.json.caption }}{{ $('Latest post').item.json.link }}",
         "additionalFields": {
@@ -66,6 +146,7 @@
       "name": "Create a post",
       "credentials": {
         "postaApi": {
+          "id": "B35JRmx3PNisTqmS",
           "name": "Posta account"
         }
       }
@@ -77,75 +158,17 @@
       "type": "n8n-nodes-posta.posta",
       "typeVersion": 1,
       "position": [
-        304,
+        496,
         256
       ],
       "id": "d92a5744-c0e1-4619-b336-c407bb27a7f1",
       "name": "Get many social accounts",
       "credentials": {
         "postaApi": {
+          "id": "B35JRmx3PNisTqmS",
           "name": "Posta account"
         }
       }
-    },
-    {
-      "parameters": {
-        "content": "You need to tell the workflow where to post - call this to get a list of connected social accounts. You need to take the id value and feed into the next step. IDs are preserved in Posta until you delete the connected account. To sign-up and connect social accounts, visit https://www.getposta.app (14 days free, no credit card required)",
-        "height": 240,
-        "color": 3
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        240,
-        448
-      ],
-      "id": "6898e38d-92d5-4acc-a146-d7d702051283",
-      "name": "Sticky Note1"
-    },
-    {
-      "parameters": {
-        "content": "You need a token to use the Posta functions. Get one at https://www.getposta.app (14 days free, no credit card required)",
-        "height": 128,
-        "color": 3
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -368,
-        -64
-      ],
-      "id": "7bc18f20-0b43-444e-93e1-6be6b55a7f4e",
-      "name": "Sticky Note2"
-    },
-    {
-      "parameters": {
-        "content": "## Blog post → LinkedIn carousel\n\n**Who it's for:** creators who want high-engagement LinkedIn carousels from their articles without designing slides.\n**What it does:** summarizes a new blog post into a 5-slide carousel PDF — AI text over AI backgrounds — and posts it to LinkedIn via Posta.\n\n**How it works:**\n1. Read the blog feed and pick the latest post.\n2. DeepSeek writes 5 slides (title + body); split them out.\n3. fal.ai generates a background per slide; upload each to Posta.\n4. Posta composites the text and builds the PDF; create the LinkedIn post.\n\n**Setup:** add Posta (Professional plan), DeepSeek, and fal.ai credentials. Sign up at https://www.getposta.app (14 days free, no credit card).",
-        "height": 320,
-        "color": 5
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -368,
-        -368
-      ],
-      "id": "31efd7a4-96cb-4f42-95c8-3a4305792b44",
-      "name": "Sticky Note3"
-    },
-    {
-      "parameters": {
-        "content": "In the create post you need to set at least one social account id (from \"get many social accounts\"), caption and optionally tags. For each supported social media account type, you can also set platform specific attributes like visibility etc. You can also add media ids to upload images and videos. Images and videos are scaled by Posta for each platform (9:16 for TikTok for example). Posta uses facial recognition to try to crop media if faces are present. ",
-        "height": 304
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        3200,
-        64
-      ],
-      "id": "335656b0-271f-4092-b077-7b429038a38b",
-      "name": "Sticky Note4"
     },
     {
       "parameters": {
@@ -161,6 +184,7 @@
       "name": "Upload media",
       "credentials": {
         "postaApi": {
+          "id": "B35JRmx3PNisTqmS",
           "name": "Posta account"
         }
       }
@@ -187,34 +211,6 @@
     },
     {
       "parameters": {
-        "content": "Add the URL for the image. Then options -> response -> then \"response format -> file\" and put the output in field \"data\". This loads the image into the \"data\" field for further processing. ",
-        "height": 512
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        2144,
-        -288
-      ],
-      "id": "89031161-66b6-4235-a651-dfcd7a0cd3a2",
-      "name": "Sticky Note5"
-    },
-    {
-      "parameters": {
-        "content": "This upload the contents of the \"data\" field from the precious node to the Posta platform and image processing starts (scaling for the different platforms). This also works for videos.",
-        "height": 512
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        2416,
-        -288
-      ],
-      "id": "20d12e43-4028-4881-9271-0e26ad7941bb",
-      "name": "Sticky Note6"
-    },
-    {
-      "parameters": {
         "jsCode": "const items = $input.all();\n  items.sort((a, b) =>\n    new Date(b.json.isoDate || b.json.pubDate).getTime() -\n    new Date(a.json.isoDate || a.json.pubDate).getTime()\n  );\n  return items.length ? [items[0]] : [];"
       },
       "type": "n8n-nodes-base.code",
@@ -225,21 +221,6 @@
       ],
       "id": "4798dbe5-598c-4075-a770-1c6f4ed68685",
       "name": "Latest post"
-    },
-    {
-      "parameters": {
-        "content": "Select the latest post",
-        "height": 352,
-        "width": 160
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        240,
-        -192
-      ],
-      "id": "f765dde3-24e7-4339-b0ef-ddf4ba98e6f5",
-      "name": "Sticky Note10"
     },
     {
       "parameters": {
@@ -258,7 +239,7 @@
       "typeVersion": 1.9,
       "position": [
         576,
-        -176
+        -336
       ],
       "id": "7d069dce-b703-4a42-ac33-0598d865e1e0",
       "name": "Basic LLM Chain"
@@ -272,30 +253,16 @@
       "typeVersion": 1,
       "position": [
         576,
-        80
+        -80
       ],
       "id": "9335ef86-74f8-492f-84eb-6c4f25bc05c5",
       "name": "DeepSeek Chat Model",
       "credentials": {
         "deepSeekApi": {
+          "id": "xqHl99v85iZxuO1j",
           "name": "DeepSeek account"
         }
       }
-    },
-    {
-      "parameters": {
-        "content": "Let the LLM summarize and create text for 5 slides. If you want fewer, change the prompt accordingly.",
-        "height": 512,
-        "width": 320
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        528,
-        -288
-      ],
-      "id": "74b3e5bd-33d3-4b35-886f-be58d6483ca9",
-      "name": "Sticky Note11"
     },
     {
       "parameters": {
@@ -306,7 +273,7 @@
       "typeVersion": 1,
       "position": [
         1216,
-        -176
+        -336
       ],
       "id": "0ef31a8f-a23e-452f-8a44-bdb887a57057",
       "name": "Split into slides"
@@ -319,39 +286,10 @@
       "typeVersion": 2,
       "position": [
         928,
-        -176
+        -336
       ],
       "id": "3a3361fd-dfd8-4b57-96e4-648e8f0d6cb7",
       "name": "Parse slides JSON"
-    },
-    {
-      "parameters": {
-        "content": "Parse the response into something more useful",
-        "height": 512,
-        "width": 256
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        880,
-        -288
-      ],
-      "id": "0c1f1c50-d884-482f-b98c-62201f4e0409",
-      "name": "Sticky Note12"
-    },
-    {
-      "parameters": {
-        "content": "Split out to 5 title / body items, one for each slide.",
-        "height": 512
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        1152,
-        -288
-      ],
-      "id": "d275d34a-fcda-4c13-a19f-4fe1196de800",
-      "name": "Sticky Note13"
     },
     {
       "parameters": {
@@ -389,24 +327,10 @@
       "name": "Generate media using AI model",
       "credentials": {
         "falAiApi": {
+          "id": "i9w2fxwZTarYdfbc",
           "name": "fal.ai account"
         }
       }
-    },
-    {
-      "parameters": {
-        "content": "Generate some background images. Recraft V3.",
-        "height": 512,
-        "width": 256
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        1856,
-        -288
-      ],
-      "id": "0eb79ec8-c34b-420f-b3c3-91071ef18e06",
-      "name": "Sticky Note14"
     },
     {
       "parameters": {
@@ -420,20 +344,6 @@
       ],
       "id": "54b17e8d-38c1-4fa8-9bf7-a59ce2611c7e",
       "name": "Re-assemble slides"
-    },
-    {
-      "parameters": {
-        "content": "Re-assemble the slides array, now we have image, title, body",
-        "height": 512
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        2672,
-        -288
-      ],
-      "id": "acdf22e4-fe38-489f-a4f2-cd47bdc7a156",
-      "name": "Sticky Note15"
     },
     {
       "parameters": {
@@ -452,6 +362,7 @@
       "name": "Generate text carousel PDF",
       "credentials": {
         "postaApi": {
+          "id": "B35JRmx3PNisTqmS",
           "name": "Posta account"
         }
       }
@@ -496,35 +407,6 @@
       ],
       "id": "afaf794a-db70-428c-a24a-ab150a5dd8b6",
       "name": "theme_color"
-    },
-    {
-      "parameters": {
-        "content": "Set a **theme color** to make sure the slides use the same color scheme",
-        "height": 512,
-        "width": 272
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        1488,
-        -288
-      ],
-      "id": "ab6d300d-da22-41ec-b98c-6ad98a08aaa3",
-      "name": "Sticky Note16"
-    },
-    {
-      "parameters": {
-        "content": "Generate the PDF carousel. Note the optional Logo Media ID to set a logo in the slides.",
-        "height": 512
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        2928,
-        -288
-      ],
-      "id": "4fc4f6e7-ae0d-4839-b796-3c4262bb3d69",
-      "name": "Sticky Note17"
     }
   ],
   "pinData": {},
@@ -691,7 +573,8 @@
   },
   "versionId": "6c394a30-d605-4244-bb79-24fe225b06c7",
   "meta": {
-    "templateCredsSetupCompleted": true
+    "templateCredsSetupCompleted": true,
+    "instanceId": "39a3102487046be4b62efd158285575e7be1bc28455490b873f61de6134af3c2"
   },
   "id": "PLUSdT5qkKZrNMfX",
   "tags": [

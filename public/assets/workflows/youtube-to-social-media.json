@@ -2,6 +2,101 @@
   "name": "YouTube video to social media promotion",
   "nodes": [
     {
+      "parameters": {
+        "content": "## YouTube video to social media promotion\n\n### How it works\n\n1. A manual trigger downloads your YouTube channel feed and parses the XML to the latest video.\n2. The video thumbnail is downloaded, uploaded to Posta, and combined with the video data.\n3. Your active social accounts are selected and de-duplicated to one post per platform.\n4. An LLM writes a promo caption per platform, which is tagged back to each account.\n5. Posta creates the promotion post across the selected networks.\n\n### Setup steps\n\n- [ ] Add your Posta credential (API token) to the Posta nodes\n- [ ] Add your DeepSeek (LLM) credential to the 'Basic LLM Chain' model\n- [ ] Set your YouTube channel feed URL in 'Download YouTube feed'\n- [ ] Confirm the accounts in 'Get many social accounts'\n\n### Customization\n\nSwap the manual trigger for a Schedule trigger to promote each new upload automatically.",
+        "width": 480,
+        "height": 896
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        -144
+      ],
+      "id": "4e36d194-eb12-48fe-8ffd-09dbc45f5f14",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Fetch latest video\n\nStarts the run, downloads the YouTube feed, parses it, and selects the latest video.",
+        "width": 976,
+        "height": 352,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -96
+      ],
+      "id": "a8f16864-4140-4359-86bb-f3aa5e912fac",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Prepare thumbnail\n\nDownloads the thumbnail, uploads it to Posta, and combines it with the video data.",
+        "width": 784,
+        "height": 336,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        720,
+        -144
+      ],
+      "id": "cff07305-37a3-4bd8-b7c6-b1b0d9e2e10b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Select target accounts\n\nLoads social accounts, keeps active ones, and limits to one post per platform.",
+        "width": 704,
+        "height": 416,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        432
+      ],
+      "id": "c349713b-94a5-4985-9d16-51e00eda3b25",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Generate captions with AI\n\nCombines the video with platforms and writes a tagged promo caption per platform.",
+        "width": 944,
+        "height": 464,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        -80
+      ],
+      "id": "43007709-31a8-4af9-9c38-8ed152ac2d3a",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Assemble and publish\n\nMerges captions per active account and creates the promotion post.",
+        "width": 496,
+        "height": 304,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        -96
+      ],
+      "id": "a6fabe76-fa14-4899-9761-9d80d672b198",
+      "name": "Sticky Note5"
+    },
+    {
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
@@ -36,6 +131,7 @@
       "name": "Create a post",
       "credentials": {
         "postaApi": {
+          "id": "B35JRmx3PNisTqmS",
           "name": "Posta account"
         }
       }
@@ -54,54 +150,10 @@
       "name": "Get many social accounts",
       "credentials": {
         "postaApi": {
+          "id": "B35JRmx3PNisTqmS",
           "name": "Posta account"
         }
       }
-    },
-    {
-      "parameters": {
-        "content": "You need to tell the workflow where to post - call this to get a list of connected social accounts. To sign-up and connect social accounts, visit https://www.getposta.app (14 days free, no credit card required)",
-        "height": 480,
-        "color": 3
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        480,
-        400
-      ],
-      "id": "ce7cb33c-f3fb-4674-8095-5b078920aa47",
-      "name": "Sticky Note1"
-    },
-    {
-      "parameters": {
-        "content": "You need a token to use the Posta functions. Get one at https://www.getposta.app (14 days free, no credit card required)",
-        "height": 128,
-        "color": 3
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -368,
-        -128
-      ],
-      "id": "a75cc4bb-62bd-4011-8f6b-3393355c9548",
-      "name": "Sticky Note2"
-    },
-    {
-      "parameters": {
-        "content": "## YouTube video → social media\n\n**Who it's for:** creators who want to promote each new video everywhere automatically.\n**What it does:** reads your YouTube feed, grabs the latest video + thumbnail, and drafts promo posts for every platform via Posta.\n\n**How it works:**\n1. Download the YouTube channel feed and parse the latest video.\n2. Upload the thumbnail to Posta (auto-scaled per platform).\n3. Get active accounts; keep one post per platform type.\n4. DeepSeek writes a caption per platform; create draft posts to review.\n\n**Setup:** add your Posta and DeepSeek credentials, and set your channel feed URL. Sign up at https://www.getposta.app (14 days free, no credit card).",
-        "height": 240,
-        "color": 5
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -368,
-        -384
-      ],
-      "id": "d8b976b6-bae7-43c3-ae00-6f6859ac7e2f",
-      "name": "Sticky Note3"
     },
     {
       "parameters": {
@@ -117,6 +169,7 @@
       "name": "Upload media",
       "credentials": {
         "postaApi": {
+          "id": "B35JRmx3PNisTqmS",
           "name": "Posta account"
         }
       }
@@ -155,62 +208,6 @@
       ],
       "id": "b35f43aa-662f-4d34-923c-dd9bee67fb6e",
       "name": "Combine thumbnail + video data"
-    },
-    {
-      "parameters": {
-        "content": "We merge the outputs from upload media (delivers the media id) and the structureed json. Mode \"combine\" and combine by \"position\".",
-        "height": 336
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        1264,
-        -96
-      ],
-      "id": "d9965a14-7a44-44da-a682-86368f5ff4ba",
-      "name": "Sticky Note7"
-    },
-    {
-      "parameters": {
-        "content": "The post is created by default as \"draft\" in the Posta backend - from this point you can publish it in the next step, or schedule it for later.",
-        "height": 320
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        2944,
-        -96
-      ],
-      "id": "fc8d4240-17e3-48a0-9da3-cd4d4817fda5",
-      "name": "Sticky Note8"
-    },
-    {
-      "parameters": {
-        "content": "Download from the RSS endpoint. n8n strips a lot of data, so use HTTP Request",
-        "height": 336
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -16,
-        -96
-      ],
-      "id": "864c538f-4734-47ec-a1c8-af516a85788b",
-      "name": "Sticky Note10"
-    },
-    {
-      "parameters": {
-        "content": "Create json from XML, save it into \"data\"",
-        "height": 336
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        224,
-        -96
-      ],
-      "id": "e3f132c8-47c5-457f-9770-898266739d3b",
-      "name": "Sticky Note11"
     },
     {
       "parameters": {
@@ -260,48 +257,6 @@
     },
     {
       "parameters": {
-        "content": "Create structured json. **IMPORTANT:** we limit to the last video here: const entries = [].concat(root.feed?.entry ?? []).slice(0, 1);  // latest only \nChange the way you see fit.",
-        "height": 336
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        480,
-        -96
-      ],
-      "id": "cd80c088-de0f-41d5-a13b-531a0ff7bde9",
-      "name": "Sticky Note12"
-    },
-    {
-      "parameters": {
-        "content": "Download the Youtube video thumbnails",
-        "height": 336
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        720,
-        -96
-      ],
-      "id": "07b6219f-3fb6-44ef-b562-b70127e94e3a",
-      "name": "Sticky Note13"
-    },
-    {
-      "parameters": {
-        "content": "Upload the thumbnails to the Posta app.",
-        "height": 336
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        976,
-        -96
-      ],
-      "id": "a590913b-ff1a-402d-952f-c33769aacb86",
-      "name": "Sticky Note14"
-    },
-    {
-      "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
@@ -346,20 +301,6 @@
     },
     {
       "parameters": {
-        "content": "We select all active social accounts",
-        "height": 480
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        736,
-        400
-      ],
-      "id": "6bf187a4-26fc-4d4f-b94e-5c00c0c01fc4",
-      "name": "Sticky Note15"
-    },
-    {
-      "parameters": {
         "compare": "selectedFields",
         "fieldsToCompare": "platform",
         "options": {}
@@ -375,21 +316,6 @@
     },
     {
       "parameters": {
-        "content": "Remove duplicates from platform. We want to create a single post for each platform type (one for TikTok, once for LinkedIn etc), not one post for each account. ",
-        "height": 480,
-        "width": 224
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        992,
-        400
-      ],
-      "id": "dafaf967-c847-4882-a124-7bbf199c3589",
-      "name": "Sticky Note16"
-    },
-    {
-      "parameters": {
         "mode": "combine",
         "combineBy": "combineAll",
         "options": {}
@@ -402,21 +328,6 @@
       ],
       "id": "4ab71d12-58c4-4ff6-a09c-7335ed70b9d2",
       "name": "Combine video + platforms"
-    },
-    {
-      "parameters": {
-        "content": "Create all possible combinations - this gives a list of post data for each account type that was delivered from upstream",
-        "height": 336,
-        "width": 288
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        1552,
-        -96
-      ],
-      "id": "11c1f549-54c5-4f6d-a999-12e456f8b704",
-      "name": "Sticky Note17"
     },
     {
       "parameters": {
@@ -455,6 +366,7 @@
       "name": "DeepSeek Chat Model",
       "credentials": {
         "deepSeekApi": {
+          "id": "xqHl99v85iZxuO1j",
           "name": "DeepSeek account"
         }
       }
@@ -474,20 +386,6 @@
     },
     {
       "parameters": {
-        "content": "The LLM gives only text, so lets add platform so we know what posts to create",
-        "height": 320
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        2304,
-        -96
-      ],
-      "id": "3ae1905f-f3d9-472e-b1a1-9076ab878949",
-      "name": "Sticky Note4"
-    },
-    {
-      "parameters": {
         "mode": "combine",
         "fieldsToMatchString": "platform",
         "options": {}
@@ -500,20 +398,6 @@
       ],
       "id": "2989b183-7287-457c-82f8-0c879465e8af",
       "name": "Post per active account"
-    },
-    {
-      "parameters": {
-        "content": "Now merge the posts with each active account - we create a post for each account. ",
-        "height": 320
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        2656,
-        -96
-      ],
-      "id": "bbcbd1b7-7103-4bfb-9b37-680a767a1d81",
-      "name": "Sticky Note9"
     }
   ],
   "pinData": {},
@@ -712,7 +596,8 @@
   },
   "versionId": "9fe8204a-40c1-4ddf-af46-b5de082f157f",
   "meta": {
-    "templateCredsSetupCompleted": true
+    "templateCredsSetupCompleted": true,
+    "instanceId": "39a3102487046be4b62efd158285575e7be1bc28455490b873f61de6134af3c2"
   },
   "id": "4SD4jWtZQmj48juh",
   "tags": [

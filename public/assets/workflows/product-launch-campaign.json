@@ -3,33 +3,98 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## 5-day product launch campaign\n\n**Who it's for:** e-commerce teams launching a product across every channel.\n**What it does:** turns one product into a 5-day, multi-platform campaign with per-platform captions, scheduled via Posta.\n\n**How it works:**\n1. Fetch the product and its image.\n2. Get active accounts; keep one post per platform type.\n3. DeepSeek writes captions + tags per platform.\n4. Expand across 5 days and schedule a post for every account.\n\n**Setup:** add your Posta and DeepSeek (or any LLM) credentials. Sign up at https://www.getposta.app (14 days free, no credit card).",
-        "height": 240,
-        "color": 5
+        "content": "## E-commerce product launch campaign\n\n### How it works\n\n1. A manual trigger fetches the product, downloads its image, and uploads it to Posta as media.\n2. Your active social accounts are selected and de-duplicated to one post per platform.\n3. The product and platforms are combined and expanded into a multi-day campaign matrix.\n4. An LLM writes per-platform captions, which are parsed and merged back per account.\n5. Posta creates the scheduled launch posts across the campaign.\n\n### Setup steps\n\n- [ ] Add your Posta credential (API token) to the Posta nodes\n- [ ] Add your DeepSeek (LLM) credential to the 'Basic LLM Chain' model\n- [ ] Point 'Fetch product' at your product source (URL or API)\n- [ ] Confirm the accounts in 'Get many social accounts' and the campaign length in 'Expand to days'\n\n### Customization\n\nChange the number of campaign days and the per-platform caption prompt to fit your launch.",
+        "width": 480,
+        "height": 816
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -944,
-        -512
+        -1184,
+        -336
       ],
-      "id": "4b7e66ec-9823-4a8c-99be-45c4a9f00474",
+      "id": "4e36d194-eb12-48fe-8ffd-09dbc45f5f14",
       "name": "Sticky Note"
     },
     {
       "parameters": {
-        "content": "You need a token to use the Posta functions. Get one at https://www.getposta.app (14 days free, no credit card required)\n\nYou also need an API key for an LLM, in this example we use DeepSeek.",
-        "height": 208,
-        "color": 3
+        "content": "## Fetch product and media\n\nStarts the run, fetches the product, and uploads its image to Posta.",
+        "width": 1056,
+        "height": 272,
+        "color": 7
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -944,
-        -256
+        -624,
+        -336
       ],
-      "id": "6a4cf8ec-f7a3-461c-9b5b-4714cdb3357f",
+      "id": "a8f16864-4140-4359-86bb-f3aa5e912fac",
       "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Select target accounts\n\nLoads social accounts, keeps active ones, and limits to one post per platform.",
+        "width": 816,
+        "height": 352,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        -32
+      ],
+      "id": "cff07305-37a3-4bd8-b7c6-b1b0d9e2e10b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Build campaign matrix\n\nCombines product and platforms, then expands into a multi-day schedule.",
+        "width": 448,
+        "height": 304,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        544,
+        -336
+      ],
+      "id": "c349713b-94a5-4985-9d16-51e00eda3b25",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Generate captions with AI\n\nAn LLM writes per-platform captions, which are then parsed into structured data.",
+        "width": 544,
+        "height": 544,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        -336
+      ],
+      "id": "43007709-31a8-4af9-9c38-8ed152ac2d3a",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Assemble and publish\n\nMerges captions per account and creates the scheduled launch posts.",
+        "width": 480,
+        "height": 304,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1776,
+        -112
+      ],
+      "id": "a6fabe76-fa14-4899-9761-9d80d672b198",
+      "name": "Sticky Note5"
     },
     {
       "parameters": {},
@@ -55,20 +120,6 @@
       ],
       "id": "95935938-a652-4bff-b5ec-5ef6801aa73c",
       "name": "Fetch product"
-    },
-    {
-      "parameters": {
-        "content": "Start by polling the product (or use a webhook to let the system tell you what is new)",
-        "height": 352
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -432,
-        -384
-      ],
-      "id": "946cd4d8-312f-40c7-9b7f-d6debee698f4",
-      "name": "Sticky Note2"
     },
     {
       "parameters": {
@@ -107,6 +158,7 @@
       "name": "DeepSeek Chat Model",
       "credentials": {
         "deepSeekApi": {
+          "id": "xqHl99v85iZxuO1j",
           "name": "DeepSeek account"
         }
       }
@@ -125,24 +177,10 @@
       "name": "Get many social accounts",
       "credentials": {
         "postaApi": {
+          "id": "B35JRmx3PNisTqmS",
           "name": "Posta account"
         }
       }
-    },
-    {
-      "parameters": {
-        "content": "Get all connected social accounts connected in the Posta app.",
-        "height": 304,
-        "width": 288
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -448,
-        0
-      ],
-      "id": "963dfd8b-f036-46ba-8959-9b6b4ef7048c",
-      "name": "Sticky Note3"
     },
     {
       "parameters": {
@@ -190,20 +228,6 @@
     },
     {
       "parameters": {
-        "content": "We select all active social accounts",
-        "height": 304
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -128,
-        0
-      ],
-      "id": "16eb4ca4-e0b6-4016-9563-c5db72b11a4a",
-      "name": "Sticky Note4"
-    },
-    {
-      "parameters": {
         "compare": "selectedFields",
         "fieldsToCompare": "platform",
         "options": {}
@@ -219,21 +243,6 @@
     },
     {
       "parameters": {
-        "content": "Remove duplicates from platform. We want to create a single post for each platform type (one for TikTok, once for LinkedIn etc), not one post for each account. ",
-        "height": 304,
-        "width": 224
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        208,
-        0
-      ],
-      "id": "9ffed604-3103-42be-8523-f723ab408ad7",
-      "name": "Sticky Note5"
-    },
-    {
-      "parameters": {
         "mode": "combine",
         "combineBy": "combineAll",
         "options": {}
@@ -246,34 +255,6 @@
       ],
       "id": "a12e72fe-1ba7-4895-b419-097d34ca44ed",
       "name": "Combine product + platforms"
-    },
-    {
-      "parameters": {
-        "content": "Now we have the product description for each platform type, ready to send to the LLM.",
-        "height": 288
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        528,
-        -336
-      ],
-      "id": "b7c416ea-3447-4110-b08b-801598504008",
-      "name": "Sticky Note6"
-    },
-    {
-      "parameters": {
-        "content": "We want to create posts for each day over the next 5 days",
-        "height": 288
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        784,
-        -336
-      ],
-      "id": "70d7fab0-1cd6-4961-89e5-c36cb322819e",
-      "name": "Sticky Note8"
     },
     {
       "parameters": {
@@ -303,20 +284,6 @@
     },
     {
       "parameters": {
-        "content": "Add the platforms, the schedule data",
-        "height": 304
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        1424,
-        -320
-      ],
-      "id": "f3cd15f1-e463-49ff-9ae8-fca7c2746d76",
-      "name": "Sticky Note9"
-    },
-    {
-      "parameters": {
         "mode": "combine",
         "fieldsToMatchString": "platform",
         "options": {}
@@ -329,20 +296,6 @@
       ],
       "id": "1447b440-295f-4586-b626-04641c2979bb",
       "name": "Merge captions per account"
-    },
-    {
-      "parameters": {
-        "content": "Merge on platform, we create the same post for each instance of a platform, so if you have multiple TikTok (for example) accounts, each will get a post. ",
-        "height": 288
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        1760,
-        -96
-      ],
-      "id": "d6e2b680-014a-4953-b839-070c207d9d25",
-      "name": "Sticky Note10"
     },
     {
       "parameters": {
@@ -366,23 +319,10 @@
       "name": "Create a post",
       "credentials": {
         "postaApi": {
+          "id": "B35JRmx3PNisTqmS",
           "name": "Posta account"
         }
       }
-    },
-    {
-      "parameters": {
-        "content": "Create posts with account ids, captions, schedules. Draft is OFF and they will be created by the Posta app for future posting.",
-        "height": 288
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        2032,
-        -96
-      ],
-      "id": "8d3cacbf-fb3d-49ed-81b1-032b7986b522",
-      "name": "Sticky Note11"
     },
     {
       "parameters": {
@@ -418,6 +358,7 @@
       "name": "Upload media",
       "credentials": {
         "postaApi": {
+          "id": "B35JRmx3PNisTqmS",
           "name": "Posta account"
         }
       }
@@ -468,64 +409,6 @@
       ],
       "id": "205d4483-bb45-4bd1-bcf7-525fd22f56eb",
       "name": "Attach product media id"
-    },
-    {
-      "parameters": {
-        "content": "Get the image for the product",
-        "height": 352,
-        "width": 160
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -128,
-        -384
-      ],
-      "id": "f1831e45-404f-4ec2-9c57-ec0209745703",
-      "name": "Sticky Note12"
-    },
-    {
-      "parameters": {
-        "content": "Upload the media to the Posta app, the platform will scale the image to fit to all social platforms. It uses facial recognition to try to crop the image if faces are present.",
-        "height": 352,
-        "width": 182
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        48,
-        -384
-      ],
-      "id": "4cdb4b84-7e2d-496a-bcbb-d9782097383f",
-      "name": "Sticky Note13"
-    },
-    {
-      "parameters": {
-        "content": "We add the data from the first request since the upload media only returns the media id from the Posta platform.",
-        "height": 352,
-        "width": 160
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        256,
-        -384
-      ],
-      "id": "b3d6bfa5-f655-4a59-a713-72cf3ee0e132",
-      "name": "Sticky Note14"
-    },
-    {
-      "parameters": {
-        "content": "Post are now created, either in \"draft\" or scheduled depending on the parameters in the last node. Now you can continue by publishing or editing the posts. "
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        2384,
-        -16
-      ],
-      "id": "dd52393a-153f-4d1f-9024-c2d0a72e5120",
-      "name": "Sticky Note7"
     }
   ],
   "pinData": {},
@@ -702,7 +585,8 @@
   },
   "versionId": "4ddba110-25ff-4606-8e61-cf21aea05740",
   "meta": {
-    "templateCredsSetupCompleted": true
+    "templateCredsSetupCompleted": true,
+    "instanceId": "39a3102487046be4b62efd158285575e7be1bc28455490b873f61de6134af3c2"
   },
   "id": "ZIzfh6sIe4ToAqeC",
   "tags": [
