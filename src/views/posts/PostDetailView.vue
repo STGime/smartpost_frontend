@@ -5,7 +5,9 @@ import { usePostsStore } from '@/stores'
 import PlatformIcon from '@/components/PlatformIcon.vue'
 import DateTimePicker from '@/components/DateTimePicker.vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
+import MediaDetailModal from '@/components/MediaDetailModal.vue'
 import CommentsTab from '@/components/comments/CommentsTab.vue'
+import type { PostMedia } from '@/types'
 
 type DetailTab = 'details' | 'comments'
 
@@ -23,6 +25,14 @@ const scheduleError = ref<string | null>(null)
 
 // Tabs
 const activeTab = ref<DetailTab>('details')
+
+// Media detail modal
+const selectedMedia = ref<PostMedia | null>(null)
+const showMediaModal = ref(false)
+const openMediaModal = (media: PostMedia) => {
+  selectedMedia.value = media
+  showMediaModal.value = true
+}
 
 // Modal state
 const showDeleteModal = ref(false)
@@ -388,6 +398,12 @@ const useAsTemplate = () => {
             v-for="media in post.media"
             :key="media.id"
             class="media-item"
+            role="button"
+            tabindex="0"
+            title="View media detail"
+            @click="openMediaModal(media)"
+            @keydown.enter="openMediaModal(media)"
+            @keydown.space.prevent="openMediaModal(media)"
           >
             <img
               v-if="media.thumbnailUrl || media.originalUrl"
@@ -592,6 +608,13 @@ const useAsTemplate = () => {
       <p class="empty-sub">This post may have been deleted</p>
       <RouterLink to="/app/posts" class="btn-primary">Back to Posts</RouterLink>
     </div>
+
+    <!-- Media Detail Modal -->
+    <MediaDetailModal
+      :show="showMediaModal"
+      :media="selectedMedia"
+      @close="showMediaModal = false"
+    />
 
     <!-- Delete Confirmation Modal -->
     <ConfirmModal
@@ -960,6 +983,15 @@ const useAsTemplate = () => {
   border-radius: var(--radius-md);
   overflow: hidden;
   background: rgba(15, 23, 42, 0.6);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.media-item:hover,
+.media-item:focus-visible {
+  transform: scale(1.02);
+  box-shadow: 0 0 0 2px var(--accent, #60a5fa);
+  outline: none;
 }
 
 .media-item img {
