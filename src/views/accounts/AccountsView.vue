@@ -1,16 +1,47 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useSocialAccountsStore } from '@/stores'
 import PlatformIcon from '@/components/PlatformIcon.vue'
 import type { SocialAccount } from '@/types'
 
 const socialAccountsStore = useSocialAccountsStore()
+const route = useRoute()
+const router = useRouter()
 
 const showDisconnectModal = ref(false)
 const pendingDeleteAccount = ref<SocialAccount | null>(null)
 const isDeleting = ref(false)
 
+const oauthBanner = ref<{ kind: 'success' | 'error'; platform: string; message: string } | null>(null)
+
+const prettyPlatform = (p: string) => p.charAt(0).toUpperCase() + p.slice(1)
+
+const consumeOAuthQueryParams = () => {
+  const { platform, error, success } = route.query
+  if (!platform) return
+
+  const platformStr = String(platform)
+  if (error) {
+    oauthBanner.value = {
+      kind: 'error',
+      platform: platformStr,
+      message: String(error),
+    }
+  } else if (success) {
+    oauthBanner.value = {
+      kind: 'success',
+      platform: platformStr,
+      message: `${prettyPlatform(platformStr)} connected successfully.`,
+    }
+  }
+
+  const { platform: _p, error: _e, success: _s, accountId: _a, ...rest } = route.query
+  router.replace({ path: route.path, query: rest })
+}
+
 onMounted(() => {
+  consumeOAuthQueryParams()
   socialAccountsStore.fetchAccounts()
 })
 
@@ -75,6 +106,23 @@ const closeModal = () => {
 
     <div v-if="socialAccountsStore.error" class="error-banner">
       {{ socialAccountsStore.error }}
+    </div>
+
+    <div
+      v-if="oauthBanner"
+      :class="['oauth-banner', oauthBanner.kind === 'error' ? 'error-banner' : 'success-banner']"
+    >
+      <div class="oauth-banner-body">
+        <strong>{{ prettyPlatform(oauthBanner.platform) }}:</strong>
+        {{ oauthBanner.message }}
+        <p
+          v-if="oauthBanner.kind === 'error' && oauthBanner.platform === 'facebook' && /no facebook pages/i.test(oauthBanner.message)"
+          class="oauth-banner-hint"
+        >
+          On Facebook's "Edit access" step, tick the Page checkbox for the Page you want to manage, then continue. Pages must be explicitly selected each time.
+        </p>
+      </div>
+      <button type="button" class="oauth-banner-close" aria-label="Dismiss" @click="oauthBanner = null">×</button>
     </div>
 
     <div v-if="socialAccountsStore.isLoading" class="loading-state">
@@ -195,6 +243,45 @@ const closeModal = () => {
   border-radius: 8px;
   margin-bottom: 16px;
   font-size: 0.9rem;
+}
+
+.success-banner {
+  background: var(--success-soft);
+  color: var(--success);
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+.oauth-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.oauth-banner-body {
+  flex: 1;
+}
+
+.oauth-banner-hint {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.oauth-banner-close {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.oauth-banner-close:hover {
+  opacity: 1;
 }
 
 .loading-state {
