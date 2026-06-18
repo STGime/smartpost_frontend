@@ -169,6 +169,10 @@ const signupEnabled = isSignupEnabled()
 const showWaitingListModal = ref(false)
 const waitingListSource = ref<WaitingListSource>('hero')
 
+// Landing demo video (click-to-play facade so the YouTube iframe isn't loaded
+// on first paint / in the SEO prerender).
+const videoPlaying = ref(false)
+
 const openWaitingList = (source: WaitingListSource) => {
   waitingListSource.value = source
   showWaitingListModal.value = true
@@ -414,6 +418,46 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               </div>
             </div>
           </div>
+        </section>
+
+        <!-- Demo Video Section -->
+        <section class="video-section" id="demo">
+          <h2 class="video-heading">Set up Posta with Claude Code in minutes</h2>
+          <p class="video-sub">Watch the full walkthrough — connect your account, add your API token, and create your first post.</p>
+          <div class="video-frame">
+            <iframe
+              v-if="videoPlaying"
+              src="https://www.youtube.com/embed/CBG0qdnFxl4?autoplay=1&rel=0&modestbranding=1"
+              title="Set up Posta with Claude Code"
+              loading="lazy"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+            ></iframe>
+            <button
+              v-else
+              type="button"
+              class="video-facade"
+              aria-label="Play video: set up Posta with Claude Code"
+              @click="videoPlaying = true"
+            >
+              <img
+                src="https://i.ytimg.com/vi/CBG0qdnFxl4/sddefault.jpg"
+                alt="Posta + Claude Code walkthrough"
+                loading="lazy"
+                width="640"
+                height="480"
+                @error="(e) => ((e.target as HTMLImageElement).src = 'https://i.ytimg.com/vi/CBG0qdnFxl4/hqdefault.jpg')"
+              />
+              <span class="video-play" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+              </span>
+            </button>
+          </div>
+          <p class="video-fallback">
+            Trouble playing?
+            <a href="https://www.youtube.com/watch?v=CBG0qdnFxl4" target="_blank" rel="noopener">Watch on YouTube →</a>
+          </p>
         </section>
 
         <!-- OpenClaw & API Section -->
@@ -1873,6 +1917,117 @@ h1 {
 /* Section */
 .section {
   margin-bottom: 40px;
+}
+
+/* Demo video section */
+.video-section {
+  margin: 8px auto 56px;
+  max-width: 860px;
+  text-align: center;
+}
+
+.video-heading {
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+
+.video-sub {
+  color: var(--muted, #94a3b8);
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0 auto 24px;
+  max-width: 560px;
+}
+
+.video-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-xl, 16px);
+  overflow: hidden;
+  border: 1px solid var(--border, rgba(148, 163, 184, 0.15));
+  background: #000;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+.video-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.video-fallback {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-muted, rgba(148, 163, 184, 0.85));
+  text-align: center;
+}
+
+.video-fallback a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.video-fallback a:hover {
+  color: var(--text, #fff);
+}
+
+.video-facade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  background: #000;
+  display: block;
+}
+
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease, opacity 0.2s ease;
+}
+
+.video-facade:hover img {
+  transform: scale(1.03);
+  opacity: 0.85;
+}
+
+.video-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--accent, #6366f1);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.video-facade:hover .video-play,
+.video-facade:focus-visible .video-play {
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+.video-play svg {
+  width: 30px;
+  height: 30px;
+  margin-left: 4px;
 }
 
 .section-title {
