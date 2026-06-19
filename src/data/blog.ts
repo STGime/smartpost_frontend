@@ -509,6 +509,376 @@ export const blogPosts: BlogPost[] = [
       },
     ],
   },
+  {
+    slug: 'mcp-vs-n8n-vs-claude-code-for-social-media',
+    title: 'MCP vs n8n vs Claude Code for social media: which Posta surface do you pick?',
+    description:
+      'Posta exposes four surfaces — MCP server, Claude Code skill, n8n node, REST API. They look interchangeable but each fits a different shape of agent. A decision guide with code.',
+    date: '2026-06-19',
+    updated: '2026-06-19',
+    author: 'Posta Team',
+    tags: ['MCP', 'n8n', 'Claude Code', 'Automation', 'Agents'],
+    body: [
+      {
+        type: 'p',
+        text: 'Posta exposes four surfaces an agent (or an automation) can call into: an <a href="/mcp-social-media-server">MCP server</a>, a <a href="/cli-social-media-posting">Claude Code skill</a>, an <a href="/n8n-social-media-node">n8n community node</a>, and the <a href="/developers">public REST API</a>. From a distance they look interchangeable — they all create posts, schedule them, and publish to the same eight networks. They are <em>not</em> interchangeable. Each was built for a different shape of agent, and picking wrong is the difference between an afternoon and a fortnight.',
+      },
+      {
+        type: 'p',
+        text: 'This is the decision guide we wish we’d had when we started shipping these. We’ll cover what each surface is, when to reach for it, and — most importantly — how to <strong>combine two or three</strong> in a production setup. Most real Posta deployments use exactly that combination.',
+      },
+      { type: 'h2', text: 'The shapes, at a glance' },
+      {
+        type: 'ul',
+        items: [
+          '<strong>MCP server</strong> — interactive LLM agents (Claude Desktop, Cursor, custom MCP clients).',
+          '<strong>Claude Code skill</strong> — terminal-driven agentic work, IDE-side workflows.',
+          '<strong>n8n node</strong> — visual, branching pipelines triggered by non-LLM events (RSS, webhooks, schedules).',
+          '<strong>REST API + webhooks</strong> — programmatic loops without an LLM in line, or fine control.',
+        ],
+      },
+      { type: 'h2', text: 'When MCP wins' },
+      {
+        type: 'p',
+        text: 'MCP gives the model <em>typed tool definitions</em> it can introspect. The agent learns the right call without prompt-engineered API docs — every Posta capability (<code>createPost</code>, <code>schedulePost</code>, <code>listAccounts</code>, <code>uploadMedia</code>, <code>getPostStatus</code>) shows up in the tool list with a JSON Schema. It’s the right surface when:',
+      },
+      {
+        type: 'ul',
+        items: [
+          'You’re building an interactive agent — the user (or another agent) talks to a model and the model decides what to do.',
+          'You want the agent to discover Posta’s capabilities at runtime, not hard-code them in a prompt.',
+          'You’re running a multi-step conversation where the agent needs to reach for several Posta tools across turns.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'The install is one config-file entry — see the <a href="/mcp-social-media-server">MCP server page</a> for the exact JSON. Works in Claude Desktop, Claude Code, Cursor, Windsurf, VS Code, Zed, and any custom MCP client.',
+      },
+      { type: 'h2', text: 'When the Claude Code skill wins' },
+      {
+        type: 'p',
+        text: 'The <a href="/cli-social-media-posting">Posta Claude Code skill</a> is a thin wrapper that turns terminal slash-commands into Posta calls. It’s the right surface when:',
+      },
+      {
+        type: 'ul',
+        items: [
+          'You live in a terminal or IDE and don’t want to switch context to post.',
+          'You want a small, focused command surface (<code>/posta create</code>, <code>/posta schedule</code>) rather than the full MCP tool set.',
+          'You’re handing a small autonomy budget to a Claude Code agent and don’t want it to wander into the full Posta API.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'You can run both the skill and the MCP server side-by-side. The skill is a UX shortcut; MCP is the underlying mechanism.',
+      },
+      { type: 'h2', text: 'When n8n wins' },
+      {
+        type: 'p',
+        text: 'The <a href="/n8n-social-media-node">n8n community node</a> turns every Posta endpoint into a typed, drag-and-drop n8n step. Drop it in next to RSS, OpenAI, HTTP, Schedule — wire them up. It’s the right surface when:',
+      },
+      {
+        type: 'ul',
+        items: [
+          'Your trigger is non-LLM: an RSS feed, a webhook, a calendar event, a database change.',
+          'You want visual branching and parallelism your team can read.',
+          'You’re building a pipeline where an LLM is <em>one step</em>, not the orchestrator.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'Examples: an RSS → LLM caption → Posta schedule flow, or a YouTube channel → Whisper highlight → Posta multi-platform fan-out. Fork any of the <a href="/workflows">ready-made templates</a> to get started.',
+      },
+      { type: 'h2', text: 'When the REST API wins' },
+      {
+        type: 'p',
+        text: 'The <a href="/developers">public REST API</a> is the lowest common denominator — every other surface ultimately calls it. Reach for it directly when:',
+      },
+      {
+        type: 'ul',
+        items: [
+          'There’s no LLM in your loop. A deterministic batch script that publishes a daily digest doesn’t need MCP.',
+          'You need fine-grained control: idempotency keys, custom retry windows, per-call timeouts.',
+          'You’re wrapping Posta in a framework that already has its own tool-calling abstraction (LangChain, CrewAI, Vercel AI SDK, Mastra — each has an <a href="/integrations">integration guide</a>).',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'And of course: HMAC-signed <strong>outbound webhooks</strong> are the closed-loop half of the REST API. The next post in this series covers them — for now, know that they’re what turns a one-shot script into an autonomous loop.',
+      },
+      { type: 'h2', text: 'A decision tree' },
+      {
+        type: 'code',
+        lang: 'text',
+        code: `Is an LLM driving the decisions?
+├─ No  → REST API (or n8n if you want a visual pipeline)
+└─ Yes
+    │
+    Is the agent interactive (chat-style, multi-turn)?
+    ├─ No  (one-shot batch / triggered run)
+    │   ├─ Trigger is non-LLM event (RSS, webhook, cron)  → n8n
+    │   └─ Trigger is in a framework you already use      → REST via that framework's tool wrapper
+    │
+    └─ Yes
+        │
+        Where does the agent live?
+        ├─ Claude Desktop / Cursor / Windsurf / VS Code / Zed  → MCP
+        ├─ Terminal / Claude Code                               → Claude Code skill (+ MCP)
+        └─ Custom multi-agent framework                          → MCP via the framework's MCP adapter`,
+      },
+      { type: 'h2', text: 'Real-world combinations' },
+      {
+        type: 'p',
+        text: 'In practice, every production setup we’ve seen combines at least two surfaces. The patterns:',
+      },
+      {
+        type: 'ul',
+        items: [
+          '<strong>n8n + REST.</strong> The default for content pipelines — n8n watches a trigger, an LLM step drafts a caption, the Posta node schedules. The "node" is REST under the hood.',
+          '<strong>MCP + webhooks.</strong> The default for interactive bots — Claude calls Posta tools to schedule, then HMAC webhooks fire a separate handler when the post goes live. See the <a href="/autonomous-social-media-bot">autonomous bot tutorial</a>.',
+          '<strong>Claude Code skill + MCP.</strong> The default for solo developers — slash-commands for the common cases, the MCP server for everything else, both pointed at the same token.',
+          '<strong>n8n + MCP.</strong> n8n handles the trigger and orchestration, then calls into an MCP-capable agent for the parts where you want a model to make decisions (subject lines, image picks, posting cadence).',
+        ],
+      },
+      { type: 'h2', text: 'A common anti-pattern' },
+      {
+        type: 'p',
+        text: 'Don’t use MCP for fully deterministic flows. If you know exactly which platforms, captions, and times every post should land at, you don’t need a model picking between tools — wire it through n8n or the REST API directly. MCP is a power tool; reach for it when the agent has to <em>decide</em>, not when it’s carrying out a known recipe.',
+      },
+      { type: 'h2', text: 'Where to start' },
+      {
+        type: 'p',
+        text: 'If you’re still unsure, follow the decision tree from your trigger. Most teams arrive at one of these starting points:',
+      },
+      {
+        type: 'ul',
+        items: [
+          'You have an LLM agent already → <a href="/mcp-social-media-server">install the MCP server</a>.',
+          'You have an n8n instance already → <a href="/n8n-social-media-node">install the community node</a>.',
+          'You live in a terminal → <a href="/cli-social-media-posting">install the Claude Code skill</a>.',
+          'You’re building from scratch → start with the <a href="/agentic-social-media-workflows">agentic workflows guide</a>.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'All four surfaces share one token. Pick the one that matches your shape today; the others are ready when you grow into them. <a href="/signup">14-day free trial</a>, no credit card.',
+      },
+    ],
+  },
+  {
+    slug: 'webhook-driven-social-media-agent-loops',
+    title: 'Webhook-driven social media agent loops: closing the loop with HMAC',
+    description:
+      'How HMAC-signed outbound webhooks turn a fire-and-forget posting script into a closed-loop autonomous agent. Patterns, code, and pitfalls.',
+    date: '2026-06-19',
+    updated: '2026-06-19',
+    author: 'Posta Team',
+    tags: ['Webhooks', 'Agents', 'Automation', 'Engineering'],
+    body: [
+      {
+        type: 'p',
+        text: 'A social posting script that publishes and forgets is fine for newsletter-style cadences. A social <em>agent</em> needs to know whether the post actually went live, on which network, with what URL — and act on that. Polling is the obvious option, and it’s the wrong one: you burn API quota, you stall the next agent turn, and you pay for it in wall-clock latency. Webhooks are the right answer.',
+      },
+      {
+        type: 'p',
+        text: 'Posta’s outbound webhooks fire the moment a post’s status changes. Every payload is HMAC-signed. This post is about how to use them to <strong>close the loop</strong> on an agent — what patterns work, what code to write, and what to avoid.',
+      },
+      { type: 'h2', text: 'Why webhooks beat polling' },
+      {
+        type: 'ul',
+        items: [
+          '<strong>Latency.</strong> Webhooks fire within seconds of the platform confirming. Polling on a 30-second interval averages 15 seconds of dead time per check.',
+          '<strong>Cost.</strong> Each poll is an API call against your Posta quota and (worse) an LLM round-trip if the agent is the one polling.',
+          '<strong>Correctness.</strong> Polling needs you to track "last seen status" per post in your own state. Webhooks ship the new status in the payload.',
+        ],
+      },
+      { type: 'h2', text: 'What you get on a webhook' },
+      {
+        type: 'p',
+        text: 'Every Posta outbound webhook includes: the event name (<code>post.published</code>, <code>post.failed</code>, <code>post.scheduled</code>, etc.), the platform, the platform post ID and URL (when published), the Posta post ID, and a timestamp. The headers carry an <code>x-posta-signature</code> HMAC-SHA256 over the raw body. See the <a href="/developers">developer reference</a> for the full payload schema.',
+      },
+      { type: 'h2', text: 'The minimum-viable receiver' },
+      {
+        type: 'p',
+        text: 'A 30-line Node receiver that verifies the signature and dispatches by event type:',
+      },
+      {
+        type: 'code',
+        lang: 'javascript',
+        code: `import { createHmac, timingSafeEqual } from 'node:crypto'
+import express from 'express'
+
+const app = express()
+app.use(express.json({ verify: (req, _, buf) => { req.raw = buf } }))
+
+app.post('/posta-webhook', (req, res) => {
+  const sig = req.headers['x-posta-signature']
+  if (!sig) return res.sendStatus(401)
+  const expected = createHmac('sha256', process.env.POSTA_WEBHOOK_SECRET)
+    .update(req.raw).digest('hex')
+  const sigBuf = Buffer.from(sig)
+  const expBuf = Buffer.from(expected)
+  if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
+    return res.sendStatus(401)
+  }
+
+  const { event, platform, platformPostUrl, postId } = req.body
+  switch (event) {
+    case 'post.published': onPublished(platform, platformPostUrl, postId); break
+    case 'post.failed':    onFailed(platform, postId, req.body.error);     break
+    default: /* ignore */ ;
+  }
+  res.sendStatus(200)
+})
+app.listen(3000)`,
+      },
+      {
+        type: 'p',
+        text: 'Three things to notice. (1) The <code>express.json</code> middleware grabs the <em>raw</em> body before parsing, because HMAC has to verify the bytes that were signed, not the re-serialized JSON. (2) An early return on missing signature header prevents a confusing crash when something other than Posta probes the endpoint. (3) The length check before <code>timingSafeEqual</code> dodges a Node throw when buffers differ in length.',
+      },
+      { type: 'h2', text: 'Pattern 1 — Auto-respond on publish' },
+      {
+        type: 'p',
+        text: 'The most common closed-loop pattern: when LinkedIn fires <code>post.published</code>, hand the URL to your agent and have it draft the first reply or a follow-up Slack note. The webhook handler kicks off a <em>new</em> agent run rather than calling synchronously — keep the webhook handler fast (return 200 quickly) and put the work on a queue.',
+      },
+      {
+        type: 'code',
+        lang: 'javascript',
+        code: `async function onPublished(platform, url, postId) {
+  await queue.push({
+    type: 'draft-reply',
+    platform, url, postId,
+    promptHint: 'Draft a thoughtful first comment on this post',
+  })
+}`,
+      },
+      { type: 'h2', text: 'Pattern 2 — Multi-day campaign branching' },
+      {
+        type: 'p',
+        text: 'For a campaign that runs over days, you don’t want to schedule day 5 on day 1 — engagement on day 1 changes what day 5 should say. Webhook-driven branching lets the agent decide day N+1 after day N publishes:',
+      },
+      {
+        type: 'ul',
+        items: [
+          'Day 1 post fires <code>post.published</code> webhook.',
+          'Receiver kicks off agent run with the day-1 metrics so far (or just the URL — agent can fetch).',
+          'Agent drafts day-2 post and calls Posta to create it as a scheduled draft.',
+          'Repeat.',
+        ],
+      },
+      { type: 'h2', text: 'Pattern 3 — Retry-with-variation' },
+      {
+        type: 'p',
+        text: 'When <code>post.failed</code> fires (rate limits, transient platform errors, content rejections), don’t blind-retry the same payload. Regenerate the caption with a different angle and re-schedule. The Posta queue itself does retry on transient platform errors with exponential backoff, so by the time you see a <code>post.failed</code> webhook the platform has truly refused — variation is the right next step.',
+      },
+      { type: 'h2', text: 'Pattern 4 — Supervised autonomy with a kill switch' },
+      {
+        type: 'p',
+        text: 'For higher-stakes content, fire a Slack message on every <code>post.scheduled</code> with a "kill switch" button that calls Posta’s <code>DELETE /v1/posts/:id</code>. The bot still drafts and schedules autonomously, but a human can pull a post before it goes live without watching a dashboard. This is the pattern we recommend for the first week of any new autonomous loop.',
+      },
+      { type: 'h2', text: 'Pitfalls' },
+      {
+        type: 'ul',
+        items: [
+          '<strong>Don’t do work synchronously in the receiver.</strong> Webhook senders time out; if you take 10 seconds to call an LLM in the handler, Posta will retry — and your downstream actions will fire twice.',
+          '<strong>Use idempotency keys.</strong> Every webhook payload includes a unique event ID. If your handler is at-least-once (most are), de-duplicate on that ID before acting.',
+          '<strong>Verify the signature on the raw body.</strong> Re-serializing the JSON before HMAC will fail intermittently — JSON whitespace and key order are not stable.',
+          '<strong>Don’t skip the signature check in dev.</strong> Skipping in dev means you ship the skip to prod. Use a dev secret and verify it the same way.',
+          '<strong>Return 200 on duplicates.</strong> If you’ve already processed the event, return 200 — Posta will treat a 4xx as a failure and retry.',
+        ],
+      },
+      { type: 'h2', text: 'Where to go from here' },
+      {
+        type: 'p',
+        text: 'Wire the webhook receiver into an agent loop end-to-end in the <a href="/autonomous-social-media-bot">autonomous social media bot tutorial</a>. For a tour of the broader patterns this fits into, read <a href="/agentic-social-media-workflows">agentic social media workflows</a>. Or just <a href="/signup">grab a Posta token</a> and write your handler.',
+      },
+    ],
+  },
+  {
+    slug: 'post-to-linkedin-from-terminal-claude-code',
+    title: 'Post to LinkedIn from the terminal with Claude Code',
+    description:
+      'Skip the LinkedIn dashboard. Install the Posta Claude Code skill, run a slash-command in your terminal, ship a post. Setup in 90 seconds.',
+    date: '2026-06-19',
+    updated: '2026-06-19',
+    author: 'Posta Team',
+    tags: ['Claude Code', 'CLI', 'LinkedIn', 'Workflow'],
+    body: [
+      {
+        type: 'p',
+        text: 'Most "post to LinkedIn" tooling assumes you’ll switch to a browser tab. The <a href="/cli-social-media-posting">Posta Claude Code skill</a> assumes the opposite — that you’re in your terminal anyway, that you’d like to stay there, and that your editor’s agent is the best place to draft. Here’s the 90-second setup and a few patterns that make it worth the install.',
+      },
+      { type: 'h2', text: 'Setup' },
+      {
+        type: 'p',
+        text: 'You need three things: a Posta account, a connected LinkedIn account, and Claude Code. If you have all three, this is the whole install:',
+      },
+      {
+        type: 'code',
+        lang: 'bash',
+        code: `# In your repo (or anywhere)
+$ npx posta-skill install
+
+# Then in Claude Code:
+/posta /help`,
+      },
+      {
+        type: 'p',
+        text: 'The skill ships a small set of slash-commands: <code>/posta create</code>, <code>/posta schedule</code>, <code>/posta list</code>, <code>/posta publish</code>. They work in any Claude Code session — you don’t need a Posta-specific repo.',
+      },
+      { type: 'h2', text: 'Pattern 1 — One-shot draft' },
+      {
+        type: 'p',
+        text: 'You finished a piece of work and want to post about it. The terminal is open, Claude Code is up. One slash-command:',
+      },
+      {
+        type: 'code',
+        lang: 'text',
+        code: `/posta create "Shipped Posta v2.1: per-platform caption limits + batch
+media endpoint. Why it matters for anyone running multi-network
+automations: <one-line>." --platforms linkedin --as-draft`,
+      },
+      {
+        type: 'p',
+        text: 'Claude takes the prompt, calls Posta to create the draft on LinkedIn, returns the draft ID and a preview URL. Open the URL in a browser when you want to review, or schedule it inline.',
+      },
+      { type: 'h2', text: 'Pattern 2 — Draft from the repo state' },
+      {
+        type: 'p',
+        text: 'A more agentic pattern: hand Claude Code the repo and ask it to <em>find</em> what’s worth posting:',
+      },
+      {
+        type: 'code',
+        lang: 'text',
+        code: `"Look at the git log since last Monday. Pick the most ship-worthy
+commit. Draft a LinkedIn post about it, schedule it for Tuesday 9am
+CET, save as draft so I can review."`,
+      },
+      {
+        type: 'p',
+        text: 'Claude reads the log, picks a commit, drafts the post, and calls Posta to schedule it as a draft. You review and approve in the Posta dashboard (or via <code>/posta list</code>).',
+      },
+      { type: 'h2', text: 'Pattern 3 — Carousel from a README' },
+      {
+        type: 'p',
+        text: 'For a longer-form release post: ask Claude to build a LinkedIn carousel directly from a README or CHANGELOG. The skill calls Posta’s carousel endpoint, which composites the slides as a PDF and ships it to LinkedIn’s document API. Walked through end-to-end in the <a href="/workflows/blog-to-linkedin-carousel">blog-to-LinkedIn-carousel workflow</a>.',
+      },
+      { type: 'h2', text: 'Why not the MCP server?' },
+      {
+        type: 'p',
+        text: 'You can also install the <a href="/mcp-social-media-server">Posta MCP server</a> into Claude Code. The difference: the skill is a <em>narrow</em> command surface — four slash-commands, scoped to the common posting workflows. The MCP server is the <em>full</em> Posta tool set, twelve tools, accessible whenever Claude decides one is relevant. Most users start with the skill, add the MCP server when they outgrow it.',
+      },
+      { type: 'h2', text: 'Combine with autonomous mode' },
+      {
+        type: 'p',
+        text: 'Claude Code’s autonomous mode means you can wire <code>/posta</code> into a longer-running task. A common pattern in our repo: a "ship the week" macro that picks the top three commits, drafts a post per audience (LinkedIn long-form, Bluesky short-form), and schedules all three — without context-switching from the terminal.',
+      },
+      { type: 'h2', text: 'Where to go from here' },
+      {
+        type: 'p',
+        text: 'The skill is one of four surfaces — see <a href="/blog/mcp-vs-n8n-vs-claude-code-for-social-media">MCP vs n8n vs Claude Code</a> for the decision framework, or jump straight to the <a href="/cli-social-media-posting">CLI posting landing page</a> for the install and full command reference. <a href="/signup">14-day free trial</a> covers all four surfaces and every supported network.',
+      },
+    ],
+  },
 ]
 
 /** Posts newest-first — used by the index and SEO generators. */
