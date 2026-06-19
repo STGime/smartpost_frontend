@@ -1349,6 +1349,450 @@ async with MCPServerStdio(params=POSTA_MCP_PARAMS) as posta_mcp:
       },
     ],
   },
+  {
+    slug: 'vercel-ai-sdk-social-media-agent-tutorial',
+    title: 'Build a social media agent with the Vercel AI SDK: TypeScript tutorial',
+    description:
+      'Wire the Posta MCP server into the Vercel AI SDK with experimental_createMCPClient, stream tool calls from a Next.js route, and close the loop with a webhook handler. TypeScript, runnable code.',
+    date: '2026-06-19',
+    updated: '2026-06-19',
+    author: 'Posta Team',
+    tags: ['Vercel AI SDK', 'TypeScript', 'Next.js', 'Agents', 'MCP'],
+    body: [
+      {
+        type: 'p',
+        text: 'This tutorial builds a working <a href="/integrations/vercel-ai-sdk">Vercel AI SDK</a> agent that posts to social media from a Next.js Route Handler. We use the SDK\'s experimental MCP client to load the <a href="/mcp-social-media-server">Posta MCP server</a>\'s tools, stream the agent\'s response back to the browser, and wire a separate Route Handler to receive Posta\'s HMAC-signed webhooks. Total time: 20 minutes.',
+      },
+      { type: 'h2', text: 'What you\'ll build' },
+      {
+        type: 'p',
+        text: 'A <code>/api/post</code> Route Handler that takes a prompt and returns the agent\'s streaming response — the agent picks which Posta tools to call, schedules the post, and reports back with the platform post URL once Posta\'s webhook confirms it published. The same setup runs in Node, Edge (for the REST path), Server Actions, or any other Vercel AI SDK surface.',
+      },
+      { type: 'h2', text: 'Prerequisites' },
+      {
+        type: 'ul',
+        items: [
+          'A Next.js 15+ app (or any Node runtime that supports the AI SDK).',
+          'A Posta account with at least one connected social account. <a href="/signup">14-day free trial</a>.',
+          'A Posta API token (Settings → API).',
+          'An Anthropic API key (or any other supported provider).',
+        ],
+      },
+      { type: 'h2', text: 'Step 1 — Install dependencies' },
+      {
+        type: 'code',
+        lang: 'bash',
+        code: `npm i ai @ai-sdk/anthropic zod`,
+      },
+      { type: 'h2', text: 'Step 2 — Load the Posta MCP server' },
+      {
+        type: 'p',
+        text: '<code>experimental_createMCPClient</code> talks to the Posta MCP server over stdio. The tools it returns drop straight into <code>generateText</code> or <code>streamText</code>:',
+      },
+      {
+        type: 'code',
+        lang: 'typescript',
+        code: `// app/api/post/route.ts
+import { anthropic } from '@ai-sdk/anthropic'
+import { experimental_createMCPClient as createMCPClient, generateText } from 'ai'
+import { Experimental_StdioMCPTransport as StdioTransport } from 'ai/mcp-stdio'
+
+export const runtime = 'nodejs'
+
+export async function POST(req: Request) {
+  const { prompt } = await req.json()
+
+  const mcp = await createMCPClient({
+    transport: new StdioTransport({
+      command: 'npx',
+      args: ['-y', 'posta-mcp'],
+      env: { POSTA_API_TOKEN: process.env.POSTA_API_TOKEN! },
+    }),
+  })
+
+  try {
+    const tools = await mcp.tools()
+    const result = await generateText({
+      model: anthropic('claude-sonnet-4-6'),
+      tools,
+      prompt,
+      maxSteps: 8,
+    })
+    return Response.json({ text: result.text, steps: result.steps.length })
+  } finally {
+    await mcp.close()
+  }
+}`,
+      },
+      { type: 'h2', text: 'Step 3 — Stream tool calls to the browser' },
+      {
+        type: 'p',
+        text: 'For an interactive UI, swap <code>generateText</code> for <code>streamText</code> and return the stream as a Response. The tool calls still run server-side; the conversation streams to the client:',
+      },
+      {
+        type: 'code',
+        lang: 'typescript',
+        code: `import { streamText } from 'ai'
+
+// inside the Route Handler:
+const tools = await mcp.tools()
+const result = streamText({
+  model: anthropic('claude-sonnet-4-6'),
+  tools,
+  prompt,
+  maxSteps: 8,
+  // Always close the MCP client when the stream completes.
+  onFinish: () => mcp.close(),
+})
+return result.toTextStreamResponse()`,
+      },
+      { type: 'h2', text: 'Step 4 — Run it' },
+      {
+        type: 'code',
+        lang: 'bash',
+        code: `export POSTA_API_TOKEN=posta_...
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# Start the dev server
+npm run dev
+
+# In another terminal:
+curl -X POST http://localhost:3000/api/post \\
+  -H "Content-Type: application/json" \\
+  -d '{ "prompt": "Draft a LinkedIn post about our v2 release and schedule it for tomorrow 9am CET. Save as draft." }'`,
+      },
+      { type: 'h2', text: 'Closing the loop with a webhook Route Handler' },
+      {
+        type: 'p',
+        text: 'A second Route Handler receives Posta\'s outbound webhooks. When Posta fires <code>post.published</code>, this handler can kick off a follow-up AI SDK run — draft a reply, fan out to another network, post a Slack note:',
+      },
+      {
+        type: 'code',
+        lang: 'typescript',
+        code: `// app/api/posta-webhook/route.ts
+import { createHmac, timingSafeEqual } from 'node:crypto'
+
+export const runtime = 'nodejs'
+
+export async function POST(req: Request) {
+  const sig = req.headers.get('x-posta-signature')
+  if (!sig) return new Response('missing signature', { status: 401 })
+
+  const raw = await req.text()
+  const expected = createHmac('sha256', process.env.POSTA_WEBHOOK_SECRET!)
+    .update(raw).digest('hex')
+  const sigBuf = Buffer.from(sig)
+  const expBuf = Buffer.from(expected)
+  if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
+    return new Response('bad signature', { status: 401 })
+  }
+
+  const event = JSON.parse(raw)
+  if (event.event === 'post.published') {
+    // Enqueue a follow-up AI SDK run, e.g. draft a reply
+    await enqueueReplyDraft(event.platform, event.platformPostUrl)
+  }
+  return new Response('ok')
+}`,
+      },
+      {
+        type: 'p',
+        text: 'The receiver hardening pattern (early-return on missing header, length-check before <code>timingSafeEqual</code>) is the same one walked through in <a href="/blog/webhook-driven-social-media-agent-loops">webhook-driven social media agent loops</a>.',
+      },
+      { type: 'h2', text: 'When to use the REST path instead' },
+      {
+        type: 'p',
+        text: 'For a single deterministic step in a chain, define a Zod-typed <code>tool()</code> wrapping the Posta REST API directly — no MCP transport, no tool discovery. The shape (two-step <code>POST /v1/posts</code> + <code>POST /v1/posts/:id/schedule</code>) is documented on the <a href="/integrations/vercel-ai-sdk">Vercel AI SDK integration page</a>.',
+      },
+      { type: 'h2', text: 'Pitfalls' },
+      {
+        type: 'ul',
+        items: [
+          '<strong>The Stdio MCP transport needs Node.</strong> Edge runtime won\'t spawn the <code>npx</code> process. If you need Edge, use the REST-API-as-typed-tool path instead.',
+          '<strong>Always <code>close()</code> the MCP client.</strong> Wrap in <code>try / finally</code> (or use <code>onFinish</code> for streaming) — leaked stdio processes will pile up.',
+          '<strong>Cap <code>maxSteps</code>.</strong> Default is 1; you need more for tool-calling, but unbounded is a runaway risk on transient errors.',
+          '<strong>Start with "save as draft" prompts.</strong> Until you trust the agent\'s output, don\'t let it publish directly.',
+        ],
+      },
+      { type: 'h2', text: 'Where to go from here' },
+      {
+        type: 'p',
+        text: 'Read the <a href="/integrations/vercel-ai-sdk">Vercel AI SDK integration reference</a> for the full Zod-tool example. Compare with the Python framework setups in <a href="/blog/langchain-social-media-agent-tutorial">the LangChain tutorial</a> and <a href="/blog/openai-agents-sdk-social-media-tutorial">the OpenAI Agents SDK tutorial</a>, or the TypeScript-native Mastra setup in <a href="/blog/mastra-social-media-agent-tutorial">the Mastra tutorial</a>. <a href="/signup">14-day free trial</a>.',
+      },
+    ],
+  },
+  {
+    slug: 'mastra-social-media-agent-tutorial',
+    title: 'Build a social media agent with Mastra: TypeScript Workflows + MCP',
+    description:
+      'Wire the Posta MCP server into a Mastra agent and a Mastra Workflow. Per-platform parallel fan-out, typed tools with Zod, and a webhook trigger. TypeScript, runnable code.',
+    date: '2026-06-19',
+    updated: '2026-06-19',
+    author: 'Posta Team',
+    tags: ['Mastra', 'TypeScript', 'Workflows', 'Agents', 'MCP'],
+    body: [
+      {
+        type: 'p',
+        text: 'This tutorial builds a working <a href="/integrations/mastra">Mastra</a> agent and Workflow that publishes social posts. The interesting part: Mastra\'s typed Workflows let you fan out to platforms in parallel with full input/output typing end-to-end — drafting and scheduling LinkedIn, Bluesky, and Threads concurrently in one Workflow run.',
+      },
+      { type: 'h2', text: 'What you\'ll build' },
+      {
+        type: 'p',
+        text: 'A Mastra setup with two pieces: (1) a <em>publisher Agent</em> that holds the Posta MCP server\'s tools and can be invoked for one-off prompts, and (2) a <em>launch Workflow</em> that fans out to three platforms in parallel and reports back with the scheduled post IDs.',
+      },
+      { type: 'h2', text: 'Prerequisites' },
+      {
+        type: 'ul',
+        items: [
+          'Node 20+ and a Mastra project (or any TypeScript app).',
+          'A Posta account with LinkedIn, Bluesky, and Threads connected. <a href="/signup">14-day free trial</a>.',
+          'A Posta API token.',
+          'An Anthropic API key.',
+        ],
+      },
+      { type: 'h2', text: 'Step 1 — Install dependencies' },
+      {
+        type: 'code',
+        lang: 'bash',
+        code: `npm i @mastra/core @mastra/mcp @ai-sdk/anthropic zod`,
+      },
+      { type: 'h2', text: 'Step 2 — Load Posta MCP into an Agent' },
+      {
+        type: 'p',
+        text: 'Mastra\'s <code>MCPClient</code> takes a dict of MCP server configs and exposes <code>getTools()</code> for the agent:',
+      },
+      {
+        type: 'code',
+        lang: 'typescript',
+        code: `// src/mastra/index.ts
+import { Mastra } from '@mastra/core/mastra'
+import { Agent } from '@mastra/core/agent'
+import { MCPClient } from '@mastra/mcp'
+import { anthropic } from '@ai-sdk/anthropic'
+
+const mcp = new MCPClient({
+  servers: {
+    posta: {
+      command: 'npx',
+      args: ['-y', 'posta-mcp'],
+      env: { POSTA_API_TOKEN: process.env.POSTA_API_TOKEN! },
+    },
+  },
+})
+
+export const publisher = new Agent({
+  name: 'social-publisher',
+  instructions: "Draft and schedule social posts. Match each platform's voice.",
+  model: anthropic('claude-sonnet-4-6'),
+  tools: await mcp.getTools(),
+})
+
+export const mastra = new Mastra({ agents: { publisher } })
+
+// One-off invocation:
+const res = await publisher.generate(
+  'Draft a LinkedIn post about our v2 launch and schedule it for tomorrow 9am CET. Save as draft.'
+)
+console.log(res.text)`,
+      },
+      { type: 'h2', text: 'Step 3 — Fan out across platforms in a Workflow' },
+      {
+        type: 'p',
+        text: 'For a launch campaign, you don\'t want sequential one-by-one drafting — three parallel Workflow steps draft and schedule for LinkedIn, Bluesky, and Threads concurrently. Mastra\'s <code>createStep()</code> + <code>.parallel()</code> handles the orchestration:',
+      },
+      {
+        type: 'code',
+        lang: 'typescript',
+        code: `import { createWorkflow, createStep } from '@mastra/core/workflows'
+import { z } from 'zod'
+
+const platformStep = (platform: string) =>
+  createStep({
+    id: \`draft-and-schedule-\${platform}\`,
+    inputSchema: z.object({ launchSummary: z.string(), scheduledAt: z.string() }),
+    outputSchema: z.object({ platform: z.string(), postId: z.string() }),
+    execute: async ({ inputData, mastra }) => {
+      const publisher = mastra.getAgent('publisher')
+      const res = await publisher.generate(
+        \`Draft and schedule a \${platform} post about: \${inputData.launchSummary}. \` +
+        \`Schedule for \${inputData.scheduledAt} as a draft. Match the \${platform} voice. \` +
+        \`Return only the Posta post ID.\`
+      )
+      return { platform, postId: res.text.trim() }
+    },
+  })
+
+export const launchWorkflow = createWorkflow({
+  id: 'launch-campaign',
+  inputSchema: z.object({ launchSummary: z.string(), scheduledAt: z.string() }),
+  outputSchema: z.array(z.object({ platform: z.string(), postId: z.string() })),
+})
+  .parallel([
+    platformStep('linkedin'),
+    platformStep('bluesky'),
+    platformStep('threads'),
+  ])
+  .commit()`,
+      },
+      { type: 'h2', text: 'Step 4 — Run the Workflow' },
+      {
+        type: 'code',
+        lang: 'typescript',
+        code: `const run = await launchWorkflow.createRunAsync()
+const result = await run.start({
+  inputData: {
+    launchSummary: 'Shipped v2 of the SDK: per-platform caption limits, batch media endpoint, OpenAPI updates.',
+    scheduledAt: '2026-06-20T09:00:00+02:00', // tomorrow 9am CET
+  },
+})
+console.log(result)`,
+      },
+      { type: 'h2', text: 'Closing the loop with a webhook trigger' },
+      {
+        type: 'p',
+        text: 'For closed-loop pipelines (publish → react), expose an HTTP endpoint in your Mastra deployment that receives Posta\'s outbound webhooks and triggers a follow-up Workflow. Verification is HMAC-SHA256; see the verified receiver pattern in <a href="/blog/webhook-driven-social-media-agent-loops">webhook-driven social media agent loops</a>.',
+      },
+      { type: 'h2', text: 'When to use the REST path instead' },
+      {
+        type: 'p',
+        text: 'For a single deterministic Workflow step that doesn\'t need an LLM, define a typed <code>createTool()</code> wrapping the Posta REST API directly. The two-step shape (<code>POST /v1/posts</code> with <code>socialAccountIds</code>/<code>mediaIds</code>, then <code>POST /v1/posts/:id/schedule</code> with <code>scheduledAt</code>) is documented on the <a href="/integrations/mastra">Mastra integration page</a>.',
+      },
+      { type: 'h2', text: 'Pitfalls' },
+      {
+        type: 'ul',
+        items: [
+          '<strong>Top-level <code>await mcp.getTools()</code> needs ESM.</strong> If you\'re still on CommonJS, wrap the Agent construction in an async init function.',
+          '<strong>Mastra Cloud vs self-hosted.</strong> REST wrapper runs anywhere fetch works; MCP stdio transport runs in any Node-capable Mastra deployment.',
+          '<strong>Cap parallel platforms.</strong> Three concurrent platform-specific generates × Anthropic concurrency limits → you can hit rate limits fast. For more than ~3 platforms, consider chunking with <code>.foreach()</code>.',
+          '<strong>Schedule as drafts for the first week.</strong> Workflow runs are non-deterministic — review before flipping out of draft mode.',
+        ],
+      },
+      { type: 'h2', text: 'Where to go from here' },
+      {
+        type: 'p',
+        text: 'Read the <a href="/integrations/mastra">Mastra integration reference</a> for the full Agent + Workflow wiring and the Zod-tool REST example. Compare with the Vercel AI SDK setup in <a href="/blog/vercel-ai-sdk-social-media-agent-tutorial">the Vercel AI SDK tutorial</a>, or the Python framework setups in <a href="/blog/langchain-social-media-agent-tutorial">LangChain</a> and <a href="/blog/crewai-social-media-agent-tutorial">CrewAI</a>. <a href="/signup">14-day free trial</a>.',
+      },
+    ],
+  },
+  {
+    slug: 'replace-zapier-social-media-with-n8n-posta',
+    title: 'Replace Zapier social media steps with n8n + Posta',
+    description:
+      'Why teams move social-media automations off Zapier to n8n + Posta: cost per Zap, branching, version control, and outbound webhooks. Migration path and trade-offs.',
+    date: '2026-06-19',
+    updated: '2026-06-19',
+    author: 'Posta Team',
+    tags: ['n8n', 'Zapier', 'Automation', 'Migration'],
+    body: [
+      {
+        type: 'p',
+        text: 'Zapier is the default for "RSS → social media" automations: easy to set up, runs in the cloud, native triggers for everything. But for serious social-posting pipelines — more than a few hundred runs a month, branching by platform, version control on the flows — the economics flip. Most teams move to <a href="/n8n-social-media-node">n8n + Posta</a> within their first year. This is why, and how.',
+      },
+      { type: 'h2', text: 'Where Zapier gets expensive' },
+      {
+        type: 'p',
+        text: 'Zapier prices per <em>task</em>, not per Zap. A "fan a blog post out to 8 networks" automation that posts to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads is <strong>eight tasks per run</strong> in Zapier accounting. If your blog publishes 30 posts a month and you back-fill across a small library, you can burn through a $73/mo Professional plan\'s 2,000 tasks in a single weekend.',
+      },
+      {
+        type: 'p',
+        text: 'On n8n + Posta, the same flow is <em>one</em> n8n run (regardless of how many platforms) and a <em>single</em> Posta call that fans out internally. Pricing on both sides is flat-tier, not per-task.',
+      },
+      { type: 'h2', text: 'Where Zapier gets brittle' },
+      {
+        type: 'ul',
+        items: [
+          '<strong>Branching.</strong> Multi-platform branching with platform-specific captions ("draft a 280-char Bluesky post AND a 3000-char LinkedIn post from the same source") gets you into Paths and chained Zaps — fragile and expensive.',
+          '<strong>Loops over RSS items.</strong> Zapier\'s loop semantics are awkward; multi-item RSS triggers often spawn one task per item per platform.',
+          '<strong>No native version control.</strong> Zap definitions live in Zapier\'s UI. n8n stores workflows as JSON you can commit to git.',
+          '<strong>Limited webhook signing on outbound.</strong> Zapier\'s outbound webhooks don\'t HMAC-sign — so closed-loop pipelines need extra trust scaffolding.',
+        ],
+      },
+      { type: 'h2', text: 'The migration path' },
+      {
+        type: 'p',
+        text: 'For most teams, the migration is straightforward: lift the existing Zap into n8n\'s visual editor, swap the per-platform "Post to LinkedIn / TikTok / Instagram / …" steps for a single Posta node. n8n\'s self-hosted runs free; Cloud is roughly half of Zapier\'s Professional plan at the same execution volume.',
+      },
+      { type: 'h2', text: 'A concrete example: RSS → multi-platform schedule' },
+      {
+        type: 'p',
+        text: 'The Zap-shape:',
+      },
+      {
+        type: 'code',
+        lang: 'text',
+        code: `RSS by Zapier            (trigger)
+  ↓
+ChatGPT                  (caption per platform — multiple Filters / Paths)
+  ↓
+Post to LinkedIn         (task 1)
+Post to Instagram        (task 2)
+Post to Bluesky          (task 3)
+Post to Threads          (task 4)
+... etc.                 (one task per network)
+
+Per run: 1 trigger + N caption steps + N publish tasks = O(N) tasks.`,
+      },
+      {
+        type: 'p',
+        text: 'The n8n + Posta shape:',
+      },
+      {
+        type: 'code',
+        lang: 'text',
+        code: `RSS Trigger              (n8n)
+  ↓
+OpenAI / Claude          (one or N per-platform captions)
+  ↓
+Posta: Create Post       (one node — fan-out happens inside Posta)
+       socialAccountIds: [42, 99, 17, 12]
+       caption: ...
+       (or per-platform configs via platformConfigurations)
+
+Per run: 1 trigger + 1 n8n LLM step + 1 Posta call = O(1) n8n executions.`,
+      },
+      {
+        type: 'p',
+        text: 'Same outcome, one n8n execution instead of N tasks. The Posta call itself fans out to every connected account in one API request — see the <a href="/n8n-social-media-node">Posta n8n node reference</a> for the typed parameter shape.',
+      },
+      { type: 'h2', text: 'When to stay on Zapier' },
+      {
+        type: 'p',
+        text: 'Be honest about the trade-off. Zapier still wins when:',
+      },
+      {
+        type: 'ul',
+        items: [
+          '<strong>Volume is genuinely low</strong> — under ~500 tasks/month and you don\'t want to think about hosting.',
+          '<strong>You need integrations Posta and n8n don\'t cover</strong> — Zapier\'s catalog is 5000+; n8n\'s is 400+; Posta covers eight social networks specifically.',
+          '<strong>You don\'t want to manage infrastructure</strong> — n8n Cloud is hosted, but self-hosting saves money only if you already have a dev team comfortable with a small VPS.',
+        ],
+      },
+      { type: 'h2', text: 'When to migrate' },
+      {
+        type: 'p',
+        text: 'Most teams hit the migration tipping point when one of these is true:',
+      },
+      {
+        type: 'ul',
+        items: [
+          'Monthly Zapier bill > $50 and growing — flat-tier n8n + Posta will be cheaper.',
+          'You\'re writing Filters / Paths and chaining Zaps to get platform-specific behavior — visual branching in n8n is materially better.',
+          'You want to version-control your automations.',
+          'You need HMAC-signed outbound webhooks to close the loop with an agent.',
+        ],
+      },
+      { type: 'h2', text: 'Where to start' },
+      {
+        type: 'p',
+        text: 'Fork one of our <a href="/workflows">ready-made n8n templates</a> (the <a href="/workflows/blog-to-social-media">blog-to-social</a> one mirrors the most common Zap shape). Swap in your accounts, run it once, watch the per-run cost compared to your current Zap. <a href="/signup">14-day free Posta trial</a> covers everything except your n8n hosting.',
+      },
+      { type: 'h2', text: 'Further reading' },
+      {
+        type: 'p',
+        text: 'For the broader picture on which Posta surface to pick (REST API, n8n, MCP, or Claude Code skill), see <a href="/blog/mcp-vs-n8n-vs-claude-code-for-social-media">MCP vs n8n vs Claude Code</a>. For agent-driven extensions of the same flow, see <a href="/agentic-social-media-workflows">agentic social media workflows</a>.',
+      },
+    ],
+  },
 ]
 
 /** Posts newest-first — used by the index and SEO generators. */
