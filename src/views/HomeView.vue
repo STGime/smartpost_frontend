@@ -141,16 +141,51 @@ useHead({
       type: 'application/ld+json',
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: 'Posta',
+        url: 'https://getposta.app/',
+        logo: 'https://getposta.app/assets/posta_og_image.png',
+        description:
+          'Posta is the API-first, agent-first social media platform. MCP server, Claude Code skill, n8n community node, and public REST API for autonomous publishing across nine networks.',
+        // Verified entity-association URLs (HEAD-checked before commit). Social
+        // profiles (X, Bluesky, LinkedIn) deliberately omitted until the actual
+        // handles are confirmed — do NOT fabricate links.
+        sameAs: [
+          'https://github.com/STGime/posta-mcp',
+          'https://github.com/STGime/posta-skill',
+          'https://github.com/STGime/n8n-nodes-posta',
+          'https://www.npmjs.com/package/posta-mcp',
+          'https://www.npmjs.com/package/n8n-nodes-posta',
+        ],
+        contactPoint: [
+          {
+            '@type': 'ContactPoint',
+            contactType: 'customer support',
+            email: 'hello@getposta.app',
+            availableLanguage: ['English'],
+          },
+        ],
+      }),
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
         '@type': 'SoftwareApplication',
         name: 'Posta',
         applicationCategory: 'BusinessApplication',
         operatingSystem: 'Web',
         url: 'https://getposta.app/',
-        // sameAs is used by LLMs to cross-confirm entity identity. Add real
-        // profile URLs here as they come online (G2, Capterra, AlternativeTo,
-        // Product Hunt, GitHub, LinkedIn). Empty array is fine until then;
-        // do NOT fabricate links.
-        sameAs: [],
+        // Verified entity-association URLs (HEAD-checked before commit). Add
+        // social profiles (X, Bluesky, LinkedIn) here once handles are
+        // confirmed; do NOT fabricate links.
+        sameAs: [
+          'https://github.com/STGime/posta-mcp',
+          'https://github.com/STGime/posta-skill',
+          'https://github.com/STGime/n8n-nodes-posta',
+          'https://www.npmjs.com/package/posta-mcp',
+          'https://www.npmjs.com/package/n8n-nodes-posta',
+        ],
         featureList: [
           'Multi-platform social media scheduling (LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, Threads)',
           'Comments inbox for LinkedIn and TikTok with inline reply',
