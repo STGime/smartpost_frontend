@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted, nextTick } from 'vue'
 import { useMediaStore } from '@/stores'
 import type { MediaListItem, MediaVariant } from '@/types'
 
@@ -275,11 +275,21 @@ interface VariantSlide {
   height: number | null
 }
 
+// Brand-case overrides for the per-platform labels — naive title-case turns
+// 'tiktok' into "Tiktok" etc., which doesn't match the platforms' own casing.
+const PLATFORM_BRAND_CASE: Record<string, string> = {
+  tiktok: 'TikTok',
+  youtube: 'YouTube',
+  linkedin: 'LinkedIn',
+  bluesky: 'Bluesky',
+}
+
 function prettifyPlatform(slug: string): string {
   // 'instagram_feed_square' → 'Instagram Feed Square'
+  // 'tiktok'                → 'TikTok'  (via brand-case map)
   return slug
     .split('_')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .map((w) => PLATFORM_BRAND_CASE[w] ?? w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ')
 }
 
@@ -342,6 +352,22 @@ watch(
   () => mediaStore.currentMedia?.id,
   () => {
     selectedVariantId.value = null
+  },
+)
+
+// Keep the active thumb visible when stepping with arrow keys — without this
+// the active thumb can sit off-screen in the horizontally-scrollable strip.
+const thumbStripEl = ref<HTMLDivElement | null>(null)
+watch(
+  () => selectedSlide.value?.id ?? 'original',
+  async (key) => {
+    await nextTick()
+    const strip = thumbStripEl.value
+    if (!strip) return
+    const active = strip.querySelector<HTMLElement>(
+      `[data-slide-key="${CSS.escape(String(key))}"]`,
+    )
+    active?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' })
   },
 )
 
@@ -813,14 +839,14 @@ const closePreviewModal = () => {
               aria-label="Previous variant"
               @click="stepVariant(-1)"
             >‹</button>
-            <div class="variant-thumbs" role="tablist">
+            <div ref="thumbStripEl" class="variant-thumbs">
               <button
                 v-for="slide in carouselSlides"
                 :key="slide.id ?? 'original'"
                 type="button"
-                role="tab"
+                :data-slide-key="slide.id ?? 'original'"
                 :class="['variant-thumb', { 'variant-thumb-active': slide.id === (selectedSlide?.id ?? null) }]"
-                :aria-selected="slide.id === (selectedSlide?.id ?? null)"
+                :aria-pressed="slide.id === (selectedSlide?.id ?? null)"
                 :title="slide.platforms.length ? `${slide.aspectRatio} — ${slide.platforms.join(' · ')}` : slide.aspectRatio"
                 @click="selectedVariantId = slide.id"
               >
