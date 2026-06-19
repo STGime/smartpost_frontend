@@ -1913,7 +1913,7 @@ Per run: 1 trigger + 1 n8n LLM step + 1 Posta call = O(1) n8n executions.`,
       { type: 'h2', text: 'Why per-channel pricing penalises agents' },
       {
         type: 'p',
-        text: 'When a human runs the dashboard, "one more connected channel" is a deliberate decision — the user adds an Instagram account because they\'ll actually post to it. When an <em>agent</em> runs the dashboard, the cost calculus inverts: the agent <em>wants</em> the option to fan out to nine networks regardless of whether it will use them this week. Per-channel pricing forces a pre-decision the agent isn\'t built to make.',
+        text: 'When a human runs the dashboard, "one more connected channel" is a deliberate decision — the user adds an Instagram account because they\'ll actually post to it. When an <em>agent</em> runs the dashboard, the cost calculus inverts: the agent <em>wants</em> the option to fan out to eight networks regardless of whether it will use them this week. Per-channel pricing forces a pre-decision the agent isn\'t built to make.',
       },
       { type: 'h2', text: 'Why per-user pricing rarely matches agent workloads' },
       {
@@ -2011,7 +2011,7 @@ Per run: 1 trigger + 1 n8n LLM step + 1 Posta call = O(1) n8n executions.`,
       {
         type: 'code',
         lang: 'text',
-        code: `"Draft a Bluesky post under 280 chars about our v2 launch.
+        code: `"Draft a Bluesky post under 300 chars about our v2 launch.
 Be specific — mention per-platform caption limits and the batch
 media endpoint. Schedule for now (so I can publish from the app
 if I like it). Save as a draft."`,
@@ -2031,7 +2031,7 @@ if I like it). Save as a draft."`,
         code: `"Look at PR #43 (the SEO Phase 3 batch 3 PR). Draft a 4-post
 Bluesky thread about what shipped: the Vercel AI SDK tutorial,
 the Mastra tutorial, and the Zapier-migration piece. Keep each
-post under 280 chars. Schedule the whole thread for tomorrow 9am
+post under 300 chars. Schedule the whole thread for tomorrow 9am
 CET as drafts so I can review."`,
       },
       {
@@ -2047,7 +2047,7 @@ CET as drafts so I can review."`,
         type: 'code',
         lang: 'text',
         code: `"Take my last LinkedIn draft (the one about the v2 launch),
-compress to a single Bluesky post under 280 chars, and save as
+compress to a single Bluesky post under 300 chars, and save as
 a Bluesky draft. Keep the technical specifics — drop the
 audience-warming opener."`,
       },
