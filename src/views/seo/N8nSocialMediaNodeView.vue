@@ -4,6 +4,7 @@ import { useHead } from '@unhead/vue'
 import SeoPageLayout from '@/components/seo/SeoPageLayout.vue'
 import CtaSection from '@/components/seo/CtaSection.vue'
 import InternalLinks from '@/components/seo/InternalLinks.vue'
+import { breadcrumbJsonLd } from '@/composables/breadcrumbJsonLd'
 import type { WaitingListSource } from '@/services'
 
 const waitingListSource = ref<WaitingListSource>('seo-api')
@@ -96,6 +97,10 @@ useHead({
         description: 'Open-source n8n community node that exposes Posta as a typed, drag-and-drop node for posting to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads.',
       }),
     },
+    breadcrumbJsonLd([
+      { name: 'Home', url: 'https://getposta.app/' },
+      { name: 'n8n Social Media Node', url: 'https://getposta.app/n8n-social-media-node' },
+    ]),
   ],
 })
 </script>

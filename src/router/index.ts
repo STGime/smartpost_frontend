@@ -110,6 +110,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/seo/AutonomousSocialMediaBotView.vue'),
   },
   {
+    path: '/integrations',
+    name: 'integrations-index',
+    component: () => import('@/views/seo/integrations/IntegrationsIndexView.vue'),
+  },
+  {
     path: '/integrations/langchain',
     name: 'integration-langchain',
     component: () => import('@/views/seo/integrations/LangChainView.vue'),

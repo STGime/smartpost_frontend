@@ -23,6 +23,7 @@ Posta is a multi-platform social media scheduler that publishes once to LinkedIn
 - [n8n Social Media Node](https://getposta.app/n8n-social-media-node) — `n8n-nodes-posta` community node: one typed node, 8 social networks.
 - [Agentic Social Media Workflows (guide)](https://getposta.app/agentic-social-media-workflows) — Five workflow archetypes, four integration surfaces, reference architectures.
 - [Build an Autonomous Social Media Bot](https://getposta.app/autonomous-social-media-bot) — End-to-end tutorial: Claude + Posta MCP + HMAC webhooks in one afternoon.
+- [Integrations index](https://getposta.app/integrations) — Hub for agent framework integrations (LangChain, CrewAI, OpenAI Agents SDK, Vercel AI SDK, Mastra).
 - [LangChain integration](https://getposta.app/integrations/langchain) — Posta MCP via `langchain-mcp-adapters`, or REST API as a LangChain Tool.
 - [CrewAI integration](https://getposta.app/integrations/crewai) — Posta MCP via `crewai-tools` `MCPServerAdapter`, or REST API as a CrewAI tool.
 - [OpenAI Agents SDK integration](https://getposta.app/integrations/openai-agents-sdk) — Posta MCP via `MCPServerStdio`, or REST API as a `@function_tool`.

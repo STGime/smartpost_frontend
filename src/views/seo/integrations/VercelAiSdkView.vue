@@ -4,6 +4,7 @@ import { useHead } from '@unhead/vue'
 import SeoPageLayout from '@/components/seo/SeoPageLayout.vue'
 import CtaSection from '@/components/seo/CtaSection.vue'
 import InternalLinks from '@/components/seo/InternalLinks.vue'
+import { breadcrumbJsonLd } from '@/composables/breadcrumbJsonLd'
 import type { WaitingListSource } from '@/services'
 
 const waitingListSource = ref<WaitingListSource>('seo-api')
@@ -74,6 +75,11 @@ useHead({
         ],
       }),
     },
+    breadcrumbJsonLd([
+      { name: 'Home', url: 'https://getposta.app/' },
+      { name: 'Integrations', url: 'https://getposta.app/integrations' },
+      { name: 'Vercel AI SDK', url: 'https://getposta.app/integrations/vercel-ai-sdk' },
+    ]),
   ],
 })
 </script>

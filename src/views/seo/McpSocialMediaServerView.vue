@@ -4,6 +4,7 @@ import { useHead } from '@unhead/vue'
 import SeoPageLayout from '@/components/seo/SeoPageLayout.vue'
 import CtaSection from '@/components/seo/CtaSection.vue'
 import InternalLinks from '@/components/seo/InternalLinks.vue'
+import { breadcrumbJsonLd } from '@/composables/breadcrumbJsonLd'
 import type { WaitingListSource } from '@/services'
 
 const waitingListSource = ref<WaitingListSource>('seo-api')
@@ -96,6 +97,10 @@ useHead({
         description: 'Open-source MCP server that exposes Posta as a set of social media tools to Claude Desktop, Cursor, Windsurf, VS Code, Zed and any other MCP-compatible AI client.',
       }),
     },
+    breadcrumbJsonLd([
+      { name: 'Home', url: 'https://getposta.app/' },
+      { name: 'MCP Server for Social Media', url: 'https://getposta.app/mcp-social-media-server' },
+    ]),
   ],
 })
 </script>

@@ -18,6 +18,7 @@ const ROUTES = [
   '/n8n-social-media-node',
   '/agentic-social-media-workflows',
   '/autonomous-social-media-bot',
+  '/integrations',
   '/integrations/langchain',
   '/integrations/crewai',
   '/integrations/openai-agents-sdk',
