@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { useMediaStore } from '@/stores'
-import type { MediaListItem } from '@/types'
+import type { MediaListItem, MediaVariant } from '@/types'
 
 // File size limits (must match backend)
 const MAX_IMAGE_SIZE_MB = 20
@@ -260,9 +260,116 @@ const confirmBulkDelete = async () => {
   }
 }
 
+// --- Variant carousel ---
+// Lets the user step through each cropped aspect ratio the backend already
+// generated. `null` = showing original; otherwise the (string) variant id of
+// the first variant in that aspect-ratio bucket.
+const selectedVariantId = ref<string | null>(null)
+
+interface VariantSlide {
+  id: string | null // null = original
+  url: string
+  aspectRatio: string // 'Original' | '9:16' | '1:1' | ...
+  platforms: string[] // ['Tiktok', 'Instagram Reels', ...] (empty for original)
+  width: number | null
+  height: number | null
+}
+
+function prettifyPlatform(slug: string): string {
+  // 'instagram_feed_square' → 'Instagram Feed Square'
+  return slug
+    .split('_')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
+}
+
+// One slide per unique aspect_ratio. The backend stores one variant per
+// (platform, aspect_ratio) tuple — ~22 rows for a fully-processed image —
+// but most of those are visually identical (e.g. 7 different "1:1" variants
+// for Instagram/Facebook/LinkedIn/Twitter/Bluesky/Pinterest/Threads square).
+// Collapse them into one slide per aspect and list the platforms in the label.
+const carouselSlides = computed<VariantSlide[]>(() => {
+  const media = mediaStore.currentMedia
+  if (!media || media.type !== 'image' || !media.original_url) return []
+  const slides: VariantSlide[] = [
+    {
+      id: null,
+      url: media.original_url,
+      aspectRatio: 'Original',
+      platforms: [],
+      width: media.width,
+      height: media.height,
+    },
+  ]
+  const byAspect = new Map<string, VariantSlide>()
+  for (const v of (media.variants ?? []) as MediaVariant[]) {
+    const existing = byAspect.get(v.aspect_ratio)
+    if (existing) {
+      existing.platforms.push(prettifyPlatform(v.platform))
+    } else {
+      const slide: VariantSlide = {
+        id: v.id,
+        url: v.url,
+        aspectRatio: v.aspect_ratio,
+        platforms: [prettifyPlatform(v.platform)],
+        width: v.width,
+        height: v.height,
+      }
+      byAspect.set(v.aspect_ratio, slide)
+      slides.push(slide)
+    }
+  }
+  return slides
+})
+
+const selectedSlide = computed<VariantSlide | undefined>(() => {
+  const slides = carouselSlides.value
+  return (
+    slides.find((s) => s.id === selectedVariantId.value) ?? slides[0]
+  )
+})
+
+function stepVariant(delta: 1 | -1): void {
+  const slides = carouselSlides.value
+  if (slides.length <= 1) return
+  const i = slides.findIndex((s) => s.id === selectedVariantId.value)
+  const next = slides[(i + delta + slides.length) % slides.length]
+  if (next) selectedVariantId.value = next.id
+}
+
+// Reset to "Original" whenever the modal opens on a new media item.
+watch(
+  () => mediaStore.currentMedia?.id,
+  () => {
+    selectedVariantId.value = null
+  },
+)
+
+// Esc closes; Left/Right step. Only bound while the modal is open.
+function onModalKeydown(e: KeyboardEvent): void {
+  if (!showPreviewModal.value) return
+  if (e.key === 'Escape') {
+    closePreviewModal()
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault()
+    stepVariant(-1)
+  } else if (e.key === 'ArrowRight') {
+    e.preventDefault()
+    stepVariant(1)
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', onModalKeydown)
+})
+onUnmounted(() => {
+  window.removeEventListener('keydown', onModalKeydown)
+})
+
 const openPreviewModal = async (media: MediaListItem) => {
   mediaToPreview.value = media
   showPreviewModal.value = true
+  selectedVariantId.value = null
 
   // Fetch full media details for original_url
   isLoadingPreview.value = true
@@ -279,6 +386,7 @@ const closePreviewModal = () => {
   showPreviewModal.value = false
   mediaToPreview.value = null
   mediaStore.currentMedia = null
+  selectedVariantId.value = null
 }
 </script>
 
@@ -618,12 +726,14 @@ const closePreviewModal = () => {
           :class="{ 'preview-container-doc': mediaToPreview?.type === 'document' }"
           @click.stop
         >
-          <!-- Image preview -->
+          <!-- Image preview (swappable via the variant carousel below) -->
           <img
             v-if="mediaToPreview?.type === 'image'"
-            :src="mediaStore.currentMedia?.original_url || mediaToPreview?.thumbnail_url || '/placeholder.png'"
-            alt=""
+            :key="selectedSlide?.id ?? 'original'"
+            :src="selectedSlide?.url || mediaToPreview?.thumbnail_url || '/placeholder.png'"
+            :alt="mediaToPreview?.name ? `${mediaToPreview.name} — ${selectedSlide?.aspectRatio ?? 'Original'}` : ''"
             class="preview-image"
+            @error="selectedVariantId = null"
           />
           <!-- Video preview -->
           <video
@@ -676,6 +786,57 @@ const closePreviewModal = () => {
             <div class="spinner"></div>
           </div>
         </div>
+
+        <!-- Variant carousel: only for images that already have variants. -->
+        <div
+          v-if="mediaToPreview?.type === 'image' && carouselSlides.length > 1"
+          class="variant-carousel"
+          @click.stop
+        >
+          <div class="variant-meta">
+            <span class="variant-aspect">{{ selectedSlide?.aspectRatio }}</span>
+            <span
+              v-if="selectedSlide?.platforms?.length"
+              class="variant-platforms"
+              :title="selectedSlide?.platforms?.join(' · ')"
+            >{{ selectedSlide?.platforms?.join(' · ') }}</span>
+            <span
+              v-if="selectedSlide?.width && selectedSlide?.height"
+              class="variant-dims"
+            >{{ selectedSlide.width }} × {{ selectedSlide.height }}</span>
+          </div>
+
+          <div class="variant-strip-row">
+            <button
+              class="variant-nav"
+              type="button"
+              aria-label="Previous variant"
+              @click="stepVariant(-1)"
+            >‹</button>
+            <div class="variant-thumbs" role="tablist">
+              <button
+                v-for="slide in carouselSlides"
+                :key="slide.id ?? 'original'"
+                type="button"
+                role="tab"
+                :class="['variant-thumb', { 'variant-thumb-active': slide.id === (selectedSlide?.id ?? null) }]"
+                :aria-selected="slide.id === (selectedSlide?.id ?? null)"
+                :title="slide.platforms.length ? `${slide.aspectRatio} — ${slide.platforms.join(' · ')}` : slide.aspectRatio"
+                @click="selectedVariantId = slide.id"
+              >
+                <img :src="slide.url" :alt="slide.aspectRatio" loading="lazy" />
+                <span class="variant-thumb-label">{{ slide.aspectRatio }}</span>
+              </button>
+            </div>
+            <button
+              class="variant-nav"
+              type="button"
+              aria-label="Next variant"
+              @click="stepVariant(1)"
+            >›</button>
+          </div>
+        </div>
+
         <div class="preview-info">
           <p class="preview-name">{{ mediaToPreview?.name }}</p>
           <p class="preview-meta">
@@ -1378,6 +1539,124 @@ const closePreviewModal = () => {
 
 .pdf-link:hover {
   text-decoration: underline;
+}
+
+.variant-carousel {
+  margin-top: 14px;
+  width: 100%;
+  max-width: min(720px, 90vw);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.variant-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.variant-aspect {
+  font-weight: 600;
+  color: white;
+  font-size: 13px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.25);
+  border: 1px solid rgba(165, 180, 252, 0.45);
+}
+
+.variant-platforms {
+  max-width: 60ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.variant-dims {
+  opacity: 0.8;
+}
+
+.variant-strip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.variant-nav {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 56px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(15, 23, 42, 0.6);
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 8px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.variant-nav:hover {
+  background: rgba(30, 41, 59, 0.85);
+  border-color: rgba(165, 180, 252, 0.55);
+}
+
+.variant-thumbs {
+  flex: 1 1 auto;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 4px 2px;
+  scrollbar-width: thin;
+}
+
+.variant-thumb {
+  flex: 0 0 auto;
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(15, 23, 42, 0.6);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: border-color 0.15s, transform 0.15s, background 0.15s;
+}
+
+.variant-thumb:hover {
+  border-color: rgba(165, 180, 252, 0.45);
+  transform: translateY(-1px);
+}
+
+.variant-thumb-active {
+  border-color: rgba(165, 180, 252, 0.85);
+  background: rgba(99, 102, 241, 0.18);
+}
+
+.variant-thumb img {
+  width: 100%;
+  height: 48px;
+  object-fit: contain;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+}
+
+.variant-thumb-label {
+  font-size: 10px;
+  line-height: 1.1;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 .preview-info {
