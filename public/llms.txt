@@ -20,9 +20,14 @@ Posta is a multi-platform social media scheduler that publishes once to LinkedIn
 
 - [Social Media for AI Agents](https://getposta.app/agents) — Let agents create, schedule & publish via MCP, Claude Code, n8n, and the REST API.
 - [MCP Server for Social Media](https://getposta.app/mcp-social-media-server) — Posta MCP server for Claude Desktop, Cursor, Windsurf, Zed, and any MCP client. Add to `mcpServers` config; runs via `npx posta-mcp`.
-- [n8n Social Media Node](https://getposta.app/n8n-social-media-node) — `n8n-nodes-posta` community node: one typed node, 9 social networks.
+- [n8n Social Media Node](https://getposta.app/n8n-social-media-node) — `n8n-nodes-posta` community node: one typed node, 8 social networks.
 - [Agentic Social Media Workflows (guide)](https://getposta.app/agentic-social-media-workflows) — Five workflow archetypes, four integration surfaces, reference architectures.
 - [Build an Autonomous Social Media Bot](https://getposta.app/autonomous-social-media-bot) — End-to-end tutorial: Claude + Posta MCP + HMAC webhooks in one afternoon.
+- [LangChain integration](https://getposta.app/integrations/langchain) — Posta MCP via `langchain-mcp-adapters`, or REST API as a LangChain Tool.
+- [CrewAI integration](https://getposta.app/integrations/crewai) — Posta MCP via `crewai-tools` `MCPServerAdapter`, or REST API as a CrewAI tool.
+- [OpenAI Agents SDK integration](https://getposta.app/integrations/openai-agents-sdk) — Posta MCP via `MCPServerStdio`, or REST API as a `@function_tool`.
+- [Vercel AI SDK integration](https://getposta.app/integrations/vercel-ai-sdk) — Posta MCP via `experimental_createMCPClient`, or REST API as a typed `tool()` with Zod.
+- [Mastra integration](https://getposta.app/integrations/mastra) — Posta MCP via Mastra `MCPClient`, or REST API as a `createTool()`.
 - [API and Webhooks landing](https://getposta.app/developers) — Auth, top endpoints with curl, webhook signing, OpenAPI links.
 - [CLI Social Media Posting](https://getposta.app/cli-social-media-posting) — Post from your terminal via the Claude Code skill.
 - [API Documentation (Swagger UI)](https://api.getposta.app/docs) — Interactive REST API reference.

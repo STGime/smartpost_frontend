@@ -110,6 +110,31 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/seo/AutonomousSocialMediaBotView.vue'),
   },
   {
+    path: '/integrations/langchain',
+    name: 'integration-langchain',
+    component: () => import('@/views/seo/integrations/LangChainView.vue'),
+  },
+  {
+    path: '/integrations/crewai',
+    name: 'integration-crewai',
+    component: () => import('@/views/seo/integrations/CrewAiView.vue'),
+  },
+  {
+    path: '/integrations/openai-agents-sdk',
+    name: 'integration-openai-agents-sdk',
+    component: () => import('@/views/seo/integrations/OpenAiAgentsSdkView.vue'),
+  },
+  {
+    path: '/integrations/vercel-ai-sdk',
+    name: 'integration-vercel-ai-sdk',
+    component: () => import('@/views/seo/integrations/VercelAiSdkView.vue'),
+  },
+  {
+    path: '/integrations/mastra',
+    name: 'integration-mastra',
+    component: () => import('@/views/seo/integrations/MastraView.vue'),
+  },
+  {
     path: '/blog',
     name: 'blog-index',
     component: () => import('@/views/seo/BlogIndexView.vue'),
