@@ -1382,7 +1382,9 @@ async with MCPServerStdio(params=POSTA_MCP_PARAMS) as posta_mcp:
       {
         type: 'code',
         lang: 'bash',
-        code: `npm i ai @ai-sdk/anthropic zod`,
+        code: `# Examples below target AI SDK v5; if you're on v4, swap
+#   stopWhen: stepCountIs(n)  →  maxSteps: n
+npm i ai @ai-sdk/anthropic zod`,
       },
       { type: 'h2', text: 'Step 2 — Load the Posta MCP server' },
       {
@@ -1394,7 +1396,11 @@ async with MCPServerStdio(params=POSTA_MCP_PARAMS) as posta_mcp:
         lang: 'typescript',
         code: `// app/api/post/route.ts
 import { anthropic } from '@ai-sdk/anthropic'
-import { experimental_createMCPClient as createMCPClient, generateText } from 'ai'
+import {
+  experimental_createMCPClient as createMCPClient,
+  generateText,
+  stepCountIs,
+} from 'ai'
 import { Experimental_StdioMCPTransport as StdioTransport } from 'ai/mcp-stdio'
 
 export const runtime = 'nodejs'
@@ -1416,7 +1422,7 @@ export async function POST(req: Request) {
       model: anthropic('claude-sonnet-4-6'),
       tools,
       prompt,
-      maxSteps: 8,
+      stopWhen: stepCountIs(8), // AI SDK v5; on v4, use maxSteps: 8
     })
     return Response.json({ text: result.text, steps: result.steps.length })
   } finally {
@@ -1432,7 +1438,7 @@ export async function POST(req: Request) {
       {
         type: 'code',
         lang: 'typescript',
-        code: `import { streamText } from 'ai'
+        code: `import { streamText, stepCountIs } from 'ai'
 
 // inside the Route Handler:
 const tools = await mcp.tools()
@@ -1440,7 +1446,7 @@ const result = streamText({
   model: anthropic('claude-sonnet-4-6'),
   tools,
   prompt,
-  maxSteps: 8,
+  stopWhen: stepCountIs(8), // AI SDK v5
   // Always close the MCP client when the stream completes.
   onFinish: () => mcp.close(),
 })
@@ -1510,7 +1516,7 @@ export async function POST(req: Request) {
         items: [
           '<strong>The Stdio MCP transport needs Node.</strong> Edge runtime won\'t spawn the <code>npx</code> process. If you need Edge, use the REST-API-as-typed-tool path instead.',
           '<strong>Always <code>close()</code> the MCP client.</strong> Wrap in <code>try / finally</code> (or use <code>onFinish</code> for streaming) — leaked stdio processes will pile up.',
-          '<strong>Cap <code>maxSteps</code>.</strong> Default is 1; you need more for tool-calling, but unbounded is a runaway risk on transient errors.',
+          '<strong>Cap the step count.</strong> On AI SDK v5 set <code>stopWhen: stepCountIs(n)</code>; on v4 use <code>maxSteps: n</code>. Without one, a single tool call won\'t continue to a follow-up — and unbounded is a runaway risk on transient errors.',
           '<strong>Start with "save as draft" prompts.</strong> Until you trust the agent\'s output, don\'t let it publish directly.',
         ],
       },
@@ -1691,7 +1697,7 @@ console.log(result)`,
       { type: 'h2', text: 'Where Zapier gets expensive' },
       {
         type: 'p',
-        text: 'Zapier prices per <em>task</em>, not per Zap. A "fan a blog post out to 8 networks" automation that posts to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads is <strong>eight tasks per run</strong> in Zapier accounting. If your blog publishes 30 posts a month and you back-fill across a small library, you can burn through a $73/mo Professional plan\'s 2,000 tasks in a single weekend.',
+        text: 'Zapier prices per <em>task</em>, not per Zap (figures below as of mid-2026; check current pricing as plans shift). A "fan a blog post out to 8 networks" automation that posts to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads is <strong>eight tasks per run</strong> in Zapier accounting. If your blog publishes 30 posts a month and you back-fill across a small library, you can burn through a paid plan\'s monthly task budget in a single weekend.',
       },
       {
         type: 'p',
@@ -1710,7 +1716,7 @@ console.log(result)`,
       { type: 'h2', text: 'The migration path' },
       {
         type: 'p',
-        text: 'For most teams, the migration is straightforward: lift the existing Zap into n8n\'s visual editor, swap the per-platform "Post to LinkedIn / TikTok / Instagram / …" steps for a single Posta node. n8n\'s self-hosted runs free; Cloud is roughly half of Zapier\'s Professional plan at the same execution volume.',
+        text: 'For most teams, the migration is straightforward: lift the existing Zap into n8n\'s visual editor, swap the per-platform "Post to LinkedIn / TikTok / Instagram / …" steps for a single Posta node. n8n\'s self-hosted edition runs free; n8n Cloud is typically meaningfully cheaper than Zapier\'s equivalent task-budget tier (check both vendors\' current pricing for your volume).',
       },
       { type: 'h2', text: 'A concrete example: RSS → multi-platform schedule' },
       {
@@ -1762,8 +1768,8 @@ Per run: 1 trigger + 1 n8n LLM step + 1 Posta call = O(1) n8n executions.`,
       {
         type: 'ul',
         items: [
-          '<strong>Volume is genuinely low</strong> — under ~500 tasks/month and you don\'t want to think about hosting.',
-          '<strong>You need integrations Posta and n8n don\'t cover</strong> — Zapier\'s catalog is 5000+; n8n\'s is 400+; Posta covers eight social networks specifically.',
+          '<strong>Volume is genuinely low</strong> — only a few hundred tasks a month and you don\'t want to think about hosting.',
+          '<strong>You need integrations Posta and n8n don\'t cover</strong> — Zapier\'s catalog is the largest in the category (several thousand apps); n8n\'s is materially smaller; Posta covers eight social networks specifically.',
           '<strong>You don\'t want to manage infrastructure</strong> — n8n Cloud is hosted, but self-hosting saves money only if you already have a dev team comfortable with a small VPS.',
         ],
       },
@@ -1775,7 +1781,7 @@ Per run: 1 trigger + 1 n8n LLM step + 1 Posta call = O(1) n8n executions.`,
       {
         type: 'ul',
         items: [
-          'Monthly Zapier bill > $50 and growing — flat-tier n8n + Posta will be cheaper.',
+          'Monthly Zapier bill running into the tens or hundreds of dollars and growing — flat-tier n8n + Posta will be cheaper.',
           'You\'re writing Filters / Paths and chaining Zaps to get platform-specific behavior — visual branching in n8n is materially better.',
           'You want to version-control your automations.',
           'You need HMAC-signed outbound webhooks to close the loop with an agent.',
