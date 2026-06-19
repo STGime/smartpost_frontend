@@ -879,6 +879,476 @@ CET, save as draft so I can review."`,
       },
     ],
   },
+  {
+    slug: 'langchain-social-media-agent-tutorial',
+    title: 'Build a LangChain social media agent: end-to-end tutorial with Posta',
+    description:
+      'Wire Posta\'s MCP server into a LangGraph agent. End-to-end Python tutorial: draft, schedule, publish across eight networks. Code that runs as-is.',
+    date: '2026-06-19',
+    updated: '2026-06-19',
+    author: 'Posta Team',
+    tags: ['LangChain', 'LangGraph', 'Python', 'Agents', 'MCP'],
+    body: [
+      {
+        type: 'p',
+        text: 'This tutorial walks through building a working <a href="/integrations/langchain">LangChain</a> agent that can draft and schedule social posts across LinkedIn, Bluesky, Threads, and any other Posta-supported network. The agent uses the <a href="/mcp-social-media-server">Posta MCP server</a> through <code>langchain-mcp-adapters</code> — so it discovers the tools at runtime instead of you writing custom Tool wrappers. Total time: 15 minutes.',
+      },
+      { type: 'h2', text: 'What you\'ll build' },
+      {
+        type: 'p',
+        text: 'A LangGraph ReAct agent that takes a high-level instruction like <em>"Draft and schedule a LinkedIn post about our v2 launch for tomorrow 9am CET"</em>, picks the right Posta tools, calls them with typed arguments, and reports back with the scheduled post ID and URL. No glue code, no hand-rolled API client.',
+      },
+      { type: 'h2', text: 'Prerequisites' },
+      {
+        type: 'ul',
+        items: [
+          'Python 3.11+ and <code>pip</code>.',
+          'A Posta account with at least one connected social account. <a href="/signup">14-day free trial</a>.',
+          'A Posta API token (Settings → API in the Posta dashboard).',
+          'An Anthropic API key (or OpenAI — sample uses Claude).',
+        ],
+      },
+      { type: 'h2', text: 'Step 1 — Install dependencies' },
+      {
+        type: 'code',
+        lang: 'bash',
+        code: `pip install langchain-anthropic langchain-mcp-adapters langgraph`,
+      },
+      { type: 'h2', text: 'Step 2 — Wire up the MCP client' },
+      {
+        type: 'p',
+        text: '<code>MultiServerMCPClient</code> takes a dict of MCP server configs and exposes them as LangChain tools. Point it at <code>posta-mcp</code> over stdio with your Posta token in the env:',
+      },
+      {
+        type: 'code',
+        lang: 'python',
+        code: `# posta_agent.py
+import asyncio
+import os
+from langchain_anthropic import ChatAnthropic
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from langgraph.prebuilt import create_react_agent
+
+async def main():
+    client = MultiServerMCPClient({
+        "posta": {
+            "command": "npx",
+            "args": ["-y", "posta-mcp"],
+            "env": {"POSTA_API_TOKEN": os.environ["POSTA_API_TOKEN"]},
+            "transport": "stdio",
+        }
+    })
+    tools = await client.get_tools()
+
+    agent = create_react_agent(
+        ChatAnthropic(model="claude-sonnet-4-6", temperature=0.3),
+        tools,
+    )
+
+    result = await agent.ainvoke({
+        "messages": [(
+            "user",
+            "Look up my connected accounts. Draft a LinkedIn post "
+            "announcing we shipped v2 of our SDK — focus on the new "
+            "per-platform caption limits and the batch media endpoint. "
+            "Schedule it for tomorrow at 9am CET. Save as a draft "
+            "so I can review."
+        )]
+    })
+
+    for msg in result["messages"]:
+        print(f"[{msg.type}] {msg.content}")
+
+asyncio.run(main())`,
+      },
+      { type: 'h2', text: 'Step 3 — Run it' },
+      {
+        type: 'code',
+        lang: 'bash',
+        code: `export POSTA_API_TOKEN=posta_...
+export ANTHROPIC_API_KEY=sk-ant-...
+
+python posta_agent.py`,
+      },
+      {
+        type: 'p',
+        text: 'On the first run the agent calls <code>listAccounts</code> to enumerate your connected social accounts, picks the LinkedIn one, drafts the caption with Claude, and calls <code>createPost</code> + <code>schedulePost</code> with the right arguments. Each tool call streams back to the agent, which decides the next step.',
+      },
+      { type: 'h2', text: 'Step 4 — Add LangGraph state for multi-turn campaigns' },
+      {
+        type: 'p',
+        text: 'The ReAct agent is great for one-shot prompts. For multi-day campaigns where you want the agent to react to webhooks between turns, wrap it in a LangGraph <code>StateGraph</code>:',
+      },
+      {
+        type: 'code',
+        lang: 'python',
+        code: `from typing import TypedDict
+from langgraph.graph import StateGraph, END
+
+class CampaignState(TypedDict):
+    messages: list
+    scheduled_post_ids: list[str]
+    published_post_ids: list[str]
+
+graph = StateGraph(CampaignState)
+
+# "draft" node runs the ReAct agent to draft + schedule
+graph.add_node("draft", agent_node)
+
+# "wait_for_publish" pauses until a webhook flips a published_post_ids entry
+graph.add_node("wait_for_publish", wait_node)
+
+# "draft_followup" runs after publish — drafts the next day's post
+graph.add_node("draft_followup", agent_node)
+
+graph.set_entry_point("draft")
+graph.add_edge("draft", "wait_for_publish")
+graph.add_edge("wait_for_publish", "draft_followup")
+graph.add_edge("draft_followup", END)
+
+campaign = graph.compile()`,
+      },
+      {
+        type: 'p',
+        text: 'The <code>wait_for_publish</code> node is the closed-loop half: it sleeps until Posta\'s HMAC-signed webhook flips the state. For the webhook receiver pattern, see <a href="/blog/webhook-driven-social-media-agent-loops">webhook-driven social media agent loops</a>.',
+      },
+      { type: 'h2', text: 'When to use the REST path instead' },
+      {
+        type: 'p',
+        text: 'If your LangChain code is a deterministic chain (not an agent that picks tools), wrapping the Posta REST API in a <code>@tool</code> is simpler than running the MCP server. The two-step shape is documented on the <a href="/integrations/langchain">LangChain integration page</a>: create the draft with <code>socialAccountIds</code>/<code>mediaIds</code>, then <code>POST /v1/posts/:id/schedule</code> with <code>scheduledAt</code>.',
+      },
+      { type: 'h2', text: 'Pitfalls' },
+      {
+        type: 'ul',
+        items: [
+          '<strong>Set <code>temperature</code> low for tool-calling agents.</strong> 0.0–0.3 produces stable arg shapes; 0.7+ will occasionally invent arguments that fail JSON schema validation.',
+          '<strong>Always include "save as draft" in the user prompt for the first week.</strong> Until you trust the agent\'s output, schedule everything as drafts and approve manually.',
+          '<strong>If a tool call fails, the ReAct loop retries up to <code>recursion_limit</code> times</strong> — keep that bounded (default is 25) to avoid runaway loops on transient platform errors.',
+        ],
+      },
+      { type: 'h2', text: 'Where to go from here' },
+      {
+        type: 'p',
+        text: 'Read the <a href="/integrations/langchain">LangChain integration reference</a> for the full LangGraph wiring. For the comparison with CrewAI and OpenAI Agents SDK, see <a href="/blog/crewai-social-media-agent-tutorial">the CrewAI tutorial</a> and <a href="/blog/openai-agents-sdk-social-media-tutorial">the OpenAI Agents SDK tutorial</a>. For the broader pattern map, see <a href="/agentic-social-media-workflows">agentic social media workflows</a>. <a href="/signup">14-day free trial</a>, no credit card.',
+      },
+    ],
+  },
+  {
+    slug: 'crewai-social-media-agent-tutorial',
+    title: 'Build a CrewAI social media crew: end-to-end tutorial with Posta',
+    description:
+      'A CrewAI crew with per-platform specialist agents, all sharing the Posta MCP server. End-to-end Python tutorial. Code that runs as-is.',
+    date: '2026-06-19',
+    updated: '2026-06-19',
+    author: 'Posta Team',
+    tags: ['CrewAI', 'Python', 'Agents', 'MCP'],
+    body: [
+      {
+        type: 'p',
+        text: 'This tutorial builds a working <a href="/integrations/crewai">CrewAI</a> crew that posts to social media. The interesting part: instead of one agent for everything, we wire up <em>per-platform specialist agents</em> — a LinkedIn specialist with a long-form voice, a Bluesky specialist with a short-form voice, a YouTube Shorts specialist tuned for vertical video promos — and let CrewAI orchestrate them. All three share the same <a href="/mcp-social-media-server">Posta MCP server</a> as a tool source.',
+      },
+      { type: 'h2', text: 'What you\'ll build' },
+      {
+        type: 'p',
+        text: 'A hierarchical CrewAI crew with a research agent that gathers context, a router/manager agent that decides which platforms get a post, and three platform specialists that draft and schedule for their network. All four agents share the Posta MCP server\'s tool set — they reach for the same <code>createPost</code> / <code>schedulePost</code> tools but call them with platform-specific voices.',
+      },
+      { type: 'h2', text: 'Prerequisites' },
+      {
+        type: 'ul',
+        items: [
+          'Python 3.11+ and <code>pip</code>.',
+          'A Posta account with LinkedIn, Bluesky, and YouTube connected. <a href="/signup">14-day free trial</a>.',
+          'A Posta API token.',
+          'An Anthropic or OpenAI API key.',
+        ],
+      },
+      { type: 'h2', text: 'Step 1 — Install dependencies' },
+      {
+        type: 'code',
+        lang: 'bash',
+        code: `pip install crewai crewai-tools`,
+      },
+      { type: 'h2', text: 'Step 2 — Load the Posta tools via MCPServerAdapter' },
+      {
+        type: 'p',
+        text: 'CrewAI\'s <code>MCPServerAdapter</code> loads any MCP server\'s tools and exposes them to the crew. Wrap the Posta server config in a <code>with</code> block so the stdio process gets cleaned up after the crew runs:',
+      },
+      {
+        type: 'code',
+        lang: 'python',
+        code: `# crew.py
+import os
+from crewai import Agent, Task, Crew, Process
+from crewai_tools import MCPServerAdapter
+
+posta_params = {
+    "command": "npx",
+    "args": ["-y", "posta-mcp"],
+    "env": {"POSTA_API_TOKEN": os.environ["POSTA_API_TOKEN"]},
+}
+
+LLM = "anthropic/claude-sonnet-4-6"
+
+with MCPServerAdapter(posta_params) as posta_tools:
+    # Three platform specialists — same tool set, different voices.
+    linkedin_specialist = Agent(
+        role="LinkedIn Specialist",
+        goal="Draft long-form, professional, insight-driven LinkedIn posts.",
+        backstory="A B2B content strategist with 10 years of LinkedIn-native writing.",
+        tools=posta_tools,
+        llm=LLM,
+        verbose=True,
+    )
+    bluesky_specialist = Agent(
+        role="Bluesky Specialist",
+        goal="Draft short, punchy, link-friendly Bluesky posts under 300 chars.",
+        backstory="A dev-Twitter veteran who moved to Bluesky early.",
+        tools=posta_tools,
+        llm=LLM,
+        verbose=True,
+    )
+    shorts_specialist = Agent(
+        role="YouTube Shorts Specialist",
+        goal="Draft promo posts for vertical-video Shorts with a hook in 5 seconds.",
+        backstory="A YouTube creator-economy strategist focused on Shorts pacing.",
+        tools=posta_tools,
+        llm=LLM,
+        verbose=True,
+    )
+
+    # Custom manager that orchestrates the specialists. With Process.hierarchical
+    # CrewAI uses manager_agent= for a hand-rolled manager (manager_llm= would
+    # spin up its own — don't mix). The manager isn't in agents=[] either.
+    manager = Agent(
+        role="Campaign Manager",
+        goal="Decide which platforms get a post and delegate drafting.",
+        backstory="A multi-network campaign manager who briefs specialists.",
+        llm=LLM,
+        allow_delegation=True,
+        verbose=True,
+    )
+
+    task = Task(
+        description=(
+            "We shipped v2 of our SDK today: per-platform caption limits, "
+            "batch media endpoint, OpenAPI updates. Brief each specialist. "
+            "Each should draft and schedule a post for tomorrow 9am CET as "
+            "a draft (so we can review)."
+        ),
+        expected_output="A summary of each scheduled post (platform + draft ID).",
+    )
+
+    crew = Crew(
+        agents=[linkedin_specialist, bluesky_specialist, shorts_specialist],
+        tasks=[task],
+        process=Process.hierarchical,
+        manager_agent=manager,
+    )
+
+    result = crew.kickoff()
+    print(result)`,
+      },
+      { type: 'h2', text: 'Step 3 — Run it' },
+      {
+        type: 'code',
+        lang: 'bash',
+        code: `export POSTA_API_TOKEN=posta_...
+export ANTHROPIC_API_KEY=sk-ant-...
+
+python crew.py`,
+      },
+      {
+        type: 'p',
+        text: 'On the first run the manager agent reads the brief, lists the platforms by calling <code>listAccounts</code> through one of the specialists, and delegates per-platform drafting. Each specialist drafts in its own voice, calls <code>createPost</code> + <code>schedulePost</code> for its platform, and reports back with the Posta draft ID. The hierarchical process serializes the delegations and the manager assembles the final summary.',
+      },
+      { type: 'h2', text: 'Why per-platform specialists?' },
+      {
+        type: 'p',
+        text: 'You could ask a single agent to "draft for LinkedIn, Bluesky, and YouTube Shorts." It will — and it will produce three nearly-identical posts with different lengths. Per-platform specialists let you bake in platform-specific writing tradition: LinkedIn rewards earnest insight, Bluesky rewards specificity and self-deprecation, Shorts rewards a hook in the first five seconds. The voices shouldn\'t be identical.',
+      },
+      { type: 'h2', text: 'When to use Flows instead' },
+      {
+        type: 'p',
+        text: 'CrewAI Flows are the right surface when you need explicit control over what runs in what order — non-deterministic delegation can be hard to debug when something goes wrong. The same Posta tools work the same way in Flow steps; the only thing that changes is the orchestration shape.',
+      },
+      { type: 'h2', text: 'Pitfalls' },
+      {
+        type: 'ul',
+        items: [
+          '<strong>Wrap MCPServerAdapter in a <code>with</code> block.</strong> Without it, the stdio process leaks across reruns.',
+          '<strong>Cap the manager\'s recursion.</strong> Hierarchical crews can ping-pong delegations forever if you don\'t set a clear <code>expected_output</code> contract.',
+          '<strong>Give each specialist its own LLM only if needed.</strong> Setting a cheaper model on the manager and Claude on specialists is a common cost-saving tweak; resist the urge to over-optimize before profiling.',
+          '<strong>Always start with "save as draft."</strong> Crew runs are non-deterministic; you want the option to abort before LinkedIn sees a post you don\'t want.',
+        ],
+      },
+      { type: 'h2', text: 'Where to go from here' },
+      {
+        type: 'p',
+        text: 'Read the <a href="/integrations/crewai">CrewAI integration reference</a> for Flow and sequential-process examples. Compare with the LangChain and OpenAI Agents SDK approaches in <a href="/blog/langchain-social-media-agent-tutorial">the LangChain tutorial</a> and <a href="/blog/openai-agents-sdk-social-media-tutorial">the OpenAI Agents SDK tutorial</a>. For the broader pattern map, see <a href="/agentic-social-media-workflows">agentic social media workflows</a>. <a href="/signup">14-day free trial</a>.',
+      },
+    ],
+  },
+  {
+    slug: 'openai-agents-sdk-social-media-tutorial',
+    title: 'Build a social media agent with the OpenAI Agents SDK: end-to-end tutorial',
+    description:
+      'A router-and-specialist agent setup using the OpenAI Agents SDK and the Posta MCP server. End-to-end Python tutorial with handoffs.',
+    date: '2026-06-19',
+    updated: '2026-06-19',
+    author: 'Posta Team',
+    tags: ['OpenAI Agents SDK', 'Python', 'Agents', 'MCP', 'Handoffs'],
+    body: [
+      {
+        type: 'p',
+        text: 'This tutorial builds a working <a href="/integrations/openai-agents-sdk">OpenAI Agents SDK</a> agent setup that posts to social media. It uses two of the SDK\'s native features: <strong>MCP server attachment</strong> (so Posta\'s tools are typed and introspectable) and <strong>handoffs</strong> (so a router agent triages the request and delegates to a publisher agent that owns the Posta tools).',
+      },
+      { type: 'h2', text: 'What you\'ll build' },
+      {
+        type: 'p',
+        text: 'A <em>Router</em> agent that classifies an incoming request (post about a release? share a customer quote? cross-post a YouTube video?) and hands off to one of three specialist agents — Release, Quote, or Repurpose — each holding the Posta MCP server. Each specialist drafts and schedules through Posta in its own voice.',
+      },
+      { type: 'h2', text: 'Prerequisites' },
+      {
+        type: 'ul',
+        items: [
+          'Python 3.11+ and <code>pip</code>.',
+          'A Posta account with at least one connected social account. <a href="/signup">14-day free trial</a>.',
+          'A Posta API token.',
+          'An OpenAI API key.',
+        ],
+      },
+      { type: 'h2', text: 'Step 1 — Install dependencies' },
+      {
+        type: 'code',
+        lang: 'bash',
+        code: `pip install openai-agents`,
+      },
+      { type: 'h2', text: 'Step 2 — Define the specialists' },
+      {
+        type: 'p',
+        text: 'Each specialist gets the same Posta MCP server attached via <code>MCPServerStdio</code> — but with different instructions, so the model picks tool calls that match each agent\'s job:',
+      },
+      {
+        type: 'code',
+        lang: 'python',
+        code: `# agent.py
+import os, asyncio
+from agents import Agent, Runner
+from agents.mcp import MCPServerStdio
+
+POSTA_MCP_PARAMS = {
+    "command": "npx",
+    "args": ["-y", "posta-mcp"],
+    "env": {"POSTA_API_TOKEN": os.environ["POSTA_API_TOKEN"]},
+}
+
+async def main():
+    async with MCPServerStdio(params=POSTA_MCP_PARAMS) as posta_mcp:
+        release_agent = Agent(
+            name="Release",
+            instructions=(
+                "You announce product releases. Draft a long-form LinkedIn "
+                "post AND a short Bluesky post. Schedule both as drafts."
+            ),
+            mcp_servers=[posta_mcp],
+        )
+        quote_agent = Agent(
+            name="CustomerQuote",
+            instructions=(
+                "You amplify customer quotes. Draft a single Bluesky post "
+                "that quotes the user with attribution and schedules as a draft."
+            ),
+            mcp_servers=[posta_mcp],
+        )
+        repurpose_agent = Agent(
+            name="Repurpose",
+            instructions=(
+                "You repurpose long-form content (videos, posts) into "
+                "short-form across LinkedIn, Bluesky, and Threads — drafts only."
+            ),
+            mcp_servers=[posta_mcp],
+        )
+
+        router = Agent(
+            name="Router",
+            instructions=(
+                "Classify the user request as a Release, a CustomerQuote, "
+                "or a Repurpose, then hand off to the right specialist."
+            ),
+            handoffs=[release_agent, quote_agent, repurpose_agent],
+        )
+
+        result = await Runner.run(
+            router,
+            input=(
+                "We shipped v2 of our SDK today: per-platform caption limits, "
+                "batch media endpoint, OpenAPI updates. Get the word out."
+            ),
+        )
+        print(result.final_output)
+
+asyncio.run(main())`,
+      },
+      { type: 'h2', text: 'Step 3 — Run it' },
+      {
+        type: 'code',
+        lang: 'bash',
+        code: `export POSTA_API_TOKEN=posta_...
+export OPENAI_API_KEY=sk-...
+
+python agent.py`,
+      },
+      {
+        type: 'p',
+        text: 'The Router classifies the input as a Release, hands off to the Release specialist, and the Release specialist calls Posta\'s tools to create the LinkedIn and Bluesky drafts. The handoff carries the input + conversation context; the specialist returns the final answer up the chain.',
+      },
+      { type: 'h2', text: 'Adding Sessions for multi-turn campaigns' },
+      {
+        type: 'p',
+        text: 'For multi-turn campaigns ("now schedule the day-2 post"), wrap the runs in a session so the agent remembers the campaign state across turns. <code>Session</code> is the abstract base; use the concrete <code>SQLiteSession</code> (or <code>OpenAIConversationsSession</code>) to actually instantiate one:',
+      },
+      {
+        type: 'code',
+        lang: 'python',
+        code: `from agents import SQLiteSession
+
+async with MCPServerStdio(params=POSTA_MCP_PARAMS) as posta_mcp:
+    # ... define agents as above
+    session = SQLiteSession("sdk-v2-launch")
+
+    # Day 1
+    await Runner.run(router, input="Launch campaign: SDK v2...", session=session)
+
+    # Day 2 — same session, agent knows what day 1 looked like
+    await Runner.run(router, input="Schedule the day-2 post following up on yesterday's launch.", session=session)`,
+      },
+      { type: 'h2', text: 'Closing the loop with webhooks' },
+      {
+        type: 'p',
+        text: 'Pair this with a webhook receiver that triggers a new <code>Runner.run()</code> when Posta fires <code>post.published</code> — that\'s how the agent reacts to platform feedback in real time. See <a href="/blog/webhook-driven-social-media-agent-loops">webhook-driven social media agent loops</a> for the full pattern.',
+      },
+      { type: 'h2', text: 'Pitfalls' },
+      {
+        type: 'ul',
+        items: [
+          '<strong>Attach the MCP server to the agent the handoff lands on, not the router.</strong> If the router holds the MCP server but doesn\'t use it, you pay for an extra tool list in every router prompt.',
+          '<strong>Cap <code>max_turns</code>.</strong> Defaults are generous; tool-calling loops can run away when an unfamiliar error shape comes back from Posta.',
+          '<strong>Always schedule as drafts for the first week.</strong> Handoff chains are easier to debug when posts haven\'t already shipped.',
+          '<strong>Use <code>tool_use_behavior="stop_on_first_tool"</code> for one-shot deterministic flows.</strong> When you want the agent to call exactly one Posta tool and return — not loop — set this.',
+        ],
+      },
+      { type: 'h2', text: 'When to use the Responses API directly instead' },
+      {
+        type: 'p',
+        text: 'The Agents SDK is ergonomic sugar on top of the Responses API + function-tool contract. If you don\'t need handoffs or sessions, registering a function tool that wraps the <a href="/integrations/openai-agents-sdk">Posta REST API</a> directly with the Responses API is one fewer abstraction.',
+      },
+      { type: 'h2', text: 'Where to go from here' },
+      {
+        type: 'p',
+        text: 'Read the <a href="/integrations/openai-agents-sdk">OpenAI Agents SDK integration reference</a> for the full handoff + sessions wiring. Compare with the LangChain and CrewAI approaches in <a href="/blog/langchain-social-media-agent-tutorial">the LangChain tutorial</a> and <a href="/blog/crewai-social-media-agent-tutorial">the CrewAI tutorial</a>. For the broader pattern map, see <a href="/agentic-social-media-workflows">agentic social media workflows</a>. <a href="/signup">14-day free trial</a>.',
+      },
+    ],
+  },
 ]
 
 /** Posts newest-first — used by the index and SEO generators. */
