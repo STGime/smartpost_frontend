@@ -563,7 +563,7 @@ export const blogPosts: BlogPost[] = [
         type: 'ul',
         items: [
           'You live in a terminal or IDE and don’t want to switch context to post.',
-          'You want a small, focused command surface (<code>/posta create</code>, <code>/posta schedule</code>) rather than the full MCP tool set.',
+          'You want a focused, natural-language wrapper around the common posting workflows — draft, schedule, list, publish — rather than the full MCP tool set.',
           'You’re handing a small autonomy budget to a Claude Code agent and don’t want it to wander into the full Posta API.',
         ],
       },
@@ -773,7 +773,7 @@ app.listen(3000)`,
       { type: 'h2', text: 'Pattern 4 — Supervised autonomy with a kill switch' },
       {
         type: 'p',
-        text: 'For higher-stakes content, fire a Slack message on every <code>post.scheduled</code> with a "kill switch" button that calls Posta’s <code>DELETE /v1/posts/:id</code>. The bot still drafts and schedules autonomously, but a human can pull a post before it goes live without watching a dashboard. This is the pattern we recommend for the first week of any new autonomous loop.',
+        text: 'For higher-stakes content, fire a Slack message on every <code>post.scheduled</code> with a deep link to the post in the Posta dashboard (<code>https://getposta.app/app/posts/&lt;postId&gt;</code>). A reviewer can open it, edit, reschedule, or cancel before it goes live. The bot still drafts and schedules autonomously, but no post slips into production without at least the option of a human glance. This is the pattern we recommend for the first week of any new autonomous loop.',
       },
       { type: 'h2', text: 'Pitfalls' },
       {
@@ -810,36 +810,36 @@ app.listen(3000)`,
       { type: 'h2', text: 'Setup' },
       {
         type: 'p',
-        text: 'You need three things: a Posta account, a connected LinkedIn account, and Claude Code. If you have all three, this is the whole install:',
-      },
-      {
-        type: 'code',
-        lang: 'bash',
-        code: `# In your repo (or anywhere)
-$ npx posta-skill install
-
-# Then in Claude Code:
-/posta /help`,
-      },
-      {
-        type: 'p',
-        text: 'The skill ships a small set of slash-commands: <code>/posta create</code>, <code>/posta schedule</code>, <code>/posta list</code>, <code>/posta publish</code>. They work in any Claude Code session — you don’t need a Posta-specific repo.',
-      },
-      { type: 'h2', text: 'Pattern 1 — One-shot draft' },
-      {
-        type: 'p',
-        text: 'You finished a piece of work and want to post about it. The terminal is open, Claude Code is up. One slash-command:',
+        text: 'You need three things: a Posta account, a connected LinkedIn account, and Claude Code. If you have all three, this is the whole install — one command in Claude Code, pointing at the skill repo:',
       },
       {
         type: 'code',
         lang: 'text',
-        code: `/posta create "Shipped Posta v2.1: per-platform caption limits + batch
-media endpoint. Why it matters for anyone running multi-network
-automations: <one-line>." --platforms linkedin --as-draft`,
+        code: `# In Claude Code:
+/install-skill https://github.com/STGime/posta-skill
+
+# Once installed, Claude can call Posta in natural language —
+# no Posta-specific slash-commands required.`,
       },
       {
         type: 'p',
-        text: 'Claude takes the prompt, calls Posta to create the draft on LinkedIn, returns the draft ID and a preview URL. Open the URL in a browser when you want to review, or schedule it inline.',
+        text: 'The skill is <em>natural-language driven</em>: there are no <code>/posta create</code> or <code>/posta schedule</code> commands to memorize. You ask Claude in plain English ("schedule a LinkedIn post about…") and the skill handles authentication, calls Posta under the hood, and reports back. The full reference is on the <a href="/cli-social-media-posting">CLI posting landing page</a>.',
+      },
+      { type: 'h2', text: 'Pattern 1 — One-shot draft' },
+      {
+        type: 'p',
+        text: 'You finished a piece of work and want to post about it. The terminal is open, Claude Code is up. Just ask:',
+      },
+      {
+        type: 'code',
+        lang: 'text',
+        code: `"Draft a LinkedIn post: 'Shipped Posta v2.1 — per-platform caption
+limits + batch media endpoint. Matters for anyone running multi-network
+automations because…' Save it as a draft so I can review."`,
+      },
+      {
+        type: 'p',
+        text: 'Claude takes the prompt, calls Posta to create the draft on LinkedIn, returns the draft ID and a preview URL. Open the URL in a browser when you want to review, or ask Claude to schedule it inline.',
       },
       { type: 'h2', text: 'Pattern 2 — Draft from the repo state' },
       {
@@ -855,7 +855,7 @@ CET, save as draft so I can review."`,
       },
       {
         type: 'p',
-        text: 'Claude reads the log, picks a commit, drafts the post, and calls Posta to schedule it as a draft. You review and approve in the Posta dashboard (or via <code>/posta list</code>).',
+        text: 'Claude reads the log, picks a commit, drafts the post, and calls Posta to schedule it as a draft. You review and approve in the Posta dashboard, or ask Claude to list scheduled drafts and approve from the terminal.',
       },
       { type: 'h2', text: 'Pattern 3 — Carousel from a README' },
       {
@@ -865,12 +865,12 @@ CET, save as draft so I can review."`,
       { type: 'h2', text: 'Why not the MCP server?' },
       {
         type: 'p',
-        text: 'You can also install the <a href="/mcp-social-media-server">Posta MCP server</a> into Claude Code. The difference: the skill is a <em>narrow</em> command surface — four slash-commands, scoped to the common posting workflows. The MCP server is the <em>full</em> Posta tool set, twelve tools, accessible whenever Claude decides one is relevant. Most users start with the skill, add the MCP server when they outgrow it.',
+        text: 'You can also install the <a href="/mcp-social-media-server">Posta MCP server</a> into Claude Code. The difference: the skill is a focused wrapper around the common posting workflows (draft, schedule, list, publish), tuned for Claude Code specifically. The MCP server exposes Posta’s full tool surface — <code>createPost</code>, <code>schedulePost</code>, <code>listAccounts</code>, <code>getPostStatus</code>, <code>listMedia</code>, <code>uploadMedia</code>, <code>listPosts</code> — to any MCP client, including Claude Code. Most users start with the skill, add the MCP server when they outgrow it.',
       },
       { type: 'h2', text: 'Combine with autonomous mode' },
       {
         type: 'p',
-        text: 'Claude Code’s autonomous mode means you can wire <code>/posta</code> into a longer-running task. A common pattern in our repo: a "ship the week" macro that picks the top three commits, drafts a post per audience (LinkedIn long-form, Bluesky short-form), and schedules all three — without context-switching from the terminal.',
+        text: 'Claude Code’s autonomous mode means you can wire the skill into a longer-running task. A common pattern in our repo: a "ship the week" prompt that picks the top three commits, drafts a post per audience (LinkedIn long-form, Bluesky short-form), and schedules all three — without context-switching from the terminal.',
       },
       { type: 'h2', text: 'Where to go from here' },
       {
