@@ -157,24 +157,42 @@ export async function POST(req: Request) {
 import { generateText, tool } from 'ai'
 import { z } from 'zod'
 
+const POSTA = 'https://api.getposta.app'
+const HEADERS = {
+  'Authorization': `Bearer ${process.env.POSTA_API_TOKEN}`,
+  'Content-Type': 'application/json',
+}
+
 const schedulePost = tool({
-  description: 'Schedule a social media post to one or many platforms via Posta.',
+  description: 'Create a Posta draft on the given social accounts and schedule it.',
   parameters: z.object({
     caption: z.string().describe('Post caption'),
-    platforms: z.array(z.string()).describe('Platform slugs e.g. ["linkedin","bluesky"]'),
-    scheduleFor: z.string().describe('ISO 8601 timestamp'),
+    socialAccountIds: z.array(z.number()).describe('Posta social_account IDs to publish to'),
+    scheduledAt: z.string().describe('ISO 8601 timestamp'),
+    mediaIds: z.array(z.string()).optional().describe('Optional Posta media IDs'),
   }),
-  execute: async ({ caption, platforms, scheduleFor }) => {
-    const r = await fetch('https://api.getposta.app/v1/posts', {
+  execute: async ({ caption, socialAccountIds, scheduledAt, mediaIds }) => {
+    // Step 1 — create the draft
+    const createRes = await fetch(`${POSTA}/v1/posts`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.POSTA_API_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ caption, platforms, scheduleFor }),
+      headers: HEADERS,
+      body: JSON.stringify({
+        caption,
+        socialAccountIds,
+        ...(mediaIds?.length ? { mediaIds } : {}),
+      }),
     })
-    if (!r.ok) throw new Error(`Posta ${r.status}`)
-    return await r.json()
+    if (!createRes.ok) throw new Error(`Posta create ${createRes.status}`)
+    const { id } = await createRes.json()
+
+    // Step 2 — schedule it
+    const scheduleRes = await fetch(`${POSTA}/v1/posts/${id}/schedule`, {
+      method: 'POST',
+      headers: HEADERS,
+      body: JSON.stringify({ scheduledAt }),
+    })
+    if (!scheduleRes.ok) throw new Error(`Posta schedule ${scheduleRes.status}`)
+    return { id, scheduledAt }
   },
 })
 

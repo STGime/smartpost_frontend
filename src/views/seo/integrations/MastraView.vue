@@ -160,27 +160,44 @@ console.log(res.text)</code></pre>
       <pre class="code-block" v-pre><code>import { createTool } from '@mastra/core/tools'
 import { z } from 'zod'
 
+const POSTA = 'https://api.getposta.app'
+const headers = () => ({
+  'Authorization': `Bearer ${process.env.POSTA_API_TOKEN}`,
+  'Content-Type': 'application/json',
+})
+
 export const schedulePost = createTool({
   id: 'schedule-post',
-  description: 'Schedule a social media post via Posta. scheduleFor is ISO 8601.',
+  description: 'Create a Posta draft on the given social accounts and schedule it. scheduledAt is ISO 8601.',
   inputSchema: z.object({
     caption: z.string(),
-    platforms: z.array(z.string()),
-    scheduleFor: z.string(),
+    socialAccountIds: z.array(z.number()),
+    scheduledAt: z.string(),
+    mediaIds: z.array(z.string()).optional(),
   }),
-  outputSchema: z.object({ id: z.string() }),
+  outputSchema: z.object({ id: z.string(), scheduledAt: z.string() }),
   execute: async ({ context }) => {
-    const r = await fetch('https://api.getposta.app/v1/posts', {
+    // Step 1 — create the draft
+    const createRes = await fetch(`${POSTA}/v1/posts`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.POSTA_API_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(context),
+      headers: headers(),
+      body: JSON.stringify({
+        caption: context.caption,
+        socialAccountIds: context.socialAccountIds,
+        ...(context.mediaIds?.length ? { mediaIds: context.mediaIds } : {}),
+      }),
     })
-    if (!r.ok) throw new Error(`Posta ${r.status}`)
-    const data = await r.json()
-    return { id: data.id }
+    if (!createRes.ok) throw new Error(`Posta create ${createRes.status}`)
+    const { id } = await createRes.json()
+
+    // Step 2 — schedule it
+    const scheduleRes = await fetch(`${POSTA}/v1/posts/${id}/schedule`, {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify({ scheduledAt: context.scheduledAt }),
+    })
+    if (!scheduleRes.ok) throw new Error(`Posta schedule ${scheduleRes.status}`)
+    return { id, scheduledAt: context.scheduledAt }
   },
 })</code></pre>
     </section>

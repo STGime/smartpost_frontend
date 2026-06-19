@@ -149,17 +149,36 @@ async def main():
         For deterministic chain steps where you don't need the agent to choose between tools, the
         REST API is simpler. One Tool, one POST.
       </p>
-      <pre class="code-block" v-pre><code>from langchain.tools import tool
+      <pre class="code-block" v-pre><code>from langchain_core.tools import tool
 import os, requests
 
+POSTA = "https://api.getposta.app"
+HEADERS = {"Authorization": f"Bearer {os.environ['POSTA_API_TOKEN']}"}
+
 @tool
-def schedule_post(caption: str, platforms: list[str], schedule_for: str) -> dict:
-    """Schedule a social media post to one or many platforms via Posta."""
+def schedule_post(
+    caption: str,
+    social_account_ids: list[int],
+    scheduled_at: str,
+    media_ids: list[str] | None = None,
+) -> dict:
+    """Create a draft on the given social accounts, then schedule it.
+    scheduled_at is an ISO 8601 timestamp. media_ids are Posta media IDs."""
+    # Step 1 — create draft
     r = requests.post(
-        "https://api.getposta.app/v1/posts",
-        headers={"Authorization": f"Bearer {os.environ['POSTA_API_TOKEN']}"},
-        json={"caption": caption, "platforms": platforms, "scheduleFor": schedule_for},
-        timeout=30,
+        f"{POSTA}/v1/posts", headers=HEADERS, timeout=30,
+        json={
+            "caption": caption,
+            "socialAccountIds": social_account_ids,
+            **({"mediaIds": media_ids} if media_ids else {}),
+        },
+    )
+    r.raise_for_status()
+    post_id = r.json()["id"]
+    # Step 2 — schedule it
+    r = requests.post(
+        f"{POSTA}/v1/posts/{post_id}/schedule", headers=HEADERS, timeout=30,
+        json={"scheduledAt": scheduled_at},
     )
     r.raise_for_status()
     return r.json()</code></pre>
