@@ -54,7 +54,31 @@ useHead({
             name: 'Who is Posta for?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Posta is for creators, solo founders and small marketing teams who post regularly across multiple platforms and are tired of manually resizing, re-exporting and re-uploading content.',
+              text: 'Posta is for developers, AI agents, automation engineers, and the creators they support — anyone who treats social posting as a pipeline rather than a manual task. Plug Posta into an MCP server, an n8n workflow, a Claude Code skill, or the REST API and let the agent do the rest.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'What is the Posta MCP server?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Posta ships an MCP (Model Context Protocol) server so any MCP-capable client — Claude Desktop, Claude Code, Cursor, or your own agent — can create, schedule, and publish social media posts as tool calls. One install (npx posta-mcp), one token, every supported network.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'Does Posta work with n8n?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes. The n8n-nodes-posta community node turns every Posta endpoint into a typed n8n node. We publish ready-to-fork workflows for blog-to-social, YouTube-to-social, product launch campaigns, and LinkedIn carousel generation — wire any trigger to Posta in a few clicks.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'Can I post to social media from Claude Code or the terminal?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes. The Posta Claude Code skill lets you create, schedule, and publish posts straight from your terminal or IDE using natural-language slash-commands. No dashboard required, no context-switch from your editor.',
             },
           },
           {
@@ -62,15 +86,15 @@ useHead({
             name: 'Does Posta publish directly to social networks?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes. Posta publishes directly to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads via each platform\'s official API. Schedule a post for a future time and Posta uploads it at the scheduled moment — no manual hand-off required.',
+              text: 'Yes. Posta publishes directly to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads via each platform\'s official API, and fires HMAC-signed webhooks back to your agent when posts go live — so closed-loop pipelines know exactly when they can act on a result.',
             },
           },
           {
             '@type': 'Question',
-            name: 'How is this different from existing tools?',
+            name: 'How is this different from Buffer, Hootsuite, or Later?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Posta goes deeper on media intelligence – face detection, safe crops and smart compression – instead of just duplicating your post across platforms.',
+              text: 'Those tools are dashboards designed for humans clicking buttons. Posta is API-first and agent-first: full public REST API on every paid tier, HMAC-signed outbound webhooks, an MCP server, a Claude Code skill, and an n8n community node — none of which the dashboard-led incumbents ship.',
             },
           },
           {
@@ -78,15 +102,7 @@ useHead({
             name: 'Can I influence the roadmap?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes. Early users help shape integrations, workflow and pricing. Tell us how you work and what your current stack looks like when you request access.',
-            },
-          },
-          {
-            '@type': 'Question',
-            name: 'Can I post to social media from the terminal or IDE?',
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: 'Yes. Posta has a Claude Code skill that lets you create, schedule and publish social media posts directly from your terminal or IDE using natural language commands.',
+              text: 'Yes. Early users help shape integrations, workflow and pricing. Tell us how you work and what your current agent stack looks like when you request access.',
             },
           },
         ],
@@ -97,26 +113,26 @@ useHead({
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'HowTo',
-        name: 'How to schedule social media posts with Posta',
-        description: 'Three simple steps to go from a single asset to scheduled posts across all your social media platforms.',
+        name: 'How to give an AI agent the power to post to social media with Posta',
+        description: 'Three steps to wire any AI agent, automation, or pipeline into Posta and publish to nine social networks.',
         step: [
           {
             '@type': 'HowToStep',
             position: 1,
-            name: 'Drop in your source asset',
-            text: 'Start with a single image or video in the format you already use today. Posta analyzes subjects, faces and aspect ratio.',
+            name: 'Connect once',
+            text: 'Generate a Posta API token and pick a surface — MCP server (npx posta-mcp), Claude Code skill, n8n community node, or the public REST API. One token, every network, every surface.',
           },
           {
             '@type': 'HowToStep',
             position: 2,
-            name: 'Pick platforms & variants',
-            text: 'Choose where you want to post. Posta prepares platform-ready variants with safe framing and compression.',
+            name: 'Instruct in natural language or code',
+            text: 'Your agent calls Posta as a tool: a Claude tool call via MCP, a slash-command from Claude Code, an n8n node in a workflow, or a typed POST to the REST API. Plain prompts work; structured payloads work; both compose.',
           },
           {
             '@type': 'HowToStep',
             position: 3,
-            name: 'Schedule & ship',
-            text: 'Approve the posts, set dates and times, and let Posta take care of the publishing calendar.',
+            name: 'Posta executes and reports back',
+            text: 'Posta auto-formats the media per platform, publishes or schedules, then fires HMAC-signed webhooks to your agent when the post goes live — closing the loop for autonomous pipelines.',
           },
         ],
       }),
@@ -310,7 +326,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
           </div>
           <div>
             <div class="logo-text">Posta</div>
-            <div class="logo-tagline">Create once. Post everywhere.</div>
+            <div class="logo-tagline">Social media for agents and automation.</div>
           </div>
         </div>
         <div class="header-actions">
@@ -674,29 +690,30 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
 
         <!-- Why Posta Section -->
         <section :ref="whyRef" class="section" id="features">
-          <h2 :class="whyVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">Why Posta?</h2>
+          <h2 :class="whyVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">Why agents choose Posta</h2>
           <p :class="whyVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
-            Automations are only as good as the media handling behind them. Posta does the heavy lifting your agents
-            shouldn't have to — smart media processing, one call for every format, and predictable pricing built for
-            high-volume posting.
+            Other social tools were built for humans clicking buttons. Posta is API-first, agent-first, and built for the
+            class of automation that ships hundreds of posts a week — auto-formatting, closed-loop webhooks, and one
+            token for every network.
           </p>
 
           <div class="feature-grid">
             <div :class="whyVisible ? 'feature-card feature-card-with-image animate-fade-in-up stagger-2' : 'feature-card feature-card-with-image opacity-0'">
-              <div class="feature-tag">Media intelligence</div>
-              <div class="feature-title">Faces stay framed — automatically</div>
+              <div class="feature-tag">Autonomous pipelines</div>
+              <div class="feature-title">No human in the loop, no broken crops</div>
               <div class="feature-body">
                 Your agent never has to reframe media. Posta detects faces in photos and videos and keeps them in
-                frame when converting to portrait, landscape, or square — automatically, on every upload.
+                frame when converting to portrait, landscape, or square — automatically, on every upload. No hand-off,
+                no manual review step.
               </div>
               <img src="/assets/images/Smart crop.png" alt="Smart crop example" class="feature-image" />
             </div>
             <div :class="whyVisible ? 'feature-card feature-card-with-image animate-fade-in-up stagger-3' : 'feature-card feature-card-with-image opacity-0'">
-              <div class="feature-tag">Format once</div>
-              <div class="feature-title">One call, every format</div>
+              <div class="feature-tag">One API, every network</div>
+              <div class="feature-title">One call, nine networks, every format</div>
               <div class="feature-body">
-                Upload once and Posta generates the variants for TikTok, Instagram, YouTube Shorts and more — so your
-                pipeline never exports eight versions by hand.
+                One <code>POST /v1/posts</code>, one MCP tool call, or one n8n node — Posta generates the variants for
+                TikTok, Instagram, YouTube Shorts and more. Your pipeline never exports eight versions by hand.
               </div>
               <div class="platform-previews">
                 <div class="platform-preview tiktok-preview">
@@ -754,11 +771,12 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               </div>
             </div>
             <div :class="whyVisible ? 'feature-card feature-card-with-image animate-fade-in-up stagger-4' : 'feature-card feature-card-with-image opacity-0'">
-              <div class="feature-tag">Performance</div>
+              <div class="feature-tag">Closed-loop with webhooks</div>
               <div class="feature-title">Built for high-volume pipelines</div>
               <div class="feature-body">
-                Compression that keeps quality where it matters and saves bytes where it doesn't — so automated,
-                high-volume posting uploads fast and stays reliable.
+                Compression keeps quality where it matters and saves bytes where it doesn't — so automated, high-volume
+                posting uploads fast and stays reliable. When a post goes live, an HMAC-signed webhook fires back to your
+                agent so the next step knows it can run.
               </div>
               <div class="compression-demo">
                 <div class="compression-item">
@@ -787,45 +805,57 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
 
         <!-- How it Works Section -->
         <section :ref="howRef" class="section" id="how">
-          <h2 :class="howVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">How it works</h2>
+          <h2 :class="howVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">How agents use Posta</h2>
           <p :class="howVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
-            Posta is designed to fit into your existing workflow. You bring your creative; Posta takes care of formats,
-            variants and timing.
+            Posta is API-first and agent-first. Wire it into whatever your stack already speaks — MCP, Claude Code, n8n,
+            or plain HTTP — and let the agent run the loop.
           </p>
 
           <div class="how-grid">
             <div :class="howVisible ? 'step-card animate-fade-in-up stagger-2' : 'step-card opacity-0'">
               <div class="step-num">Step 1</div>
-              <div class="step-title">Drop in your source asset</div>
+              <div class="step-title">Connect once</div>
               <div class="step-body">
-                Start with a single image or video in the format you already use today. Posta analyzes subjects, faces
-                and aspect ratio.
+                Generate a Posta API token, then pick a surface. One token, every network, every surface.
               </div>
+              <pre class="step-code"><code>$ npx posta-mcp install</code></pre>
               <div class="pill-row">
-                <span class="pill">Images & short video</span>
+                <span class="pill">MCP server</span>
+                <span class="pill">Claude Code skill</span>
+                <span class="pill">n8n node</span>
+                <span class="pill">REST API</span>
               </div>
             </div>
             <div :class="howVisible ? 'step-card animate-fade-in-up stagger-3' : 'step-card opacity-0'">
               <div class="step-num">Step 2</div>
-              <div class="step-title">Pick platforms & variants</div>
+              <div class="step-title">Instruct in natural language or code</div>
               <div class="step-body">
-                Choose where you want to post. Posta prepares platform-ready variants with safe framing and compression.
+                Your agent calls Posta as a tool. A Claude tool call via MCP, a slash-command from Claude Code, an n8n
+                node, or a typed POST — same Posta on the other side.
               </div>
+              <pre class="step-code"><code>/posta create "Launch announcement" \
+  --platforms linkedin,bluesky \
+  --schedule "tomorrow 9am"</code></pre>
               <div class="pill-row">
-                <span class="pill">TikTok</span>
-                <span class="pill">Instagram</span>
-                <span class="pill">YouTube Shorts</span>
+                <span class="pill">Prompt</span>
+                <span class="pill">Tool call</span>
+                <span class="pill">JSON payload</span>
               </div>
             </div>
             <div :class="howVisible ? 'step-card animate-fade-in-up stagger-4' : 'step-card opacity-0'">
               <div class="step-num">Step 3</div>
-              <div class="step-title">Schedule & ship</div>
+              <div class="step-title">Posta executes and reports back</div>
               <div class="step-body">
-                Approve the posts, set dates and times, and let Posta take care of the publishing calendar.
+                Posta auto-formats the media per platform, schedules or publishes, and fires HMAC-signed webhooks back
+                to your agent when the post goes live. Closed-loop, hands-off.
               </div>
+              <pre class="step-code"><code>POST {your-webhook}
+{ "event": "post.published",
+  "platform": "linkedin",
+  "platformPostUrl": "..." }</code></pre>
               <div class="pill-row">
-                <span class="pill">Calendar view</span>
-                <span class="pill">Timezone safe</span>
+                <span class="pill">HMAC-signed</span>
+                <span class="pill">Retries with backoff</span>
               </div>
             </div>
           </div>
@@ -1322,35 +1352,59 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
             <div class="faq-item">
               <div class="faq-q">Who is Posta for?</div>
               <div class="faq-a">
-                Posta is for creators, solo founders and small marketing teams who post regularly across multiple
-                platforms and are tired of manually resizing, re-exporting and re-uploading content.
+                Developers, AI agents, automation engineers, and the creators they support — anyone who treats social
+                posting as a pipeline rather than a manual task. Plug Posta into an MCP server, an n8n workflow, a
+                <RouterLink to="/cli-social-media-posting">Claude Code skill</RouterLink>, or the
+                <RouterLink to="/developers">REST API</RouterLink> and let the agent do the rest.
+              </div>
+            </div>
+            <div class="faq-item">
+              <div class="faq-q">What is the Posta MCP server?</div>
+              <div class="faq-a">
+                Posta ships an MCP (Model Context Protocol) server so any MCP-capable client — Claude Desktop,
+                Claude Code, Cursor, or your own agent — can create, schedule, and publish social media posts as tool
+                calls. One install (<code>npx posta-mcp</code>), one token, every supported network.
+              </div>
+            </div>
+            <div class="faq-item">
+              <div class="faq-q">Does Posta work with n8n?</div>
+              <div class="faq-a">
+                Yes. The <code>n8n-nodes-posta</code> community node turns every Posta endpoint into a typed n8n node.
+                We publish ready-to-fork <RouterLink to="/workflows">workflows</RouterLink> for blog-to-social,
+                YouTube-to-social, product-launch campaigns, and LinkedIn carousel generation.
+              </div>
+            </div>
+            <div class="faq-item">
+              <div class="faq-q">Can I post from Claude Code or the terminal?</div>
+              <div class="faq-a">
+                Yes. The <RouterLink to="/cli-social-media-posting">Posta Claude Code skill</RouterLink> lets you create,
+                schedule, and publish posts straight from your terminal or IDE using natural-language slash-commands.
+                No dashboard required, no context-switch from your editor.
               </div>
             </div>
             <div class="faq-item">
               <div class="faq-q">Does Posta publish directly to social networks?</div>
               <div class="faq-a">
-                Yes. Posta publishes directly to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads via each platform's official API. Schedule a post for a future time and Posta uploads it at the scheduled moment — no manual hand-off required.
+                Yes. Posta publishes directly to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and
+                Threads via each platform's official API, and fires HMAC-signed webhooks back to your agent when posts
+                go live — so closed-loop pipelines know exactly when they can act on a result.
               </div>
             </div>
             <div class="faq-item">
-              <div class="faq-q">How is this different from existing tools?</div>
+              <div class="faq-q">How is this different from Buffer, Hootsuite, or Later?</div>
               <div class="faq-a">
-                Posta goes deeper on media intelligence – face detection, safe crops and smart compression – instead of
-                just duplicating your post across platforms.
+                Those tools are dashboards designed for humans clicking buttons. Posta is API-first and agent-first:
+                full public <RouterLink to="/developers">REST API</RouterLink> on every paid tier, HMAC-signed outbound
+                webhooks, an MCP server, a Claude Code skill, and an n8n community node — none of which the
+                dashboard-led incumbents ship. See the
+                <RouterLink to="/compare">side-by-side comparison</RouterLink>.
               </div>
             </div>
             <div class="faq-item">
               <div class="faq-q">Can I influence the roadmap?</div>
               <div class="faq-a">
                 Yes. Early users help shape integrations, workflow and pricing. Tell us how you work and what your
-                current stack looks like when you request access.
-              </div>
-            </div>
-            <div class="faq-item">
-              <div class="faq-q">Can I post to social media from the terminal or IDE?</div>
-              <div class="faq-a">
-                Yes. Posta has a <RouterLink to="/cli-social-media-posting">Claude Code skill</RouterLink> that lets you create, schedule and publish
-                social media posts directly from your terminal or IDE using natural language commands.
+                current agent stack looks like when you request access.
               </div>
             </div>
           </div>
@@ -2411,6 +2465,23 @@ h1 {
 .step-body {
   font-size: 12px;
   color: var(--muted);
+}
+
+.step-code {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  overflow-x: auto;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+
+.step-code code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  white-space: pre;
 }
 
 .pill-row {
