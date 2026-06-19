@@ -1799,6 +1799,270 @@ Per run: 1 trigger + 1 n8n LLM step + 1 Posta call = O(1) n8n executions.`,
       },
     ],
   },
+  {
+    slug: 'n8n-social-media-workflows-cookbook',
+    title: 'The n8n social media workflows cookbook: 4 ready, 8 you can build',
+    description:
+      'Twelve n8n + Posta social-media workflow patterns: four you can fork today and eight you can build with the same primitives. Triggers, LLM steps, Posta nodes.',
+    date: '2026-06-19',
+    updated: '2026-06-19',
+    author: 'Posta Team',
+    tags: ['n8n', 'Workflows', 'Automation', 'Cookbook'],
+    body: [
+      {
+        type: 'p',
+        text: 'This is a working cookbook of n8n + Posta workflow patterns for social-media automation. The first four are <strong>ready-to-fork templates</strong> — open the workflow page, grab the JSON, swap your credentials in. The next eight are <strong>buildable patterns</strong>: the trigger, the LLM step (if any), and the Posta node shape you\'d wire up. Each one is short on purpose; the actual templates are linked where they exist, and the rest are deliberately simple enough to build in an afternoon.',
+      },
+      { type: 'h2', text: 'Four templates ready to fork' },
+      { type: 'h3', text: '1. Blog post → social media' },
+      {
+        type: 'p',
+        text: '<strong>Trigger:</strong> RSS feed of your blog. <strong>LLM step:</strong> draft a caption per platform. <strong>Posta node:</strong> Create Post (multi-account, scheduled). <strong>Use case:</strong> the canonical "auto-promote every post." <a href="/workflows/blog-to-social-media">Open the template →</a>',
+      },
+      { type: 'h3', text: '2. Blog post → LinkedIn carousel' },
+      {
+        type: 'p',
+        text: '<strong>Trigger:</strong> manual or RSS. <strong>LLM step:</strong> summarise the article into slide copy. <strong>Posta node:</strong> generate LinkedIn carousel (Posta composites the PDF and ships it to LinkedIn\'s document API). <strong>Use case:</strong> long-form articles deserve more than a single LinkedIn post. <a href="/workflows/blog-to-linkedin-carousel">Open the template →</a>',
+      },
+      { type: 'h3', text: '3. Product launch → 5-day multi-platform campaign' },
+      {
+        type: 'p',
+        text: '<strong>Trigger:</strong> manual. <strong>LLM step:</strong> draft per-platform copy for each day. <strong>Posta node:</strong> schedule the whole sequence (5 days × N platforms). <strong>Use case:</strong> turning one launch into a sustained campaign without manual scheduling. <a href="/workflows/product-launch-campaign">Open the template →</a>',
+      },
+      { type: 'h3', text: '4. YouTube video → multi-platform promo' },
+      {
+        type: 'p',
+        text: '<strong>Trigger:</strong> YouTube channel feed. <strong>LLM step:</strong> draft a promo caption per platform. <strong>Posta node:</strong> Create Post per network, all scheduled. <strong>Use case:</strong> the cross-poster every YouTuber wishes they\'d set up earlier. <a href="/workflows/youtube-to-social-media">Open the template →</a>',
+      },
+      { type: 'h2', text: 'Eight patterns you can build today' },
+      { type: 'h3', text: '5. Podcast episode → multi-platform repurpose' },
+      {
+        type: 'p',
+        text: '<strong>Trigger:</strong> podcast RSS feed. <strong>Steps:</strong> Whisper (or your transcription provider) → LLM to pick a highlight quote → image generator for the quote card → Posta Create Post. The interesting variant: ask the LLM for three different highlights, then schedule each one for a different day.',
+      },
+      { type: 'h3', text: '6. GitHub release → changelog posts' },
+      {
+        type: 'p',
+        text: '<strong>Trigger:</strong> GitHub webhook on release published. <strong>Steps:</strong> LLM reads the release notes → drafts an engineering-tone post for LinkedIn and a punchier one for Bluesky → Posta Create Post on both. Bonus: only post if the release tag isn\'t a pre-release.',
+      },
+      { type: 'h3', text: '7. Customer testimonial → social proof posts' },
+      {
+        type: 'p',
+        text: '<strong>Trigger:</strong> Typeform / Tally form submission, or a new row in a customer-feedback table. <strong>Steps:</strong> LLM reformats the quote with attribution → image generator drops it on a branded background → Posta Create Post (draft, so you can review for sensitivity before publishing).',
+      },
+      { type: 'h3', text: '8. Webhook → auto-comment-reply pipeline' },
+      {
+        type: 'p',
+        text: '<strong>Trigger:</strong> Posta outbound webhook (<code>post.published</code>). <strong>Steps:</strong> Posta returns the platform post URL → fetch comments via the Posta comments API → LLM drafts a reply for any new comment matching a pattern → Posta Create Comment Reply (LinkedIn / TikTok). Closes the loop on your own posts. Pattern walked through in <a href="/blog/webhook-driven-social-media-agent-loops">webhook-driven social media agent loops</a>.',
+      },
+      { type: 'h3', text: '9. Slack message → social broadcast' },
+      {
+        type: 'p',
+        text: '<strong>Trigger:</strong> Slack reaction on a message (e.g. <code>:megaphone:</code>). <strong>Steps:</strong> LLM rewrites the Slack content in social voice → Posta Create Post on the team\'s connected accounts. Good for "we shipped this" announcements without leaving Slack.',
+      },
+      { type: 'h3', text: '10. Calendar event → live-tweet thread' },
+      {
+        type: 'p',
+        text: '<strong>Trigger:</strong> Calendar event (Google Calendar trigger node). <strong>Steps:</strong> at event start, LLM drafts the opening of a thread → at event mid-point and end, LLM drafts continuation posts → Posta Create Post each time. Works for product launches, demo days, and live streams.',
+      },
+      { type: 'h3', text: '11. Daily digest → multi-platform morning post' },
+      {
+        type: 'p',
+        text: '<strong>Trigger:</strong> n8n Schedule (cron). <strong>Steps:</strong> fetch top stories from your RSS bundle or news API → LLM picks one and writes a thoughtful comment → Posta Create Post scheduled for your audience\'s peak hour. The "you have an opinion about today\'s news" workflow.',
+      },
+      { type: 'h3', text: '12. Stripe payment → "look who joined" social proof' },
+      {
+        type: 'p',
+        text: '<strong>Trigger:</strong> Stripe webhook on <code>customer.subscription.created</code>. <strong>Steps:</strong> LLM drafts a (consented, anonymised) "another team chose us" post → Posta Create Post as a draft (so you can review). The privacy-first version: aggregate weekly and post a "10 teams joined this week" digest.',
+      },
+      { type: 'h2', text: 'What every pattern shares' },
+      {
+        type: 'p',
+        text: 'Notice the shape — every workflow is some variation on <strong>trigger → context → LLM → Posta</strong>. The Posta node is always the last step, and it\'s always one node regardless of how many platforms you fan out to. That\'s what makes n8n + Posta cheap to operate vs. per-task pricing models: see <a href="/blog/replace-zapier-social-media-with-n8n-posta">replace Zapier social media with n8n + Posta</a> for the cost math.',
+      },
+      { type: 'h2', text: 'Where to go from here' },
+      {
+        type: 'p',
+        text: 'Fork one of the four templates from the <a href="/workflows">workflow gallery</a>, then bookmark this page as a buildable list for the rest. For the agent-driven version of these patterns (LLM in the orchestration seat, not just one step), see <a href="/agentic-social-media-workflows">agentic social media workflows</a>. <a href="/signup">14-day free Posta trial</a>, no credit card.',
+      },
+    ],
+  },
+  {
+    slug: 'agent-posting-cost-comparison-vs-buffer-hootsuite',
+    title: 'Posting at agent volume: Posta vs Buffer vs Hootsuite cost model',
+    description:
+      'How the cost of social-media posting scales when an agent (not a human) is the one posting. A qualitative cost-model comparison: per-channel vs flat-tier vs per-task pricing.',
+    date: '2026-06-19',
+    updated: '2026-06-19',
+    author: 'Posta Team',
+    tags: ['Pricing', 'Buffer', 'Hootsuite', 'Agents'],
+    body: [
+      {
+        type: 'p',
+        text: 'When the thing posting to LinkedIn is an autonomous agent and not a human in a Buffer tab, the unit-economics of social-media tooling change. This post is a qualitative cost-model comparison of Posta vs Buffer vs Hootsuite for high-volume agent-driven posting. <em>Specific pricing tiers and limits shift quarterly</em>; the structural shape is more durable than any single dollar amount, so we\'ll focus on the shape (figures sketched here are accurate as of mid-2026; check vendor pricing pages for the live numbers).',
+      },
+      { type: 'h2', text: 'The three pricing shapes' },
+      {
+        type: 'ul',
+        items: [
+          '<strong>Per-channel + per-user (Hootsuite-shape).</strong> You pay for the number of social accounts you connect, multiplied by the number of seats. Designed for agencies with many clients.',
+          '<strong>Per-channel, per-month (Buffer-shape).</strong> You pay per connected social account, on a flat monthly tier. Designed for solo creators and small teams.',
+          '<strong>Flat-tier (Posta-shape).</strong> You pay one monthly fee for a usage cap (post volume + connected accounts inside a generous ceiling). Designed so the marginal cost of one more post or one more channel is zero — which matters when the agent decides.',
+        ],
+      },
+      { type: 'h2', text: 'Why per-channel pricing penalises agents' },
+      {
+        type: 'p',
+        text: 'When a human runs the dashboard, "one more connected channel" is a deliberate decision — the user adds an Instagram account because they\'ll actually post to it. When an <em>agent</em> runs the dashboard, the cost calculus inverts: the agent <em>wants</em> the option to fan out to eight networks regardless of whether it will use them this week. Per-channel pricing forces a pre-decision the agent isn\'t built to make.',
+      },
+      { type: 'h2', text: 'Why per-user pricing rarely matches agent workloads' },
+      {
+        type: 'p',
+        text: 'Hootsuite\'s per-user tier was designed for agencies with humans operating dashboards on behalf of clients. Agent setups typically have one or two human seats (the developer + the on-call person) — the user count is fixed, while the workload (posts per month) can scale 10× without adding humans. Per-user pricing doesn\'t track the work.',
+      },
+      { type: 'h2', text: 'What flat-tier looks like in practice' },
+      {
+        type: 'p',
+        text: 'Posta\'s tiers are flat: a monthly fee covers a generous post-count and channel-count ceiling, with the same MCP server, REST API, webhooks, and Claude Code skill on every paid tier. The marginal cost of one more post is zero until you cross the ceiling; the marginal cost of one more connected channel is zero. <a href="/#pricing">See current Posta pricing</a> for the exact numbers — what matters here is the shape.',
+      },
+      { type: 'h2', text: 'A worked scenario' },
+      {
+        type: 'p',
+        text: 'Imagine a small SaaS team running an agentic content pipeline: 8 social networks, ~150 posts a month (some experiments, some scheduled, some webhook-triggered replies), one developer + one ops person on the dashboard. Sketch the rough monthly cost in each shape:',
+      },
+      {
+        type: 'ul',
+        items: [
+          '<strong>Per-channel × per-user (Hootsuite-shape).</strong> 8 channels × 2 users at agency-tier pricing. The cost grows with the team and with the network list.',
+          '<strong>Per-channel (Buffer-shape).</strong> 8 channels at the per-channel monthly rate. Adding a 9th platform later is another line item.',
+          '<strong>Flat-tier (Posta-shape).</strong> One tier covers everything inside the ceiling. Adding a 9th platform when the next one launches is zero marginal cost.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'Whether the dollar gap is significant depends on each vendor\'s current pricing — but the shape stays the same: per-channel and per-user costs scale with surface area, flat-tier doesn\'t. For agents that want to keep their options open, flat-tier wins by construction.',
+      },
+      { type: 'h2', text: 'The non-cost variables' },
+      {
+        type: 'p',
+        text: 'Cost isn\'t the only variable. Buffer and Hootsuite ship publishing dashboards designed for humans; Posta ships the MCP server, Claude Code skill, n8n node, REST API, and HMAC-signed outbound webhooks designed for agents. If your agent needs to <em>do</em> something with the published post (close a loop, respond to comments, fan out to another network), the dashboard-led incumbents don\'t have a primitive for that. See <a href="/compare">the side-by-side comparison</a> and the <a href="/agentic-social-media-workflows">agentic workflows guide</a>.',
+      },
+      { type: 'h2', text: 'When the others still win' },
+      {
+        type: 'p',
+        text: 'Be honest: Buffer and Hootsuite still win on:',
+      },
+      {
+        type: 'ul',
+        items: [
+          '<strong>Polished editorial UX</strong> — Buffer\'s composer is a strong human-first tool.',
+          '<strong>Agency-grade approval workflows</strong> — Hootsuite\'s permission model is mature.',
+          '<strong>Specific platform features Posta doesn\'t cover</strong> — like in-app TikTok video editor.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'If those are central to your work, the comparison ends differently. For agent-driven, high-volume, API-first posting, flat-tier with the developer surfaces is the shape to pick.',
+      },
+      { type: 'h2', text: 'Where to go from here' },
+      {
+        type: 'p',
+        text: 'For the operational decision (which integration surface to use), see <a href="/blog/mcp-vs-n8n-vs-claude-code-for-social-media">MCP vs n8n vs Claude Code</a>. For the migration math from a task-priced tool, see <a href="/blog/replace-zapier-social-media-with-n8n-posta">replace Zapier social media with n8n + Posta</a>. <a href="/signup">14-day free trial</a>, no credit card.',
+      },
+    ],
+  },
+  {
+    slug: 'post-to-bluesky-from-terminal-claude-code',
+    title: 'Post to Bluesky from the terminal with Claude Code',
+    description:
+      'Skip the Bluesky app. Install the Posta Claude Code skill, ask Claude in natural language, ship a thread or single post. Setup in 90 seconds.',
+    date: '2026-06-19',
+    updated: '2026-06-19',
+    author: 'Posta Team',
+    tags: ['Bluesky', 'Claude Code', 'CLI', 'Workflow'],
+    body: [
+      {
+        type: 'p',
+        text: 'Bluesky\'s native app and web client are fine, but if you live in a terminal anyway, switching to draft a 280-char post is friction. The <a href="/cli-social-media-posting">Posta Claude Code skill</a> lets you draft and post Bluesky entries with the same agent that\'s editing your code — natural-language prompts, no slash-commands, no context switch.',
+      },
+      { type: 'h2', text: 'Setup' },
+      {
+        type: 'p',
+        text: 'You need a Posta account, a connected Bluesky account, and Claude Code. If you have all three, this is the whole install — one command in Claude Code, pointing at the skill repo:',
+      },
+      {
+        type: 'code',
+        lang: 'text',
+        code: `# In Claude Code:
+/install-skill https://github.com/STGime/posta-skill
+
+# Once installed, Claude can call Posta in natural language —
+# no Posta-specific slash-commands required.`,
+      },
+      {
+        type: 'p',
+        text: 'Connect Bluesky from the Posta dashboard\'s Accounts page first; the skill picks up your connected account automatically. The full reference is on the <a href="/cli-social-media-posting">CLI posting landing page</a>.',
+      },
+      { type: 'h2', text: 'Pattern 1 — Single Bluesky post under 300 chars' },
+      {
+        type: 'p',
+        text: 'Bluesky\'s post limit is 300 graphemes. Ask Claude to draft and post under the cap:',
+      },
+      {
+        type: 'code',
+        lang: 'text',
+        code: `"Draft a Bluesky post under 300 chars about our v2 launch.
+Be specific — mention per-platform caption limits and the batch
+media endpoint. Schedule for now (so I can publish from the app
+if I like it). Save as a draft."`,
+      },
+      {
+        type: 'p',
+        text: 'Claude calls Posta to create the draft on Bluesky. Posta enforces Bluesky\'s 300-char limit on its side — if the draft is too long, the response surfaces the overage so Claude can rewrite tighter.',
+      },
+      { type: 'h2', text: 'Pattern 2 — Bluesky thread from a repo' },
+      {
+        type: 'p',
+        text: 'Threads work well on Bluesky for technical commentary. Ask Claude to draft a multi-post thread from a recent commit or PR:',
+      },
+      {
+        type: 'code',
+        lang: 'text',
+        code: `"Look at PR #43 (the SEO Phase 3 batch 3 PR). Draft a 4-post
+Bluesky thread about what shipped: the Vercel AI SDK tutorial,
+the Mastra tutorial, and the Zapier-migration piece. Keep each
+post under 300 chars. Schedule the whole thread for tomorrow 9am
+CET as drafts so I can review."`,
+      },
+      {
+        type: 'p',
+        text: 'Claude reads the PR, picks the thread shape, drafts each post, and calls Posta for the whole sequence. Bluesky threads are first-class in Posta — the skill knows to chain them.',
+      },
+      { type: 'h2', text: 'Pattern 3 — Cross-post from a longer LinkedIn draft' },
+      {
+        type: 'p',
+        text: 'Already drafted something long-form for LinkedIn? Ask Claude to compress for Bluesky:',
+      },
+      {
+        type: 'code',
+        lang: 'text',
+        code: `"Take my last LinkedIn draft (the one about the v2 launch),
+compress to a single Bluesky post under 300 chars, and save as
+a Bluesky draft. Keep the technical specifics — drop the
+audience-warming opener."`,
+      },
+      { type: 'h2', text: 'Why the skill, not the MCP server?' },
+      {
+        type: 'p',
+        text: 'You can also install the <a href="/mcp-social-media-server">Posta MCP server</a> into Claude Code. The skill is the focused wrapper around the common posting workflows (draft, schedule, list, publish), tuned for Claude Code specifically. The MCP server exposes Posta\'s full tool surface — <code>createPost</code>, <code>schedulePost</code>, <code>listAccounts</code>, <code>getPostStatus</code>, <code>listMedia</code>, <code>uploadMedia</code>, <code>listPosts</code> — to any MCP client. Most users start with the skill and add the MCP server when they need to call the broader tool set from Claude Desktop, Cursor, or a custom agent.',
+      },
+      { type: 'h2', text: 'Where to go from here' },
+      {
+        type: 'p',
+        text: 'Same skill works for LinkedIn — see <a href="/blog/post-to-linkedin-from-terminal-claude-code">post to LinkedIn from the terminal with Claude Code</a>. For the broader decision framework on which surface to pick, see <a href="/blog/mcp-vs-n8n-vs-claude-code-for-social-media">MCP vs n8n vs Claude Code</a>. <a href="/signup">14-day free trial</a> covers Bluesky plus seven other networks.',
+      },
+    ],
+  },
 ]
 
 /** Posts newest-first — used by the index and SEO generators. */
