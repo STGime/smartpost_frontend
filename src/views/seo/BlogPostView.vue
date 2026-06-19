@@ -1,16 +1,31 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useHead } from '@unhead/vue'
 import SeoPageLayout from '@/components/seo/SeoPageLayout.vue'
 import CtaSection from '@/components/seo/CtaSection.vue'
 import InternalLinks from '@/components/seo/InternalLinks.vue'
-import { getPost, postPlainText, SITE_URL, DEFAULT_OG_IMAGE } from '@/data/blog'
+import { getPost, postPlainText, sortedPosts, SITE_URL, DEFAULT_OG_IMAGE, type BlogPost } from '@/data/blog'
 import type { WaitingListSource } from '@/services'
 
 const props = defineProps<{ slug: string }>()
 
 const waitingListSource = ref<WaitingListSource>('seo-blog')
 const post = getPost(props.slug)
+
+// Surface up to 3 related posts by tag overlap, newest first as tiebreaker.
+// Compounds internal-link density across the 14-post agentic cluster — each
+// post becomes a hub linking to its closest neighbours.
+const relatedPosts = computed<BlogPost[]>(() => {
+  if (!post) return []
+  const myTags = new Set(post.tags)
+  return sortedPosts
+    .filter((p) => p.slug !== post.slug)
+    .map((p) => ({ p, score: p.tags.filter((t) => myTags.has(t)).length }))
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score || b.p.date.localeCompare(a.p.date))
+    .slice(0, 3)
+    .map(({ p }) => p)
+})
 
 function formatDate(iso: string): string {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-US', {
@@ -175,6 +190,23 @@ if (post) {
         </div>
       </article>
 
+      <section v-if="relatedPosts.length" class="related-posts" aria-labelledby="related-posts-heading">
+        <h2 id="related-posts-heading">Related posts</h2>
+        <ul class="related-list">
+          <li v-for="rp in relatedPosts" :key="rp.slug" class="related-item">
+            <RouterLink :to="`/blog/${rp.slug}`" class="related-link">
+              <div class="related-title">{{ rp.title }}</div>
+              <div class="related-description">{{ rp.description }}</div>
+              <div class="related-meta">
+                <span>{{ formatDate(rp.date) }}</span>
+                <span class="dot">·</span>
+                <span>{{ rp.tags.slice(0, 3).join(' · ') }}</span>
+              </div>
+            </RouterLink>
+          </li>
+        </ul>
+      </section>
+
       <InternalLinks />
 
       <CtaSection :source="waitingListSource" />
@@ -262,6 +294,67 @@ h1 {
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.25);
   color: #a5b4fc;
+}
+
+.related-posts {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.related-posts h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.related-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.related-link {
+  display: block;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.85);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.related-link:hover {
+  border-color: rgba(165, 180, 252, 0.5);
+  transform: translateY(-1px);
+}
+
+.related-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.related-description {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.55;
+  margin-bottom: 6px;
+}
+
+.related-meta {
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.85;
+}
+
+.related-meta .dot {
+  margin: 0 6px;
 }
 
 .post-body {
