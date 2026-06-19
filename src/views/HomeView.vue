@@ -332,6 +332,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
         <div class="header-actions">
           <RouterLink to="/agents" class="nav-link">Agents</RouterLink>
           <RouterLink to="/workflows" class="nav-link">Workflows</RouterLink>
+          <RouterLink to="/developers" class="nav-link">Developers</RouterLink>
           <RouterLink to="/blog" class="nav-link">Blog</RouterLink>
           <template v-if="!isAuthenticated">
             <button class="btn-login" @click="showLoginModal = true">
@@ -1422,6 +1423,17 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
           <RouterLink to="/terms">Terms of Service</RouterLink>
           <RouterLink to="/privacy">Privacy Policy</RouterLink>
           <RouterLink to="/impressum">Impressum</RouterLink>
+        </div>
+        <div class="footer-section">
+          <div class="footer-heading">Developer resources</div>
+          <div class="footer-links">
+            <RouterLink to="/agents">For AI agents</RouterLink>
+            <RouterLink to="/cli-social-media-posting">Claude Code skill</RouterLink>
+            <RouterLink to="/workflows">n8n workflows</RouterLink>
+            <RouterLink to="/developers">REST API docs</RouterLink>
+            <a href="https://github.com/STGime/posta-mcp" target="_blank" rel="noopener">MCP server (GitHub)</a>
+            <a href="https://github.com/STGime/posta-skill" target="_blank" rel="noopener">Claude Code skill (GitHub)</a>
+          </div>
         </div>
         <div class="footer-section">
           <div class="footer-heading">Other Products</div>
