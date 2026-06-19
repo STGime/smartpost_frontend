@@ -1021,7 +1021,6 @@ campaign = graph.compile()`,
       {
         type: 'ul',
         items: [
-          '<strong>Don\'t leave the MCP client open in production.</strong> Wrap it in an <code>async with</code> or call <code>await client.aclose()</code> — leaked stdio handles will eat process slots.',
           '<strong>Set <code>temperature</code> low for tool-calling agents.</strong> 0.0–0.3 produces stable arg shapes; 0.7+ will occasionally invent arguments that fail JSON schema validation.',
           '<strong>Always include "save as draft" in the user prompt for the first week.</strong> Until you trust the agent\'s output, schedule everything as drafts and approve manually.',
           '<strong>If a tool call fails, the ReAct loop retries up to <code>recursion_limit</code> times</strong> — keep that bounded (default is 25) to avoid runaway loops on transient platform errors.',
@@ -1088,6 +1087,8 @@ posta_params = {
     "env": {"POSTA_API_TOKEN": os.environ["POSTA_API_TOKEN"]},
 }
 
+LLM = "anthropic/claude-sonnet-4-6"
+
 with MCPServerAdapter(posta_params) as posta_tools:
     # Three platform specialists — same tool set, different voices.
     linkedin_specialist = Agent(
@@ -1095,6 +1096,7 @@ with MCPServerAdapter(posta_params) as posta_tools:
         goal="Draft long-form, professional, insight-driven LinkedIn posts.",
         backstory="A B2B content strategist with 10 years of LinkedIn-native writing.",
         tools=posta_tools,
+        llm=LLM,
         verbose=True,
     )
     bluesky_specialist = Agent(
@@ -1102,6 +1104,7 @@ with MCPServerAdapter(posta_params) as posta_tools:
         goal="Draft short, punchy, link-friendly Bluesky posts under 300 chars.",
         backstory="A dev-Twitter veteran who moved to Bluesky early.",
         tools=posta_tools,
+        llm=LLM,
         verbose=True,
     )
     shorts_specialist = Agent(
@@ -1109,14 +1112,18 @@ with MCPServerAdapter(posta_params) as posta_tools:
         goal="Draft promo posts for vertical-video Shorts with a hook in 5 seconds.",
         backstory="A YouTube creator-economy strategist focused on Shorts pacing.",
         tools=posta_tools,
+        llm=LLM,
         verbose=True,
     )
 
-    # Manager that orchestrates the specialists.
+    # Custom manager that orchestrates the specialists. With Process.hierarchical
+    # CrewAI uses manager_agent= for a hand-rolled manager (manager_llm= would
+    # spin up its own — don't mix). The manager isn't in agents=[] either.
     manager = Agent(
         role="Campaign Manager",
         goal="Decide which platforms get a post and delegate drafting.",
         backstory="A multi-network campaign manager who briefs specialists.",
+        llm=LLM,
         allow_delegation=True,
         verbose=True,
     )
@@ -1128,15 +1135,14 @@ with MCPServerAdapter(posta_params) as posta_tools:
             "Each should draft and schedule a post for tomorrow 9am CET as "
             "a draft (so we can review)."
         ),
-        agent=manager,
         expected_output="A summary of each scheduled post (platform + draft ID).",
     )
 
     crew = Crew(
-        agents=[manager, linkedin_specialist, bluesky_specialist, shorts_specialist],
+        agents=[linkedin_specialist, bluesky_specialist, shorts_specialist],
         tasks=[task],
         process=Process.hierarchical,
-        manager_llm="anthropic/claude-sonnet-4-6",
+        manager_agent=manager,
     )
 
     result = crew.kickoff()
@@ -1299,16 +1305,16 @@ python agent.py`,
       { type: 'h2', text: 'Adding Sessions for multi-turn campaigns' },
       {
         type: 'p',
-        text: 'For multi-turn campaigns ("now schedule the day-2 post"), wrap the runs in a <code>Session</code> so the agent remembers the campaign state across turns:',
+        text: 'For multi-turn campaigns ("now schedule the day-2 post"), wrap the runs in a session so the agent remembers the campaign state across turns. <code>Session</code> is the abstract base; use the concrete <code>SQLiteSession</code> (or <code>OpenAIConversationsSession</code>) to actually instantiate one:',
       },
       {
         type: 'code',
         lang: 'python',
-        code: `from agents import Session
+        code: `from agents import SQLiteSession
 
 async with MCPServerStdio(params=POSTA_MCP_PARAMS) as posta_mcp:
     # ... define agents as above
-    session = Session()
+    session = SQLiteSession("sdk-v2-launch")
 
     # Day 1
     await Runner.run(router, input="Launch campaign: SDK v2...", session=session)
