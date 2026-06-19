@@ -9,7 +9,7 @@ import type { WaitingListSource } from '@/services'
 const waitingListSource = ref<WaitingListSource>('seo-api')
 
 const description =
-  'From zero to a closed-loop autonomous social media bot in one afternoon using Claude and the Posta MCP server. Draft, schedule, publish to nine networks, and react to HMAC webhooks — no dashboard, no glue code.'
+  'From zero to a closed-loop autonomous social media bot in one afternoon using Claude and the Posta MCP server. Draft, schedule, publish to eight networks, and react to HMAC webhooks — no dashboard, no glue code.'
 
 useHead({
   title: 'Build an Autonomous Social Media Bot in One Afternoon | Posta',
@@ -92,7 +92,7 @@ useHead({
       <h1>Build an Autonomous Social Media Bot in One Afternoon</h1>
       <p class="hero-sub">
         From zero to a closed-loop social bot using Claude + the Posta MCP server. Draft, schedule,
-        publish to nine networks, and react to HMAC webhooks — no dashboard, no glue code.
+        publish to eight networks, and react to HMAC webhooks — no dashboard, no glue code.
       </p>
     </section>
 
@@ -107,7 +107,7 @@ useHead({
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-title">In scope</div>
-          <div class="feature-body">Draft → schedule → publish → webhook → react. Nine social networks, one afternoon.</div>
+          <div class="feature-body">Draft → schedule → publish → webhook → react. Eight social networks, one afternoon.</div>
         </div>
         <div class="feature-card">
           <div class="feature-title">Out of scope</div>
@@ -133,20 +133,19 @@ useHead({
         </div>
         <div class="feature-card">
           <div class="feature-title">Posta account (the rails)</div>
-          <div class="feature-body">Connects to nine social networks via official APIs. 14-day free trial.</div>
+          <div class="feature-body">Connects to eight social networks via official APIs. 14-day free trial.</div>
         </div>
       </div>
     </section>
 
     <section class="content-section">
-      <h2>Step 1 — Install Posta MCP</h2>
+      <h2>Step 1 — Wire Posta MCP into your client</h2>
       <p>
-        Get a Posta API token from your dashboard, then run the installer. The MCP server appears in
-        your client's tool list on next restart.
+        Get a Posta API token from your dashboard, then add the Posta MCP server to your client's
+        MCP config. The server runs on demand via <code>npx</code> — no separate install step.
+        Restart the client and the Posta tools appear in the tool list.
       </p>
-      <pre class="code-block" v-pre><code>$ npx posta-mcp install
-
-# Adds to your MCP client config:
+      <pre class="code-block" v-pre><code>// claude_desktop_config.json (or your client's MCP config)
 {
   "mcpServers": {
     "posta": {
@@ -191,9 +190,14 @@ app.use(express.json({ verify: (req, _, buf) => { req.raw = buf } }))
 
 app.post('/posta-webhook', (req, res) => {
   const sig = req.headers['x-posta-signature']
+  if (!sig) return res.sendStatus(401)
   const expected = createHmac('sha256', process.env.POSTA_WEBHOOK_SECRET)
     .update(req.raw).digest('hex')
-  if (!timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return res.sendStatus(401)
+  const sigBuf = Buffer.from(sig)
+  const expBuf = Buffer.from(expected)
+  if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
+    return res.sendStatus(401)
+  }
 
   const { event, platform, platformPostUrl } = req.body
   console.log(`${event} on ${platform}: ${platformPostUrl}`)

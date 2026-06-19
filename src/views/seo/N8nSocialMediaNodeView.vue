@@ -12,7 +12,7 @@ const description =
   'Install n8n-nodes-posta and every social network becomes a typed node in your n8n workflows — LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, Threads. One auth, every channel, ready-to-fork templates.'
 
 useHead({
-  title: 'n8n Social Media Node — One Community Node, 9 Networks | Posta',
+  title: 'n8n Social Media Node — One Community Node, 8 Networks | Posta',
   meta: [
     { name: 'description', content: description },
     {
@@ -23,7 +23,7 @@ useHead({
     { name: 'robots', content: 'index, follow' },
     { property: 'og:type', content: 'website' },
     { property: 'og:url', content: 'https://getposta.app/n8n-social-media-node' },
-    { property: 'og:title', content: 'n8n Node for Social Media: One Node, 9 Networks | Posta' },
+    { property: 'og:title', content: 'n8n Node for Social Media: One Node, 8 Networks | Posta' },
     { property: 'og:description', content: description },
     { property: 'og:image', content: 'https://getposta.app/assets/posta_og_image.png' },
     { name: 'twitter:card', content: 'summary_large_image' },
@@ -103,7 +103,7 @@ useHead({
 <template>
   <SeoPageLayout :waiting-list-source="waitingListSource">
     <section class="hero">
-      <h1>n8n Node for Social Media: One Node, 9 Networks</h1>
+      <h1>n8n Node for Social Media: One Node, 8 Networks</h1>
       <p class="hero-sub">
         Install <code>n8n-nodes-posta</code> and every social network becomes a typed node in your
         n8n workflows. LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, Threads —
@@ -216,7 +216,7 @@ Credentials → Add → Posta
         </div>
         <div class="feature-card">
           <div class="feature-title">Per-platform caption limits</div>
-          <div class="feature-body">Truncation enforced per network — Bluesky 300, X 280, LinkedIn 3000 — without you parsing the limits.</div>
+          <div class="feature-body">Truncation enforced per network — Bluesky 300, Threads 500, LinkedIn 3000 — without you parsing the limits.</div>
         </div>
       </div>
     </section>
@@ -229,7 +229,7 @@ Credentials → Add → Posta
           <div class="faq-a">
             <code>n8n-nodes-posta</code> is an official community node that turns every Posta API
             endpoint into a typed, drag-and-drop n8n node. Drop it into a workflow alongside your
-            other n8n nodes — RSS, OpenAI, HTTP, Schedule — and post to nine social networks
+            other n8n nodes — RSS, OpenAI, HTTP, Schedule — and post to eight social networks
             without writing HTTP requests. Source on
             <a href="https://github.com/STGime/n8n-nodes-posta" target="_blank" rel="noopener">GitHub</a>;
             package on <a href="https://www.npmjs.com/package/n8n-nodes-posta" target="_blank" rel="noopener">npm</a>.

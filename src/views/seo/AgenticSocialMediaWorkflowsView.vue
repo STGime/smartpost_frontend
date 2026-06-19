@@ -118,7 +118,7 @@ useHead({
       </div>
       <p>
         Without all three you have automation, but not an agent. Posta gives you all three out of
-        the box on nine social networks.
+        the box on eight social networks.
       </p>
     </section>
 

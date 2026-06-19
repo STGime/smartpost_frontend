@@ -19,7 +19,7 @@ Posta is a multi-platform social media scheduler that publishes once to LinkedIn
 ## Developers
 
 - [Social Media for AI Agents](https://getposta.app/agents) — Let agents create, schedule & publish via MCP, Claude Code, n8n, and the REST API.
-- [MCP Server for Social Media](https://getposta.app/mcp-social-media-server) — Posta MCP server for Claude Desktop, Cursor, Windsurf, Zed, and any MCP client. `npx posta-mcp install`.
+- [MCP Server for Social Media](https://getposta.app/mcp-social-media-server) — Posta MCP server for Claude Desktop, Cursor, Windsurf, Zed, and any MCP client. Add to `mcpServers` config; runs via `npx posta-mcp`.
 - [n8n Social Media Node](https://getposta.app/n8n-social-media-node) — `n8n-nodes-posta` community node: one typed node, 9 social networks.
 - [Agentic Social Media Workflows (guide)](https://getposta.app/agentic-social-media-workflows) — Five workflow archetypes, four integration surfaces, reference architectures.
 - [Build an Autonomous Social Media Bot](https://getposta.app/autonomous-social-media-bot) — End-to-end tutorial: Claude + Posta MCP + HMAC webhooks in one afternoon.

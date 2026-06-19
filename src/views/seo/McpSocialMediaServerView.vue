@@ -12,7 +12,7 @@ const description =
   'Drop the Posta MCP server into Claude Desktop, Cursor, Windsurf, VS Code, Zed, or any agent that speaks Model Context Protocol and post to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads with a single tool call.'
 
 useHead({
-  title: 'MCP Server for Social Media — Post to 9 Networks from Claude Desktop, Cursor & Any MCP Client | Posta',
+  title: 'MCP Server for Social Media — Post to 8 Networks from Claude Desktop, Cursor & Any MCP Client | Posta',
   meta: [
     { name: 'description', content: description },
     {
@@ -60,7 +60,7 @@ useHead({
             name: 'How do I install the Posta MCP server?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Run `npx posta-mcp install` to add the server to your client config, or paste the JSON config block into mcp.json by hand. Add your Posta API token, restart your client, and the Posta tools appear.',
+              text: 'Add the Posta MCP server to your client config — Claude Desktop, Claude Code, Cursor, Windsurf, VS Code, Zed all read the same mcpServers JSON shape. Set POSTA_API_TOKEN in the env block, restart the client, and the Posta tools appear in the tool list.',
             },
           },
           {
@@ -115,12 +115,12 @@ useHead({
     <section class="content-section">
       <h2>Install in 30 seconds</h2>
       <p>
-        Run the installer and your MCP client picks up the Posta tools on its next restart. Or paste
-        the JSON config block straight into <code>mcp.json</code> if you prefer to wire it by hand.
+        Add the Posta MCP server to your client's MCP config (Claude Desktop, Claude Code, Cursor,
+        Windsurf, VS Code, Zed all read the same <code>mcpServers</code> shape). Set your
+        <code>POSTA_API_TOKEN</code>, restart the client, and the Posta tools appear in the tool
+        list.
       </p>
-      <pre class="code-block" v-pre><code>$ npx posta-mcp install
-
-# adds to your MCP client config:
+      <pre class="code-block" v-pre><code>// claude_desktop_config.json (or your client's MCP config)
 {
   "mcpServers": {
     "posta": {
@@ -236,7 +236,7 @@ useHead({
             An MCP (Model Context Protocol) server exposes a set of typed tools to any compatible AI
             client. The Posta MCP server exposes tools like <code>createPost</code>,
             <code>schedulePost</code>, <code>listAccounts</code>, and <code>uploadMedia</code>, so
-            an MCP client (Claude Desktop, Cursor, Windsurf, VS Code, Zed) can post to nine social
+            an MCP client (Claude Desktop, Cursor, Windsurf, VS Code, Zed) can post to eight social
             networks as native tool calls.
           </div>
         </div>
@@ -251,9 +251,10 @@ useHead({
         <div class="faq-item">
           <div class="faq-q">How do I install the Posta MCP server?</div>
           <div class="faq-a">
-            Run <code>npx posta-mcp install</code> to add the server to your client config, or paste
-            the JSON config block into <code>mcp.json</code> by hand. Add your Posta API token,
-            restart your client, and the Posta tools appear. Source on
+            Add the Posta MCP server to your client's MCP config (Claude Desktop, Claude Code,
+            Cursor, Windsurf, VS Code, Zed all read the same <code>mcpServers</code> JSON shape).
+            Set <code>POSTA_API_TOKEN</code> in the env block, restart the client, and the Posta
+            tools appear in the tool list. Source on
             <a href="https://github.com/STGime/posta-mcp" target="_blank" rel="noopener">GitHub</a>;
             package on <a href="https://www.npmjs.com/package/posta-mcp" target="_blank" rel="noopener">npm</a>.
           </div>
