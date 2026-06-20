@@ -1,0 +1,295 @@
+{
+  "name": "Notion content calendar to Posta",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Notion content calendar → Posta\n\n### How it works\n\n1. A Schedule Trigger runs every 15 minutes.\n2. Notion returns the pages in your content-calendar database.\n3. A Filter keeps only rows that are **Approved** and **due** (scheduled time is within the next 15 minutes).\n4. Posta **Create a post** publishes the row's caption to the selected social accounts (created as a draft).\n5. Posta **Schedule a post** sets the draft to go live at the row's scheduled time.\n6. Notion **Update a database page** flips the row to **Scheduled** and writes the Posta post URL back.\n\nBecause the row is flipped to *Scheduled*, the Approved filter never picks it up again — no double-posting.\n\n### Setup\n\n- [ ] Add your **Posta** credential (API token) to the three Posta nodes\n- [ ] Add your **Notion** credential to the two Notion nodes\n- [ ] Set the database in **Get approved & due rows** to your content calendar\n- [ ] Confirm the property names match your database (see the schema note)",
+        "height": 720,
+        "width": 460
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        -160
+      ],
+      "id": "a1b2c3d4-0001-4a00-9000-000000000001",
+      "name": "Sticky Note Overview"
+    },
+    {
+      "parameters": {
+        "content": "## Required Notion database schema\n\nThis template reads **simplified** Notion output, so property values are referenced by column name (e.g. `{{ $json.Caption }}`). Your content-calendar database needs:\n\n- **Caption** — *Text*: the post body\n- **Social Accounts** — *Multi-select*: each option's name is a **Posta social account ID** (from Posta → Get many social accounts)\n- **Scheduled At** — *Date* (with time): when the post should go live\n- **Status** — *Select*: at least `Approved` and `Scheduled`\n- **Posta URL** — *URL*: written back after scheduling\n\nUsing **Airtable** instead? Swap the two Notion nodes for the Airtable *Search* and *Update record* nodes — the field mapping is identical.",
+        "height": 460,
+        "width": 360,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -540,
+        -440
+      ],
+      "id": "a1b2c3d4-0002-4a00-9000-000000000002",
+      "name": "Sticky Note Schema"
+    },
+    {
+      "parameters": {
+        "content": "## Optional: AI per-platform captions\n\nWant per-network voices from one source caption? Add a checkbox column **Regenerate With AI** to the database, then drop an **IF** node here (true when the box is checked) that routes to an **OpenAI** node which rewrites `{{ $json.Caption }}` per platform before **Create a post**. Keep `Social Accounts` and `Scheduled At` from the original row via `{{ $('Get approved & due rows').item.json[...] }}`.",
+        "height": 300,
+        "width": 360,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        220,
+        -440
+      ],
+      "id": "a1b2c3d4-0003-4a00-9000-000000000003",
+      "name": "Sticky Note AI"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -540,
+        80
+      ],
+      "id": "a1b2c3d4-0004-4a00-9000-000000000004",
+      "name": "Every 15 minutes"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_YOUR_DATABASE_ID",
+          "mode": "id"
+        },
+        "returnAll": true,
+        "simple": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -280,
+        80
+      ],
+      "id": "a1b2c3d4-0005-4a00-9000-000000000005",
+      "name": "Get approved & due rows",
+      "credentials": {
+        "notionApi": {
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f0000000-0000-4000-9000-000000000001",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "Approved",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "f0000000-0000-4000-9000-000000000002",
+              "leftValue": "={{ $json['Scheduled At'] }}",
+              "rightValue": "={{ $now.plus({ minutes: 15 }).toISO() }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "before"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -20,
+        80
+      ],
+      "id": "a1b2c3d4-0006-4a00-9000-000000000006",
+      "name": "Approved & due now"
+    },
+    {
+      "parameters": {
+        "socialAccountIds": "={{ $json['Social Accounts'].join(',') }}",
+        "caption": "={{ $json.Caption }}",
+        "additionalFields": {},
+        "platformConfigurations": {}
+      },
+      "type": "n8n-nodes-posta.posta",
+      "typeVersion": 1,
+      "position": [
+        240,
+        80
+      ],
+      "id": "a1b2c3d4-0007-4a00-9000-000000000007",
+      "name": "Create a post",
+      "credentials": {
+        "postaApi": {
+          "name": "Posta account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "schedule",
+        "postId": "={{ $json.id }}",
+        "scheduledAt": "={{ $('Get approved & due rows').item.json['Scheduled At'] }}"
+      },
+      "type": "n8n-nodes-posta.posta",
+      "typeVersion": 1,
+      "position": [
+        500,
+        80
+      ],
+      "id": "a1b2c3d4-0008-4a00-9000-000000000008",
+      "name": "Schedule a post",
+      "credentials": {
+        "postaApi": {
+          "name": "Posta account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Get approved & due rows').item.json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Status|select",
+              "selectValue": "Scheduled"
+            },
+            {
+              "key": "Posta URL|url",
+              "urlValue": "={{ 'https://getposta.app/app/posts/' + $('Create a post').item.json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        760,
+        80
+      ],
+      "id": "a1b2c3d4-0009-4a00-9000-000000000009",
+      "name": "Mark row Scheduled",
+      "credentials": {
+        "notionApi": {
+          "name": "Notion account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Every 15 minutes": {
+      "main": [
+        [
+          {
+            "node": "Get approved & due rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get approved & due rows": {
+      "main": [
+        [
+          {
+            "node": "Approved & due now",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved & due now": {
+      "main": [
+        [
+          {
+            "node": "Create a post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a post": {
+      "main": [
+        [
+          {
+            "node": "Schedule a post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule a post": {
+      "main": [
+        [
+          {
+            "node": "Mark row Scheduled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [
+    {
+      "name": "socialmedia"
+    },
+    {
+      "name": "notion"
+    },
+    {
+      "name": "posta"
+    }
+  ]
+}

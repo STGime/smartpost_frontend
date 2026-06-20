@@ -240,6 +240,58 @@ export const workflows: Workflow[] = [
       },
     ],
   },
+  {
+    slug: 'notion-content-calendar-to-posta',
+    title: 'Schedule a Notion content calendar to social media',
+    description:
+      'An n8n workflow that reads approved rows from a Notion content calendar and schedules them across your social accounts via Posta — status synced back to Notion.',
+    updated: '2026-06-20',
+    tags: ['Notion', 'Content calendar', 'Scheduling', 'Automation'],
+    summary: 'Publish approved rows from a Notion calendar on time, synced back to Notion.',
+    nodeChain: ['Schedule (15 min)', 'Notion: get rows', 'Filter approved & due', 'Create post', 'Schedule post', 'Notion: mark scheduled'],
+    difficulty: 'Intermediate',
+    setupTime: '~15 min',
+    requiredCredentials: [POSTA_CRED, { name: 'Notion API key', url: 'https://www.notion.so/my-integrations' }],
+    jsonFile: '/assets/workflows/notion-content-calendar-to-posta.json',
+    body: [
+      {
+        type: 'p',
+        text: 'Keep your editorial calendar in Notion and let n8n do the publishing. Every 15 minutes this workflow reads the rows you’ve marked <strong>Approved</strong>, and for any whose scheduled time has arrived it creates and schedules the post across your connected accounts through the <a href="/developers">Posta API</a> — then writes the status and the Posta post URL back into the same Notion row. It’s the cleanest way to manage drafts where your team already works.',
+      },
+      { type: 'h2', text: 'How it works' },
+      {
+        type: 'ol',
+        items: [
+          '<strong>Schedule Trigger</strong> — runs every 15 minutes (tighten or loosen to taste).',
+          '<strong>Get approved &amp; due rows</strong> (Notion) — returns the pages in your content-calendar database.',
+          '<strong>Approved &amp; due now</strong> (Filter) — keeps only rows where <code>Status = Approved</code> and <code>Scheduled At</code> is within the next 15 minutes.',
+          '<strong>Create a post</strong> (Posta) — uses the row’s <code>Social Accounts</code> (a multi-select of Posta account ids) and <code>Caption</code> to create the post as a draft.',
+          '<strong>Schedule a post</strong> (Posta) — schedules that draft for the row’s <code>Scheduled At</code> time.',
+          '<strong>Mark row Scheduled</strong> (Notion) — flips <code>Status</code> to <em>Scheduled</em> and writes the Posta post URL back. Because the row is no longer <em>Approved</em>, the next run skips it — so nothing posts twice.',
+        ],
+      },
+      { type: 'h2', text: 'Set up your Notion database' },
+      {
+        type: 'ul',
+        items: [
+          '<strong>Caption</strong> (Text) — the post body.',
+          '<strong>Social Accounts</strong> (Multi-select) — each option’s name is a Posta social account id (grab them from the <em>Get many social accounts</em> Posta node).',
+          '<strong>Scheduled At</strong> (Date, with time) — when the post should go live.',
+          '<strong>Status</strong> (Select) — at least <code>Approved</code> and <code>Scheduled</code>.',
+          '<strong>Posta URL</strong> (URL) — written back automatically after scheduling.',
+        ],
+      },
+      { type: 'h2', text: 'Tips' },
+      {
+        type: 'ul',
+        items: [
+          'Prefer <strong>Airtable</strong>? Swap the two Notion nodes for Airtable <em>Search</em> + <em>Update record</em> — the field mapping is identical. The Airtable trigger is mature and a common starting point.',
+          'Want per-platform voices? Add a <code>Regenerate With AI</code> checkbox column and route checked rows through an OpenAI node that rewrites the caption per network before <em>Create a post</em>.',
+          'Attaching media? Upload it to Posta first (the <em>Upload media</em> node) and pass the returned id via <strong>Additional Fields → Media IDs</strong> on Create post.',
+        ],
+      },
+    ],
+  },
 ]
 
 /** Newest-first — used by the index and SEO generators. */
