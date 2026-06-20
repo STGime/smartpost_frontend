@@ -1,0 +1,262 @@
+{
+  "name": "LinkedIn published to Bluesky + Threads cross-post",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## LinkedIn → Bluesky + Threads cross-post\n\nWhen a LinkedIn post publishes, Posta fires an outbound webhook. This workflow verifies it, fetches the published caption, compresses it per network with an LLM, and creates **draft** Bluesky and Threads versions for you to review.\n\n### Setup\n\n- [ ] Point a Posta **outbound webhook** at the `Posta webhook` node's URL, scoped to `post.published` on LinkedIn (Posta dashboard → Webhooks)\n- [ ] Set `POSTA_WEBHOOK_SECRET` in n8n env (the signing secret from the webhook endpoint)\n- [ ] Add **Header Auth** credentials: `Posta API` (`Authorization: Bearer posta_…`) and `OpenAI API` (`Authorization: Bearer sk-…`)\n- [ ] Set your Bluesky and Threads Posta account ids on the two Create-post nodes\n- [ ] Set `SLACK_WEBHOOK_URL` in n8n env for the review ping (or delete the Slack node)\n\n### Signature scheme\n\nPosta signs `HMAC-SHA256(secret, \"{X-Posta-Timestamp}.{rawBody}\")` and sends it as `X-Posta-Signature`. The Code node verifies exactly that (constant-time, raw body).",
+        "height": 620,
+        "width": 480
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        -120
+      ],
+      "id": "b1000000-0000-4000-9000-000000000001",
+      "name": "Sticky Overview"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "posta-linkedin-published",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -580,
+        160
+      ],
+      "id": "b1000000-0000-4000-9000-000000000002",
+      "name": "Posta webhook",
+      "webhookId": "posta-linkedin-published"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Verify Posta's HMAC signature over `{timestamp}.{rawBody}` (constant-time),\n// then emit the parsed payload. Throws (stops the run) if verification fails.\nconst crypto = require('crypto');\nconst item = $input.first();\nconst headers = item.json.headers || {};\nconst sig = headers['x-posta-signature'];\nconst ts = headers['x-posta-timestamp'];\nif (!sig || !ts) throw new Error('Missing X-Posta-Signature / X-Posta-Timestamp');\n\n// Raw body (the Webhook node has Raw Body enabled -> binary 'data').\nconst raw = item.binary && item.binary.data\n  ? Buffer.from(item.binary.data, 'base64').toString('utf8')\n  : JSON.stringify(item.json.body);\n\nconst secret = $env.POSTA_WEBHOOK_SECRET;\nif (!secret) throw new Error('Set POSTA_WEBHOOK_SECRET in n8n env');\n\nconst expected = crypto.createHmac('sha256', secret).update(`${ts}.${raw}`).digest('hex');\nconst a = Buffer.from(sig);\nconst b = Buffer.from(expected);\nif (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {\n  throw new Error('Bad signature');\n}\nreturn [{ json: JSON.parse(raw) }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -340,
+        160
+      ],
+      "id": "b1000000-0000-4000-9000-000000000003",
+      "name": "Verify signature"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.getposta.app/v1/posts/{{ $json.data.post.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -100,
+        160
+      ],
+      "id": "b1000000-0000-4000-9000-000000000004",
+      "name": "Get LinkedIn post",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Posta API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: 'gpt-4o-mini',\n  response_format: { type: 'json_object' },\n  messages: [\n    { role: 'system', content: 'Rewrite a LinkedIn post for other networks. Return JSON {\"bluesky\": string <=300 chars, \"threads\": string <=500 chars}. Keep links, drop the LinkedIn-flavored opener, keep the technical specifics.' },\n    { role: 'user', content: $json.caption || ($json.post && $json.post.caption) || '' }\n  ]\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        140,
+        160
+      ],
+      "id": "b1000000-0000-4000-9000-000000000005",
+      "name": "Compress per network",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse the model's JSON content into top-level fields.\nconst content = $json.choices[0].message.content;\nconst parsed = JSON.parse(content);\nreturn [{ json: { bluesky: parsed.bluesky, threads: parsed.threads } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        380,
+        160
+      ],
+      "id": "b1000000-0000-4000-9000-000000000006",
+      "name": "Parse variants"
+    },
+    {
+      "parameters": {
+        "socialAccountIds": "REPLACE_BLUESKY_ACCOUNT_ID",
+        "caption": "={{ $json.bluesky }}",
+        "additionalFields": {},
+        "platformConfigurations": {}
+      },
+      "type": "n8n-nodes-posta.posta",
+      "typeVersion": 1,
+      "position": [
+        640,
+        60
+      ],
+      "id": "b1000000-0000-4000-9000-000000000007",
+      "name": "Create Bluesky draft",
+      "credentials": {
+        "postaApi": {
+          "name": "Posta account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "socialAccountIds": "REPLACE_THREADS_ACCOUNT_ID",
+        "caption": "={{ $json.threads }}",
+        "additionalFields": {},
+        "platformConfigurations": {}
+      },
+      "type": "n8n-nodes-posta.posta",
+      "typeVersion": 1,
+      "position": [
+        640,
+        260
+      ],
+      "id": "b1000000-0000-4000-9000-000000000008",
+      "name": "Create Threads draft",
+      "credentials": {
+        "postaApi": {
+          "name": "Posta account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: 'Cross-post drafts ready for review:\\n• Bluesky: https://getposta.app/app/posts/' + $('Create Bluesky draft').item.json.id + '\\n• Threads: https://getposta.app/app/posts/' + $('Create Threads draft').item.json.id }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        160
+      ],
+      "id": "b1000000-0000-4000-9000-000000000009",
+      "name": "Slack review ping"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Posta webhook": {
+      "main": [
+        [
+          {
+            "node": "Verify signature",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify signature": {
+      "main": [
+        [
+          {
+            "node": "Get LinkedIn post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get LinkedIn post": {
+      "main": [
+        [
+          {
+            "node": "Compress per network",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compress per network": {
+      "main": [
+        [
+          {
+            "node": "Parse variants",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse variants": {
+      "main": [
+        [
+          {
+            "node": "Create Bluesky draft",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create Threads draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Bluesky draft": {
+      "main": [
+        [
+          {
+            "node": "Slack review ping",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [
+    {
+      "name": "socialmedia"
+    },
+    {
+      "name": "posta"
+    },
+    {
+      "name": "webhook"
+    }
+  ]
+}

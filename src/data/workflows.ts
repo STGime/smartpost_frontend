@@ -292,6 +292,143 @@ export const workflows: Workflow[] = [
       },
     ],
   },
+  {
+    slug: 'linkedin-cross-post-to-bluesky-threads',
+    title: 'Mirror a LinkedIn post to Bluesky and Threads',
+    description:
+      'A webhook-driven n8n workflow: when a LinkedIn post publishes, Posta fires a signed webhook and this template drafts compressed Bluesky and Threads versions.',
+    updated: '2026-06-20',
+    tags: ['Bluesky', 'Threads', 'Cross-post', 'Webhook', 'AI'],
+    summary: 'Publish once on LinkedIn; auto-draft Bluesky and Threads versions.',
+    nodeChain: ['Posta webhook', 'Verify HMAC', 'Get post', 'LLM compress', 'Create Bluesky', 'Create Threads', 'Slack ping'],
+    difficulty: 'Intermediate',
+    setupTime: '~10 min',
+    requiredCredentials: [POSTA_CRED, { name: 'OpenAI API key', url: 'https://platform.openai.com' }],
+    jsonFile: '/assets/workflows/linkedin-cross-post-to-bluesky-threads.json',
+    body: [
+      {
+        type: 'p',
+        text: 'The X→Bluesky migration left a lot of people wanting “post once, mirror everywhere.” This workflow does it the clean way — driven by <a href="/developers">Posta’s outbound webhooks</a>, not a leaky cron poll. When a LinkedIn post goes live, Posta sends a signed <code>post.published</code> webhook; the workflow verifies it, fetches the caption, and uses an LLM to compress it into a Bluesky and a Threads draft for you to review.',
+      },
+      { type: 'h2', text: 'How it works' },
+      {
+        type: 'ol',
+        items: [
+          '<strong>Posta webhook</strong> — receives <code>post.published</code> (point a Posta outbound webhook scoped to LinkedIn at this node’s URL).',
+          '<strong>Verify signature</strong> (Code) — checks <code>HMAC-SHA256(secret, "{X-Posta-Timestamp}.{rawBody}")</code> in constant time and stops on mismatch.',
+          '<strong>Get LinkedIn post</strong> — fetches the published post’s caption from the Posta API.',
+          '<strong>Compress per network</strong> (LLM) — returns a Bluesky variant (≤300 chars) and a Threads variant, links preserved, LinkedIn opener dropped.',
+          '<strong>Create Bluesky / Threads drafts</strong> (Posta) — created as drafts so nothing publishes without your say-so.',
+          '<strong>Slack review ping</strong> — posts both Posta dashboard links so you can review and publish from one place.',
+        ],
+      },
+      { type: 'h2', text: 'Verifying the webhook' },
+      {
+        type: 'p',
+        text: 'Posta signs each delivery as <code>HMAC-SHA256(secret, "{timestamp}.{body}")</code> and sends <code>X-Posta-Signature</code>, <code>X-Posta-Timestamp</code>, and <code>X-Posta-Event</code> headers. The Code node enables the Webhook’s <em>Raw Body</em> option and verifies the bytes that were signed — never a re-serialized copy.',
+      },
+      { type: 'h2', text: 'Tips' },
+      {
+        type: 'ul',
+        items: [
+          'Set the Bluesky and Threads Posta account ids on the two Create-post nodes (grab them from the <em>Get many social accounts</em> Posta node).',
+          'Want it fully hands-off? Drop the “draft” intent so the mirrored posts publish immediately instead of waiting for review.',
+          'Add more targets by duplicating a Create-post node and pointing it at another account id.',
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'posta-webhook-ai-comment-reply',
+    title: 'Auto-reply to comments with AI (LinkedIn + TikTok)',
+    description:
+      'A webhook-driven n8n workflow that drafts brand-voice replies to new LinkedIn and TikTok comments with an LLM — review-first, using Posta’s comments API.',
+    updated: '2026-06-20',
+    tags: ['Comments', 'AI', 'Webhook', 'LinkedIn', 'TikTok'],
+    summary: 'Draft AI replies to new comments; auto-post once you trust it.',
+    nodeChain: ['Posta webhook', 'Verify HMAC', 'Wait 30m', 'Get comments', 'Filter unreplied', 'LLM draft', 'Reply / Slack'],
+    difficulty: 'Advanced',
+    setupTime: '~20 min',
+    requiredCredentials: [POSTA_CRED, { name: 'OpenAI API key', url: 'https://platform.openai.com' }],
+    jsonFile: '/assets/workflows/posta-webhook-ai-comment-reply.json',
+    body: [
+      {
+        type: 'p',
+        text: 'Posta’s comments inbox covers <strong>LinkedIn and TikTok</strong> — and exposes a reply API most schedulers simply don’t have. This workflow turns that into engagement: when a post publishes, it waits for the first comments, drafts a warm brand-voice reply with an LLM, and either posts it or routes it to Slack for a human. It’s the closed-loop pattern from <a href="/developers">Posta’s webhooks</a>, made real.',
+      },
+      { type: 'h2', text: 'How it works' },
+      {
+        type: 'ol',
+        items: [
+          '<strong>Posta webhook</strong> — receives <code>post.published</code>; the Code node verifies the HMAC signature.',
+          '<strong>Wait 30 min</strong> — give the first comments time to land before checking.',
+          '<strong>Get comments</strong> — reads the post’s comments from the Posta comments API.',
+          '<strong>Unreplied only</strong> (Filter) — drops comments you’ve already answered (tighten this to match question-shaped comments if you like).',
+          '<strong>Draft reply</strong> (LLM) — 2–3 sentences in your brand voice; returns <code>ESCALATE</code> for anything negative or sensitive.',
+          '<strong>Auto-reply enabled?</strong> (IF) — when <code>AUTO_REPLY=true</code> and not escalated, <strong>Post reply</strong> publishes it; otherwise <strong>Slack for review</strong> sends it to a human.',
+        ],
+      },
+      { type: 'h2', text: 'Review-first by design' },
+      {
+        type: 'p',
+        text: 'Leave <code>AUTO_REPLY</code> unset for the first week — every draft goes to Slack so you can sanity-check the voice. Flip it to <code>true</code> once you trust it. The <code>ESCALATE</code> guard keeps the bot away from sensitive threads even after that.',
+      },
+      { type: 'h2', text: 'Scope' },
+      {
+        type: 'p',
+        text: 'The comments inbox and reply API are <strong>LinkedIn and TikTok</strong> only — that’s where Posta currently reads and writes comments.',
+      },
+    ],
+  },
+  {
+    slug: 'trending-topics-daily-ai-post',
+    title: 'Post daily about trending topics with AI',
+    description:
+      'A scheduled n8n workflow: Perplexity finds today’s trending angles, an LLM writes per-platform captions, and Posta schedules a daily post on each network.',
+    updated: '2026-06-20',
+    tags: ['AI', 'Perplexity', 'Scheduling', 'Daily'],
+    summary: 'Turn daily trends into scheduled per-platform posts (drafts first).',
+    nodeChain: ['Schedule 8am', 'Perplexity trends', 'LLM captions', 'Fan out', 'Create post', 'Schedule post'],
+    difficulty: 'Advanced',
+    setupTime: '~30 min',
+    requiredCredentials: [
+      POSTA_CRED,
+      { name: 'OpenAI API key', url: 'https://platform.openai.com' },
+      { name: 'Perplexity API key', url: 'https://www.perplexity.ai/settings/api' },
+    ],
+    jsonFile: '/assets/workflows/trending-topics-daily-ai-post.json',
+    body: [
+      {
+        type: 'p',
+        text: 'The “AI fills my content calendar daily” pattern, done with Posta as the publishing rail. Each morning Perplexity surfaces what’s trending in your niche, an LLM picks the best angle and drafts a caption tuned to each network, and Posta schedules one post per platform for its peak hour.',
+      },
+      {
+        type: 'p',
+        text: '<strong>Drafts only by default.</strong> Posts are created as drafts and scheduled — review them each morning before they ship. Don’t graduate to auto-publish until you trust the output.',
+      },
+      { type: 'h2', text: 'How it works' },
+      {
+        type: 'ol',
+        items: [
+          '<strong>Every day at 8am</strong> (Schedule) — kicks off the run in your timezone.',
+          '<strong>Trending angles</strong> (Perplexity) — asks for three specific angles in your <code>CONTENT_NICHE</code>.',
+          '<strong>Per-platform captions</strong> (LLM) — picks the best angle and returns a LinkedIn, Bluesky, and Threads caption as JSON.',
+          '<strong>Fan out to platforms</strong> (Code) — emits one item per network with its account id, caption, and peak-hour schedule time.',
+          '<strong>Create a post</strong> → <strong>Schedule a post</strong> (Posta) — one draft per network, scheduled for that platform’s peak hour.',
+        ],
+      },
+      { type: 'h2', text: 'Add an AI image' },
+      {
+        type: 'p',
+        text: 'Optional: generate an image (DALL·E / Runware / fal.ai), upload it with the Posta <em>Upload media</em> node, and pass the returned id via Create post’s <strong>Additional Fields → Media IDs</strong>. Posta produces the per-network crops automatically.',
+      },
+      { type: 'h2', text: 'Setup' },
+      {
+        type: 'p',
+        text: 'Four credentials: Posta, OpenAI, and Perplexity API keys, plus your social account ids in the <em>Fan out</em> node. Set <code>CONTENT_NICHE</code> to your topic and adjust the per-platform peak hours to your audience.',
+      },
+    ],
+  },
 ]
 
 /** Newest-first — used by the index and SEO generators. */

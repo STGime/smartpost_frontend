@@ -1,0 +1,220 @@
+{
+  "name": "Trending topics to daily AI post",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Trending topics → daily AI post\n\nEvery morning: ask Perplexity what's trending in your niche, draft per-platform captions with an LLM, and schedule one post per network through Posta.\n\n> **Drafts only by default.** Posts are created as drafts and scheduled — review them each morning before they ship. Don't flip to auto-publish until you trust the output.\n\n### Setup\n\n- [ ] Header Auth creds: `Posta API`, `OpenAI API`, `Perplexity API`\n- [ ] `CONTENT_NICHE` env, e.g. `developer tools` — what to search trends for\n- [ ] In **Fan out to platforms**, set your LinkedIn / Bluesky / Threads Posta account ids and the per-platform peak hours\n\n### Optional: AI image\n\nAdd an image step (DALL·E / Runware / fal.ai) → download the bytes → Posta **Upload media** (resource: Media) → pass the returned id via Create post's **Additional Fields → Media IDs**, and per-network crops happen inside Posta.",
+        "height": 560,
+        "width": 460
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1180,
+        -120
+      ],
+      "id": "d1000000-0000-4000-9000-000000000001",
+      "name": "Sticky Overview"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -640,
+        160
+      ],
+      "id": "d1000000-0000-4000-9000-000000000002",
+      "name": "Every day at 8am"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: 'sonar',\n  messages: [\n    { role: 'user', content: \"What's trending today in \" + ($env.CONTENT_NICHE || 'social media automation') + \"? Give 3 distinct, specific angles worth posting about. Be concise.\" }\n  ]\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -400,
+        160
+      ],
+      "id": "d1000000-0000-4000-9000-000000000003",
+      "name": "Trending angles (Perplexity)",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Perplexity API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: 'gpt-4o-mini',\n  response_format: { type: 'json_object' },\n  messages: [\n    { role: 'system', content: 'Pick the single best angle from the input and write per-platform captions. Return JSON {\"linkedin\": long-form professional, \"bluesky\": <=300 chars, \"threads\": punchy}. No hashtags on LinkedIn.' },\n    { role: 'user', content: $json.choices[0].message.content }\n  ]\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -160,
+        160
+      ],
+      "id": "d1000000-0000-4000-9000-000000000004",
+      "name": "Per-platform captions",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse the captions JSON and fan out to one item per platform with the\n// account id and that network's peak posting hour (today).\nconst c = JSON.parse($input.first().json.choices[0].message.content);\n\n// >>> Set your Posta social account ids and peak hours here <<<\nconst ACCOUNTS = { linkedin: 'REPLACE_LINKEDIN_ID', bluesky: 'REPLACE_BLUESKY_ID', threads: 'REPLACE_THREADS_ID' };\nconst HOURS = { linkedin: 9, bluesky: 12, threads: 18 };\n\nreturn ['linkedin', 'bluesky', 'threads'].map((p) => ({\n  json: {\n    platform: p,\n    socialAccountIds: ACCOUNTS[p],\n    caption: c[p],\n    scheduledAt: $now.set({ hour: HOURS[p], minute: 0, second: 0, millisecond: 0 }).toISO(),\n  },\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        160
+      ],
+      "id": "d1000000-0000-4000-9000-000000000005",
+      "name": "Fan out to platforms"
+    },
+    {
+      "parameters": {
+        "socialAccountIds": "={{ $json.socialAccountIds }}",
+        "caption": "={{ $json.caption }}",
+        "additionalFields": {},
+        "platformConfigurations": {}
+      },
+      "type": "n8n-nodes-posta.posta",
+      "typeVersion": 1,
+      "position": [
+        320,
+        160
+      ],
+      "id": "d1000000-0000-4000-9000-000000000006",
+      "name": "Create a post",
+      "credentials": {
+        "postaApi": {
+          "name": "Posta account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "schedule",
+        "postId": "={{ $json.id }}",
+        "scheduledAt": "={{ $('Fan out to platforms').item.json.scheduledAt }}"
+      },
+      "type": "n8n-nodes-posta.posta",
+      "typeVersion": 1,
+      "position": [
+        560,
+        160
+      ],
+      "id": "d1000000-0000-4000-9000-000000000007",
+      "name": "Schedule a post",
+      "credentials": {
+        "postaApi": {
+          "name": "Posta account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Every day at 8am": {
+      "main": [
+        [
+          {
+            "node": "Trending angles (Perplexity)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trending angles (Perplexity)": {
+      "main": [
+        [
+          {
+            "node": "Per-platform captions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Per-platform captions": {
+      "main": [
+        [
+          {
+            "node": "Fan out to platforms",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fan out to platforms": {
+      "main": [
+        [
+          {
+            "node": "Create a post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a post": {
+      "main": [
+        [
+          {
+            "node": "Schedule a post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [
+    {
+      "name": "socialmedia"
+    },
+    {
+      "name": "posta"
+    },
+    {
+      "name": "ai"
+    }
+  ]
+}
