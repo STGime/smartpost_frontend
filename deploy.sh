@@ -54,15 +54,15 @@ gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" \
 
 # Set no-cache for pre-rendered HTML pages
 log_info "Setting cache headers for pre-rendered pages..."
-for dir in social-media-scheduler instagram-scheduler tiktok-scheduler auto-post-social-media social-media-tools cli-social-media-posting agents bluesky-scheduler threads-scheduler buffer-alternative hootsuite-alternative compare developers terms privacy impressum; do
+for dir in social-media-scheduler instagram-scheduler tiktok-scheduler auto-post-social-media social-media-tools cli-social-media-posting agents mcp-social-media-server n8n-social-media-node agentic-social-media-workflows autonomous-social-media-bot bluesky-scheduler threads-scheduler buffer-alternative hootsuite-alternative compare developers terms privacy impressum; do
     if [ -f "dist/$dir/index.html" ]; then
         gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" \
             "gs://$GCS_BUCKET/$dir/index.html" 2>/dev/null || true
     fi
 done
 
-# Blog + Workflows: index + every pre-rendered slug (slugs are dynamic, so glob them).
-for f in dist/blog/index.html dist/blog/*/index.html dist/workflows/index.html dist/workflows/*/index.html; do
+# Blog + Workflows + Integrations: index + every pre-rendered slug (slugs are dynamic, so glob them).
+for f in dist/blog/index.html dist/blog/*/index.html dist/workflows/index.html dist/workflows/*/index.html dist/integrations/index.html dist/integrations/*/index.html; do
     if [ -f "$f" ]; then
         rel="${f#dist/}"
         gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" \

@@ -90,6 +90,56 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/seo/AgentsView.vue'),
   },
   {
+    path: '/mcp-social-media-server',
+    name: 'mcp-social-media-server',
+    component: () => import('@/views/seo/McpSocialMediaServerView.vue'),
+  },
+  {
+    path: '/n8n-social-media-node',
+    name: 'n8n-social-media-node',
+    component: () => import('@/views/seo/N8nSocialMediaNodeView.vue'),
+  },
+  {
+    path: '/agentic-social-media-workflows',
+    name: 'agentic-social-media-workflows',
+    component: () => import('@/views/seo/AgenticSocialMediaWorkflowsView.vue'),
+  },
+  {
+    path: '/autonomous-social-media-bot',
+    name: 'autonomous-social-media-bot',
+    component: () => import('@/views/seo/AutonomousSocialMediaBotView.vue'),
+  },
+  {
+    path: '/integrations',
+    name: 'integrations-index',
+    component: () => import('@/views/seo/integrations/IntegrationsIndexView.vue'),
+  },
+  {
+    path: '/integrations/langchain',
+    name: 'integration-langchain',
+    component: () => import('@/views/seo/integrations/LangChainView.vue'),
+  },
+  {
+    path: '/integrations/crewai',
+    name: 'integration-crewai',
+    component: () => import('@/views/seo/integrations/CrewAiView.vue'),
+  },
+  {
+    path: '/integrations/openai-agents-sdk',
+    name: 'integration-openai-agents-sdk',
+    component: () => import('@/views/seo/integrations/OpenAiAgentsSdkView.vue'),
+  },
+  {
+    path: '/integrations/vercel-ai-sdk',
+    name: 'integration-vercel-ai-sdk',
+    component: () => import('@/views/seo/integrations/VercelAiSdkView.vue'),
+  },
+  {
+    path: '/integrations/mastra',
+    name: 'integration-mastra',
+    component: () => import('@/views/seo/integrations/MastraView.vue'),
+  },
+  {
     path: '/blog',
     name: 'blog-index',
     component: () => import('@/views/seo/BlogIndexView.vue'),
