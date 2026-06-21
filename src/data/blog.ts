@@ -694,7 +694,7 @@ export const blogPosts: BlogPost[] = [
       { type: 'h2', text: 'What you get on a webhook' },
       {
         type: 'p',
-        text: 'Every Posta outbound webhook includes: the event name (<code>post.published</code>, <code>post.failed</code>, <code>post.scheduled</code>, etc.), the platform, the platform post ID and URL (when published), the Posta post ID, and a timestamp. The headers carry an <code>x-posta-signature</code> HMAC-SHA256 over the raw body. See the <a href="/developers">developer reference</a> for the full payload schema.',
+        text: 'Every Posta outbound webhook includes: the event name (<code>post.published</code>, <code>post.failed</code>, <code>post.scheduled</code>, etc.), the platform, the platform post ID and URL (when published), the Posta post ID, and a timestamp. The headers carry an <code>x-posta-timestamp</code> and an <code>x-posta-signature</code> — the latter is HMAC-SHA256 over <code>{timestamp}.{rawBody}</code>. See the <a href="/developers">developer reference</a> for the full payload schema.',
       },
       { type: 'h2', text: 'The minimum-viable receiver' },
       {
@@ -712,9 +712,10 @@ app.use(express.json({ verify: (req, _, buf) => { req.raw = buf } }))
 
 app.post('/posta-webhook', (req, res) => {
   const sig = req.headers['x-posta-signature']
-  if (!sig) return res.sendStatus(401)
+  const ts = req.headers['x-posta-timestamp']
+  if (!sig || !ts) return res.sendStatus(401)
   const expected = createHmac('sha256', process.env.POSTA_WEBHOOK_SECRET)
-    .update(req.raw).digest('hex')
+    .update(ts + '.' + req.raw).digest('hex')
   const sigBuf = Buffer.from(sig)
   const expBuf = Buffer.from(expected)
   if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
@@ -733,7 +734,7 @@ app.listen(3000)`,
       },
       {
         type: 'p',
-        text: 'Three things to notice. (1) The <code>express.json</code> middleware grabs the <em>raw</em> body before parsing, because HMAC has to verify the bytes that were signed, not the re-serialized JSON. (2) An early return on missing signature header prevents a confusing crash when something other than Posta probes the endpoint. (3) The length check before <code>timingSafeEqual</code> dodges a Node throw when buffers differ in length.',
+        text: 'Three things to notice. (1) The <code>express.json</code> middleware grabs the <em>raw</em> body before parsing, because the signature covers the exact bytes Posta sent — the <code>x-posta-timestamp</code> value joined to the raw body — not a re-serialized copy. (2) An early return on missing signature header prevents a confusing crash when something other than Posta probes the endpoint. (3) The length check before <code>timingSafeEqual</code> dodges a Node throw when buffers differ in length.',
       },
       { type: 'h2', text: 'Pattern 1 — Auto-respond on publish' },
       {
@@ -1482,11 +1483,12 @@ export const runtime = 'nodejs'
 
 export async function POST(req: Request) {
   const sig = req.headers.get('x-posta-signature')
-  if (!sig) return new Response('missing signature', { status: 401 })
+  const ts = req.headers.get('x-posta-timestamp')
+  if (!sig || !ts) return new Response('missing signature', { status: 401 })
 
   const raw = await req.text()
   const expected = createHmac('sha256', process.env.POSTA_WEBHOOK_SECRET!)
-    .update(raw).digest('hex')
+    .update(ts + '.' + raw).digest('hex')
   const sigBuf = Buffer.from(sig)
   const expBuf = Buffer.from(expected)
   if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
