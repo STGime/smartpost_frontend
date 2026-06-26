@@ -8,6 +8,7 @@ import { sortedWorkflows } from '../src/data/workflows'
 const ROUTES = [
   '/',
   '/social-media-scheduler',
+  '/agentic-social-media-scheduler',
   '/instagram-scheduler',
   '/tiktok-scheduler',
   '/auto-post-social-media',

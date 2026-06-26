@@ -516,7 +516,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
         <section :ref="openclawRef" class="section" id="api">
           <h2 :class="openclawVisible ? 'section-title animate-fade-in-up' : 'section-title opacity-0'">Built for agents & automation</h2>
           <p :class="openclawVisible ? 'section-sub animate-fade-in-up stagger-1' : 'section-sub opacity-0'">
-            Posta is API-first, so your agents run the whole loop — generate, schedule, publish, and report back — programmatically. Plug it into whatever your agents already speak.
+            Posta is the <RouterLink to="/agentic-social-media-scheduler">agentic social media scheduler</RouterLink> — API-first, so your agents run the whole loop (generate, schedule, publish, report back) programmatically. Looking for the full <RouterLink to="/social-media-scheduler">social media scheduler</RouterLink> overview? Start there.
           </p>
 
           <div :class="openclawVisible ? 'usecase-grid animate-fade-in-up stagger-1' : 'usecase-grid opacity-0'">
