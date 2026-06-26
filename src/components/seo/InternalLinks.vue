@@ -7,6 +7,7 @@ const route = useRoute()
 const links = [
   { path: '/', label: 'Posta Home' },
   { path: '/social-media-scheduler', label: 'Social Media Scheduler' },
+  { path: '/agentic-social-media-scheduler', label: 'Agentic Social Media Scheduler' },
   { path: '/instagram-scheduler', label: 'Instagram Scheduler' },
   { path: '/tiktok-scheduler', label: 'TikTok Scheduler' },
   { path: '/bluesky-scheduler', label: 'Bluesky Scheduler' },

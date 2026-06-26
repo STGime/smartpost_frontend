@@ -30,6 +30,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/seo/SocialMediaSchedulerView.vue'),
   },
   {
+    path: '/agentic-social-media-scheduler',
+    name: 'agentic-social-media-scheduler',
+    component: () => import('@/views/seo/AgenticSocialMediaSchedulerView.vue'),
+  },
+  {
     path: '/instagram-scheduler',
     name: 'instagram-scheduler',
     component: () => import('@/views/seo/InstagramSchedulerView.vue'),

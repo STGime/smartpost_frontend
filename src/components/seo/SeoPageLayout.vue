@@ -73,6 +73,14 @@ const openWaitingList = (source: WaitingListSource) => {
           <RouterLink to="/impressum">Impressum</RouterLink>
         </div>
         <div class="footer-section">
+          <div class="footer-heading">Product</div>
+          <div class="footer-links">
+            <RouterLink to="/social-media-scheduler">Social Media Scheduler</RouterLink>
+            <RouterLink to="/agentic-social-media-scheduler">Agentic Scheduler</RouterLink>
+            <RouterLink to="/compare">Compare</RouterLink>
+          </div>
+        </div>
+        <div class="footer-section">
           <div class="footer-heading">Developer resources</div>
           <div class="footer-links">
             <RouterLink to="/agents">For AI agents</RouterLink>
