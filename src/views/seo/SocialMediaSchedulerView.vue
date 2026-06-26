@@ -310,16 +310,16 @@ useHead({
             <tr>
               <td>Networks supported</td>
               <td>8</td>
-              <td>6</td>
+              <td>10+</td>
               <td>10+</td>
               <td>8</td>
             </tr>
             <tr>
               <td>Bluesky &amp; Threads native</td>
               <td>Yes</td>
-              <td>Partial</td>
-              <td>Partial</td>
-              <td>Partial</td>
+              <td>Yes</td>
+              <td>Threads only</td>
+              <td>Threads only</td>
             </tr>
             <tr>
               <td>Face-aware auto-cropping</td>
@@ -344,10 +344,10 @@ useHead({
             </tr>
             <tr>
               <td>n8n community node</td>
-              <td>Yes</td>
+              <td>Yes (verified)</td>
               <td>Via HTTP</td>
               <td>Via HTTP</td>
-              <td>No</td>
+              <td>Via HTTP</td>
             </tr>
             <tr>
               <td>HMAC-signed outbound webhooks</td>
@@ -363,16 +363,13 @@ useHead({
               <td>30-day trial</td>
               <td>14-day trial</td>
             </tr>
-            <tr>
-              <td>Starting price</td>
-              <td>Starter tier</td>
-              <td>$6 / channel / mo</td>
-              <td>$199 / mo</td>
-              <td>$25 / mo</td>
-            </tr>
           </tbody>
         </table>
       </div>
+      <p class="comparison-footnote">
+        Comparison verified June 2026. Competitor feature sets and pricing change
+        frequently — check each vendor's site for live details.
+      </p>
       <p>
         Need a head-to-head deep dive? See the dedicated
         <RouterLink to="/buffer-alternative">Buffer alternative</RouterLink> and
@@ -652,6 +649,14 @@ h1 {
 .comparison-table tbody td:nth-child(2) {
   color: var(--text);
   font-weight: 500;
+}
+
+.comparison-footnote {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  max-width: 760px;
 }
 
 .faq-section {

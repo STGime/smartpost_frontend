@@ -20,15 +20,15 @@ const agenticFaq = [
   },
   {
     q: 'Is there an MCP social media server?',
-    a: 'Yes. The Posta MCP server is published on npm and installs with `npx posta-mcp`. It exposes typed tools for creating posts, scheduling posts, listing scheduled posts, fetching analytics, and deleting posts — so any MCP client (Claude Desktop, Claude Code, Cursor, Windsurf, Zed) becomes a social media client. See the MCP server page for the full tool list and config snippet.',
+    a: 'Yes. The Posta MCP server is published on npm and installs with `npx posta-mcp`. It exposes typed tools — createPost, schedulePost, listAccounts, getPostStatus, listMedia, uploadMedia, listPosts — so any MCP client (Claude Desktop, Claude Code, Cursor, Windsurf, VS Code, Zed) becomes a social media client. See the MCP server page for the full tool list and config snippet.',
   },
   {
     q: 'Can I automate social media with n8n?',
-    a: 'Yes. Posta ships a verified n8n community node — install from the n8n marketplace, paste your API token, and you have create/schedule/publish/list nodes in the n8n editor. The workflow templates in /workflows include trending-topics-to-post, RSS-to-social, blog-to-LinkedIn-carousel, and YouTube-to-social pipelines you can clone and customise.',
+    a: 'Yes. Posta ships a verified n8n community node — install from the n8n marketplace, paste your API token, and you have create/schedule/publish/list nodes in the n8n editor. The workflow templates in /workflows include blog-to-social, blog-to-LinkedIn-carousel, product-launch-campaign, and YouTube-to-social pipelines you can clone and customise.',
   },
   {
     q: 'How does a Claude Code agent post to TikTok?',
-    a: 'Install the Posta Claude Code skill (one slash-command), connect your TikTok account in the Posta dashboard, and from your terminal type something like `/posta schedule TikTok video.mp4 caption "..." at 3pm`. The skill calls the Posta API behind the scenes, Posta auto-formats the video for TikTok, and queues it. Works for every supported platform, not just TikTok.',
+    a: 'Install the Posta Claude Code skill, connect your TikTok account in the Posta dashboard, and just describe what you want in plain English — e.g. "Generate an image and schedule a TikTok for 3pm with caption …". The skill calls the Posta API behind the scenes, Posta auto-formats the video for TikTok, and queues it. Works for every supported platform, not just TikTok.',
   },
   {
     q: 'How is Posta different from Postiz?',
@@ -225,7 +225,7 @@ useHead({
           Best for chat-style agents and IDE agents. One npm install, one API token,
           every Posta primitive shows up as a typed tool the model introspects.
         </p>
-<pre class="code-block"><code>// ~/.config/claude/mcp.json
+<pre class="code-block" v-pre><code>// claude_desktop_config.json (or your client's MCP config)
 {
   "mcpServers": {
     "posta": {
@@ -363,6 +363,10 @@ Package: n8n-nodes-posta
         a hard requirement. Posta makes sense if you want the strongest agent-tooling
         defaults without standing up infrastructure.
       </p>
+      <p class="comparison-footnote">
+        Comparison verified June 2026. Postiz is an actively developed open-source
+        project; check the upstream repo for current capabilities.
+      </p>
     </section>
 
     <section class="content-section">
@@ -381,17 +385,19 @@ Package: n8n-nodes-posta
           <h3>Trend-driven posting</h3>
           <p>
             Daily Perplexity query → Claude reasoning → multi-platform schedule.
-            One n8n workflow ships in an afternoon. See the
-            <RouterLink to="/workflows">trending-topics template</RouterLink>.
+            One n8n workflow ships in an afternoon — browse the
+            <RouterLink to="/workflows">workflow templates</RouterLink> for a
+            starting point.
           </p>
         </div>
         <div class="feature-card">
           <h3>Calendar-aware scheduler agent</h3>
           <p>
-            Read your editorial calendar from Notion or Google Sheets, draft and
-            queue every row, write back the post URL on success. The
-            <RouterLink to="/workflows/notion-content-calendar">Notion content calendar workflow</RouterLink>
-            is a starting point.
+            Read your editorial calendar from Notion, Airtable, or Google Sheets,
+            draft and queue every row via the API or n8n node, write back the post
+            URL on success. The n8n
+            <RouterLink to="/workflows">workflow templates</RouterLink> are a starting
+            point for the wiring.
           </p>
         </div>
         <div class="feature-card">
@@ -645,6 +651,14 @@ h1 {
 .comparison-table tbody td:nth-child(2) {
   color: var(--text);
   font-weight: 500;
+}
+
+.comparison-footnote {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  max-width: 760px;
 }
 
 .faq-section {
