@@ -78,7 +78,7 @@ useHead({
             name: 'Can I post to social media from Claude Code or the terminal?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes. The Posta Claude Code skill lets you create, schedule, and publish posts straight from your terminal or IDE using natural-language slash-commands. No dashboard required, no context-switch from your editor.',
+              text: 'Yes. The Posta Claude Code skill lets you create, schedule, and publish posts straight from your terminal or IDE using natural language. No dashboard required, no context-switch from your editor.',
             },
           },
           {
@@ -126,7 +126,7 @@ useHead({
             '@type': 'HowToStep',
             position: 2,
             name: 'Instruct in natural language or code',
-            text: 'Your agent calls Posta as a tool: a Claude tool call via MCP, a slash-command from Claude Code, an n8n node in a workflow, or a typed POST to the REST API. Plain prompts work; structured payloads work; both compose.',
+            text: 'Your agent calls Posta as a tool: a Claude tool call via MCP, the Claude Code skill in plain English, an n8n node in a workflow, or a typed POST to the REST API. Plain prompts work; structured payloads work; both compose.',
           },
           {
             '@type': 'HowToStep',
@@ -866,12 +866,11 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               <div class="step-num">Step 2</div>
               <div class="step-title">Instruct in natural language or code</div>
               <div class="step-body">
-                Your agent calls Posta as a tool. A Claude tool call via MCP, a slash-command from Claude Code, an n8n
-                node, or a typed POST — same Posta on the other side.
+                Your agent calls Posta as a tool. A Claude tool call via MCP, the Claude Code skill in plain English, an
+                n8n node, or a typed POST — same Posta on the other side.
               </div>
-              <pre class="step-code"><code>/posta create "Launch announcement" \
-  --platforms linkedin,bluesky \
-  --schedule "tomorrow 9am"</code></pre>
+              <pre class="step-code"><code>"Schedule a launch announcement to LinkedIn
+and Bluesky for tomorrow at 9am."</code></pre>
               <div class="pill-row">
                 <span class="pill">Prompt</span>
                 <span class="pill">Tool call</span>
@@ -1414,7 +1413,7 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
               <div class="faq-q">Can I post from Claude Code or the terminal?</div>
               <div class="faq-a">
                 Yes. The <RouterLink to="/cli-social-media-posting">Posta Claude Code skill</RouterLink> lets you create,
-                schedule, and publish posts straight from your terminal or IDE using natural-language slash-commands.
+                schedule, and publish posts straight from your terminal or IDE using natural language.
                 No dashboard required, no context-switch from your editor.
               </div>
             </div>
