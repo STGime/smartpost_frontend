@@ -289,6 +289,7 @@ export interface TikTokConfiguration extends BasePlatformConfiguration {
   brandContentToggle?: boolean // Branded content (paid partnership)
   brandOrganicToggle?: boolean // Your brand promotion
   contentDisclosureEnabled?: boolean // Wrapper toggle for brand content options
+  autoAddMusic?: boolean // Photo direct-posts only: TikTok auto-picks a recommended track
 }
 
 // Instagram configuration

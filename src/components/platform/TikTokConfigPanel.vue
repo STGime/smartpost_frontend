@@ -293,7 +293,7 @@ const contentDisclosureLabel = computed(() => {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
             </svg>
-            Publish
+            Direct Post
           </button>
           <button
             type="button"
@@ -303,8 +303,64 @@ const contentDisclosureLabel = computed(() => {
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
-            Save as Draft
+            Send to TikTok drafts
           </button>
+        </div>
+        <p v-if="!config.draft" class="field-hint mode-hint">
+          Publishes immediately. Audio must be embedded in your video — TikTok's API
+          doesn't allow attaching a trending sound to video posts.
+        </p>
+        <p v-else class="field-hint mode-hint">
+          Uploads to your TikTok drafts. Open the TikTok app on your phone to pick a
+          trending sound, add filters or in-app text, then publish from there.
+        </p>
+      </div>
+
+      <!-- Music & Sound -->
+      <div class="config-field">
+        <label class="field-label">Music &amp; sound</label>
+
+        <!-- Photo direct post: opt-in to auto_add_music -->
+        <div v-if="!config.draft &amp;&amp; isPhotoPost" class="checkbox-row">
+          <input
+            type="checkbox"
+            id="tiktok-auto-add-music"
+            :checked="config.autoAddMusic"
+            @change="updateField('autoAddMusic', ($event.target as HTMLInputElement).checked)"
+          />
+          <label for="tiktok-auto-add-music" class="checkbox-label">
+            <span class="checkbox-box"></span>
+            <span class="checkbox-text">
+              <strong>Let TikTok pick a track</strong>
+              <span class="checkbox-hint">
+                TikTok auto-adds a recommended sound to your photo slideshow. You can
+                swap it later in the TikTok app. Photo posts only.
+              </span>
+            </span>
+          </label>
+        </div>
+
+        <!-- Video direct post: explain the API limitation -->
+        <div v-else-if="!config.draft" class="music-info">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19a3 3 0 11-6 0 3 3 0 016 0zm12-3a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span>
+            The audio in your video file is what plays on TikTok. To attach a trending
+            sound, switch to <strong>Send to TikTok drafts</strong> and finish in the
+            TikTok app.
+          </span>
+        </div>
+
+        <!-- Draft mode: hand-off explanation -->
+        <div v-else class="music-info">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19a3 3 0 11-6 0 3 3 0 016 0zm12-3a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span>
+            Trending sounds live in the TikTok app. When you finish this draft on your
+            phone, the TikTok editor lets you pick any sound from the in-app library.
+          </span>
         </div>
       </div>
 
@@ -755,6 +811,37 @@ const contentDisclosureLabel = computed(() => {
   background: var(--accent-soft);
   border-color: var(--accent);
   color: #a5b4fc;
+}
+
+.mode-hint {
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.music-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.music-info svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: #ff0050;
+  margin-top: 1px;
+}
+
+.music-info strong {
+  color: var(--text);
+  font-weight: 500;
 }
 
 /* Checkbox styles */
