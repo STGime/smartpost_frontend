@@ -1522,6 +1522,7 @@ and Bluesky for tomorrow at 9am."</code></pre>
   align-items: center;
   gap: 12px;
   margin-bottom: 32px;
+  flex-wrap: wrap;
 }
 
 .logo {
@@ -1570,6 +1571,7 @@ and Bluesky for tomorrow at 9am."</code></pre>
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .btn-login {
@@ -3531,6 +3533,9 @@ h1 {
   }
   .wrapper {
     padding-inline: 16px;
+  }
+  .logo-tagline {
+    display: none;
   }
   .showcase-item,
   .showcase-item-reverse {

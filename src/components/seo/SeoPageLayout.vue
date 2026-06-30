@@ -133,6 +133,7 @@ const openWaitingList = (source: WaitingListSource) => {
   align-items: center;
   gap: 12px;
   margin-bottom: 32px;
+  flex-wrap: wrap;
 }
 
 .logo {
@@ -182,6 +183,7 @@ const openWaitingList = (source: WaitingListSource) => {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .nav-link {
@@ -283,6 +285,22 @@ const openWaitingList = (source: WaitingListSource) => {
 @media (max-width: 720px) {
   .wrapper {
     padding-inline: 16px;
+  }
+  .logo-tagline {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .nav-link {
+    font-size: 12px;
+    padding: 6px 2px;
+  }
+  .header {
+    gap: 8px;
+  }
+  .header-actions {
+    gap: 8px;
   }
 }
 </style>
