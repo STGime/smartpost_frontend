@@ -339,48 +339,6 @@ export const workflows: Workflow[] = [
     ],
   },
   {
-    slug: 'posta-webhook-ai-comment-reply',
-    title: 'Auto-reply to comments with AI (LinkedIn + TikTok)',
-    description:
-      'A webhook-driven n8n workflow that drafts brand-voice replies to new LinkedIn and TikTok comments with an LLM — review-first, using Posta’s comments API.',
-    updated: '2026-06-20',
-    tags: ['Comments', 'AI', 'Webhook', 'LinkedIn', 'TikTok'],
-    summary: 'Draft AI replies to new comments; auto-post once you trust it.',
-    nodeChain: ['Posta webhook', 'Verify HMAC', 'Wait 30m', 'Get comments', 'Filter unreplied', 'LLM draft', 'Reply / Slack'],
-    difficulty: 'Advanced',
-    setupTime: '~20 min',
-    requiredCredentials: [POSTA_CRED, { name: 'OpenAI API key', url: 'https://platform.openai.com' }],
-    jsonFile: '/assets/workflows/posta-webhook-ai-comment-reply.json',
-    body: [
-      {
-        type: 'p',
-        text: 'Posta’s comments inbox covers <strong>LinkedIn and TikTok</strong> — and exposes a reply API most schedulers simply don’t have. This workflow turns that into engagement: when a post publishes, it waits for the first comments, drafts a warm brand-voice reply with an LLM, and either posts it or routes it to Slack for a human. It’s the closed-loop pattern from <a href="/developers">Posta’s webhooks</a>, made real.',
-      },
-      { type: 'h2', text: 'How it works' },
-      {
-        type: 'ol',
-        items: [
-          '<strong>Posta webhook</strong> — receives <code>post.published</code>; the Code node verifies the HMAC signature.',
-          '<strong>Wait 30 min</strong> — give the first comments time to land before checking.',
-          '<strong>Get comments</strong> — reads the post’s comments from the Posta comments API.',
-          '<strong>Unreplied only</strong> (Filter) — drops comments you’ve already answered (tighten this to match question-shaped comments if you like).',
-          '<strong>Draft reply</strong> (LLM) — 2–3 sentences in your brand voice; returns <code>ESCALATE</code> for anything negative or sensitive.',
-          '<strong>Auto-reply enabled?</strong> (IF) — when <code>AUTO_REPLY=true</code> and not escalated, <strong>Post reply</strong> publishes it; otherwise <strong>Slack for review</strong> sends it to a human.',
-        ],
-      },
-      { type: 'h2', text: 'Review-first by design' },
-      {
-        type: 'p',
-        text: 'Leave <code>AUTO_REPLY</code> unset for the first week — every draft goes to Slack so you can sanity-check the voice. Flip it to <code>true</code> once you trust it. The <code>ESCALATE</code> guard keeps the bot away from sensitive threads even after that.',
-      },
-      { type: 'h2', text: 'Scope' },
-      {
-        type: 'p',
-        text: 'The comments inbox and reply API are <strong>LinkedIn and TikTok</strong> only — that’s where Posta currently reads and writes comments.',
-      },
-    ],
-  },
-  {
     slug: 'trending-topics-daily-ai-post',
     title: 'Post daily about trending topics with AI',
     description:
