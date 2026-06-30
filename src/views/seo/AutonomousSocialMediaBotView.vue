@@ -195,9 +195,10 @@ app.use(express.json({ verify: (req, _, buf) => { req.raw = buf } }))
 
 app.post('/posta-webhook', (req, res) => {
   const sig = req.headers['x-posta-signature']
-  if (!sig) return res.sendStatus(401)
+  const ts = req.headers['x-posta-timestamp']
+  if (!sig || !ts) return res.sendStatus(401)
   const expected = createHmac('sha256', process.env.POSTA_WEBHOOK_SECRET)
-    .update(req.raw).digest('hex')
+    .update(ts + '.' + req.raw).digest('hex')
   const sigBuf = Buffer.from(sig)
   const expBuf = Buffer.from(expected)
   if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {

@@ -694,7 +694,7 @@ export const blogPosts: BlogPost[] = [
       { type: 'h2', text: 'What you get on a webhook' },
       {
         type: 'p',
-        text: 'Every Posta outbound webhook includes: the event name (<code>post.published</code>, <code>post.failed</code>, <code>post.scheduled</code>, etc.), the platform, the platform post ID and URL (when published), the Posta post ID, and a timestamp. The headers carry an <code>x-posta-signature</code> HMAC-SHA256 over the raw body. See the <a href="/developers">developer reference</a> for the full payload schema.',
+        text: 'Every Posta outbound webhook includes: the event name (<code>post.published</code>, <code>post.failed</code>, <code>post.scheduled</code>, etc.), the platform, the platform post ID and URL (when published), the Posta post ID, and a timestamp. The headers carry an <code>x-posta-timestamp</code> and an <code>x-posta-signature</code> — the latter is HMAC-SHA256 over <code>{timestamp}.{rawBody}</code>. See the <a href="/developers">developer reference</a> for the full payload schema.',
       },
       { type: 'h2', text: 'The minimum-viable receiver' },
       {
@@ -712,9 +712,10 @@ app.use(express.json({ verify: (req, _, buf) => { req.raw = buf } }))
 
 app.post('/posta-webhook', (req, res) => {
   const sig = req.headers['x-posta-signature']
-  if (!sig) return res.sendStatus(401)
+  const ts = req.headers['x-posta-timestamp']
+  if (!sig || !ts) return res.sendStatus(401)
   const expected = createHmac('sha256', process.env.POSTA_WEBHOOK_SECRET)
-    .update(req.raw).digest('hex')
+    .update(ts + '.' + req.raw).digest('hex')
   const sigBuf = Buffer.from(sig)
   const expBuf = Buffer.from(expected)
   if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
@@ -733,7 +734,7 @@ app.listen(3000)`,
       },
       {
         type: 'p',
-        text: 'Three things to notice. (1) The <code>express.json</code> middleware grabs the <em>raw</em> body before parsing, because HMAC has to verify the bytes that were signed, not the re-serialized JSON. (2) An early return on missing signature header prevents a confusing crash when something other than Posta probes the endpoint. (3) The length check before <code>timingSafeEqual</code> dodges a Node throw when buffers differ in length.',
+        text: 'Three things to notice. (1) The <code>express.json</code> middleware grabs the <em>raw</em> body before parsing, because the signature covers the exact bytes Posta sent — the <code>x-posta-timestamp</code> value joined to the raw body — not a re-serialized copy. (2) An early return on missing signature header prevents a confusing crash when something other than Posta probes the endpoint. (3) The length check before <code>timingSafeEqual</code> dodges a Node throw when buffers differ in length.',
       },
       { type: 'h2', text: 'Pattern 1 — Auto-respond on publish' },
       {
@@ -1482,11 +1483,12 @@ export const runtime = 'nodejs'
 
 export async function POST(req: Request) {
   const sig = req.headers.get('x-posta-signature')
-  if (!sig) return new Response('missing signature', { status: 401 })
+  const ts = req.headers.get('x-posta-timestamp')
+  if (!sig || !ts) return new Response('missing signature', { status: 401 })
 
   const raw = await req.text()
   const expected = createHmac('sha256', process.env.POSTA_WEBHOOK_SECRET!)
-    .update(raw).digest('hex')
+    .update(ts + '.' + raw).digest('hex')
   const sigBuf = Buffer.from(sig)
   const expBuf = Buffer.from(expected)
   if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
@@ -2060,6 +2062,88 @@ audience-warming opener."`,
       {
         type: 'p',
         text: 'Same skill works for LinkedIn — see <a href="/blog/post-to-linkedin-from-terminal-claude-code">post to LinkedIn from the terminal with Claude Code</a>. For the broader decision framework on which surface to pick, see <a href="/blog/mcp-vs-n8n-vs-claude-code-for-social-media">MCP vs n8n vs Claude Code</a>. <a href="/signup">14-day free trial</a> covers Bluesky plus seven other networks.',
+      },
+    ],
+  },
+  {
+    slug: 'schedule-social-media-from-notion-with-n8n',
+    title: 'Schedule social media straight from your Notion calendar with n8n + Posta',
+    description:
+      'Keep your content calendar in Notion and let n8n publish it on time across every network with Posta — approved rows ship automatically, status synced back.',
+    date: '2026-06-30',
+    updated: '2026-06-30',
+    author: 'Posta Team',
+    tags: ['n8n', 'Notion', 'Automation', 'Scheduling'],
+    body: [
+      {
+        type: 'p',
+        text: 'A lot of teams already run their content calendar in <strong>Notion</strong> — a row per post, a caption, a date, an approval status. The gap is the last step: someone still has to open each network at the right time and paste the post in. This <a href="/n8n-social-media-node">n8n</a> template closes that gap. Every 15 minutes it reads the rows you’ve marked <em>Approved</em>, and for any whose time has arrived it schedules the post across your accounts through <a href="/developers">Posta</a> — then writes the status and the live post URL back into the same Notion row. Notion stays your source of truth; n8n and Posta do the publishing.',
+      },
+      {
+        type: 'image',
+        src: '/assets/blog/notion-to-social-n8n.svg',
+        alt: 'A Notion content calendar of approved rows flowing through an n8n automation robot and fanning out to LinkedIn, Bluesky, Threads, and video networks.',
+        text: 'Approved rows in Notion → n8n every 15 minutes → scheduled across your networks with Posta, status written back.',
+      },
+      { type: 'h2', text: 'What it does' },
+      {
+        type: 'p',
+        text: 'It’s a small, sturdy loop with no moving parts you have to babysit: a schedule trigger, a Notion read, a filter, two Posta calls, and a Notion write-back. Because the last step flips the row out of <em>Approved</em>, the next run skips it — so nothing ever publishes twice, even if a run overlaps.',
+      },
+      { type: 'h2', text: 'Set up your Notion database' },
+      {
+        type: 'p',
+        text: 'The template reads simplified Notion output, so it references your columns by name. Your content-calendar database needs:',
+      },
+      {
+        type: 'ul',
+        items: [
+          '<strong>Caption</strong> (Text) — the post body.',
+          '<strong>Social Accounts</strong> (Multi-select) — each option’s name is a Posta social account id (grab them from the <em>Get many social accounts</em> Posta node). This is how one row fans out to several networks.',
+          '<strong>Scheduled At</strong> (Date, with time) — when the post should go live.',
+          '<strong>Status</strong> (Select) — at least <code>Approved</code> and <code>Scheduled</code>.',
+          '<strong>Posta URL</strong> (URL) — written back automatically after scheduling, so the row links to the live post.',
+        ],
+      },
+      { type: 'h2', text: 'How the workflow runs' },
+      {
+        type: 'ol',
+        items: [
+          '<strong>Schedule trigger</strong> — fires every 15 minutes (tighten or loosen to taste).',
+          '<strong>Get rows</strong> (Notion) — pulls the pages in your content-calendar database.',
+          '<strong>Filter</strong> — keeps only rows where <code>Status = Approved</code> and <code>Scheduled At</code> is within the next 15 minutes.',
+          '<strong>Create a post</strong> (Posta) — uses the row’s <code>Social Accounts</code> and <code>Caption</code> to create the post as a draft, fanning out to every selected network in one call.',
+          '<strong>Schedule a post</strong> (Posta) — schedules that draft for the row’s <code>Scheduled At</code> time.',
+          '<strong>Mark row Scheduled</strong> (Notion) — flips <code>Status</code> to <em>Scheduled</em> and writes the Posta post URL back. The row is no longer <em>Approved</em>, so the next run leaves it alone.',
+        ],
+      },
+      { type: 'h2', text: 'Why the typed Posta node, not a raw HTTP node' },
+      {
+        type: 'p',
+        text: 'You could wire this up with n8n’s generic HTTP Request node, but you’d re-implement a lot by hand. The <a href="/n8n-social-media-node">Posta community node</a> gives you:',
+      },
+      {
+        type: 'ul',
+        items: [
+          '<strong>One call, many networks.</strong> Pass several <code>socialAccountIds</code> and Posta fans the post out — you don’t loop per platform.',
+          '<strong>Per-platform formatting for free.</strong> Posta auto-crops media to each network’s aspect ratios and enforces caption limits, so one Notion row works everywhere.',
+          '<strong>Typed inputs and credential management.</strong> Caption, accounts, and schedule are proper node fields with one reusable Posta credential — no token-juggling in HTTP headers.',
+          '<strong>A clean two-step contract.</strong> Create the draft, then schedule it — the same shape documented in the <a href="/developers">REST API reference</a>.',
+        ],
+      },
+      { type: 'h2', text: 'Make it your own' },
+      {
+        type: 'ul',
+        items: [
+          'Prefer <strong>Airtable</strong>? Swap the two Notion nodes for Airtable <em>Search</em> + <em>Update record</em> — the field mapping is identical.',
+          'Want per-platform voices from one source caption? Add a <code>Regenerate With AI</code> checkbox column and route checked rows through an LLM node that rewrites the caption per network before <em>Create a post</em>.',
+          'Attaching media? Upload it to Posta first with the <em>Upload media</em> node and pass the returned id via Create post’s <strong>Additional Fields → Media IDs</strong>.',
+        ],
+      },
+      { type: 'h2', text: 'Get the template' },
+      {
+        type: 'p',
+        text: 'Import it from the <a href="https://n8n.io/workflows/16558" target="_blank" rel="noopener">n8n template library</a>, or browse all of Posta’s <a href="/workflows">ready-to-fork n8n workflows</a>. Coming from a task-priced tool? The same calendar-to-social shape is the migration story in <a href="/blog/replace-zapier-social-media-with-n8n-posta">replace Zapier social media with n8n + Posta</a>. <a href="/signup">14-day free Posta trial</a>, no credit card — covers all eight networks.',
       },
     ],
   },
