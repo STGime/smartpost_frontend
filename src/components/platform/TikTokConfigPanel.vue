@@ -254,7 +254,9 @@ const contentDisclosureLabel = computed(() => {
       </div>
 
       <!-- Privacy Level (TikTok UX Requirement: dropdown with no default) -->
-      <div class="config-field" v-if="!config.draft">
+      <!-- Always visible: privacy is required for drafts too (used when the -->
+      <!-- draft is eventually published from the queue). -->
+      <div class="config-field">
         <label class="field-label">
           Who can view this video
           <span class="required">*</span>
@@ -297,7 +299,9 @@ const contentDisclosureLabel = computed(() => {
           </button>
           <button
             type="button"
-            :class="['toggle-btn', { active: config.draft }]"
+            :class="['toggle-btn', { active: config.draft, disabled: !config.privacyLevel && !config.draft }]"
+            :disabled="!config.privacyLevel && !config.draft"
+            :title="!config.privacyLevel && !config.draft ? 'Pick a visibility above before switching to Save as Draft' : ''"
             @click="updateField('draft', true)"
           >
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -306,6 +310,10 @@ const contentDisclosureLabel = computed(() => {
             Save as Draft
           </button>
         </div>
+        <p v-if="!config.privacyLevel && !config.draft" class="field-hint mode-hint">
+          Pick a visibility above first — TikTok requires it even for drafts, so
+          the post can eventually publish with the right audience.
+        </p>
       </div>
 
       <!-- Interaction Settings (TikTok UX Requirement: "Allow" checkboxes, unchecked by default) -->
@@ -749,6 +757,25 @@ const contentDisclosureLabel = computed(() => {
 
 .toggle-btn:hover {
   border-color: var(--border-hover);
+}
+
+.toggle-btn:disabled,
+.toggle-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toggle-btn:disabled:hover,
+.toggle-btn.disabled:hover {
+  border-color: var(--border);
+}
+
+.mode-hint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+  max-width: 520px;
 }
 
 .toggle-btn.active {
