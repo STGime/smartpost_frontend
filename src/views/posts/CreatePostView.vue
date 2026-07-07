@@ -149,14 +149,19 @@ const selectedPlatforms = computed(() => {
   return [...new Set(platforms)]
 })
 
-// Validation for TikTok posts - privacy level is always required
+// Validation for TikTok posts — privacy level is required for direct publish
+// only. Drafts skip the check because TikTok's inbox/draft endpoint doesn't
+// accept privacy at all (the user picks it when they finish the post inside
+// the TikTok app), and the backend explicitly mirrors this
+// (see tiktokValidationService.validateConfigLocally: `if (draft !== true)`).
 const tiktokValidation = computed(() => {
   const hasTikTok = selectedPlatforms.value.includes('tiktok')
   if (!hasTikTok) return { valid: true, message: null }
 
   const tiktokConfig = platformConfigurations.value.tiktok
 
-  // Privacy level required for all TikTok posts (including drafts that will be scheduled)
+  if (tiktokConfig?.draft === true) return { valid: true, message: null }
+
   if (!tiktokConfig?.privacyLevel) {
     return {
       valid: false,

@@ -254,7 +254,9 @@ const contentDisclosureLabel = computed(() => {
       </div>
 
       <!-- Privacy Level (TikTok UX Requirement: dropdown with no default) -->
-      <div class="config-field" v-if="!config.draft">
+      <!-- Always visible: privacy is required for drafts too (used when the -->
+      <!-- draft is eventually published from the queue). -->
+      <div class="config-field">
         <label class="field-label">
           Who can view this video
           <span class="required">*</span>
