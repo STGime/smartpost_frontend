@@ -2147,6 +2147,209 @@ audience-warming opener."`,
       },
     ],
   },
+  {
+    slug: 'hootsuite-social-os-vs-ai-native-scheduler',
+    title: 'Hootsuite Social OS is AI bolted onto a legacy dashboard — Posta was AI-native day one',
+    description:
+      'Hootsuite launched Social OS with Wisdom, Perch, Nest, Lumen and Parliament. It is a UI layer for humans with an AI chatbot on top. Posta is API and MCP-first, so any agent can drive it.',
+    date: '2026-07-20',
+    updated: '2026-07-20',
+    author: 'Posta Team',
+    tags: ['Hootsuite', 'AI', 'MCP', 'Comparison'],
+    body: [
+      {
+        type: 'p',
+        text: 'Hootsuite spent 2026 rebranding around <em>Social OS</em> — a suite of modular apps (Perch, Nest, Lumen, Parliament) tied together by a conversational AI layer called <strong>Wisdom</strong>. It is a real launch, positioned as their move into an "AI-first social operating system." It is also, structurally, an AI chatbot bolted onto the same per-user, per-channel enterprise dashboard that has anchored Hootsuite for a decade — Standard $99/user/mo, Professional $199, Advanced $399, Enterprise custom (typically $16k–$18k/yr; pricing from <a href="https://influencermarketinghub.com/hootsuite/" target="_blank" rel="noopener">Influencer Marketing Hub, 2026</a>).',
+      },
+      {
+        type: 'p',
+        text: 'That framing matters. When you buy Social OS, you are buying a dashboard for humans, with a "chat with Wisdom" panel that lets those humans move faster. When you buy <a href="/social-media-scheduler">Posta</a>, you are buying primitives — a <a href="/mcp-social-media-server">Model Context Protocol server</a>, a public REST API, HMAC-signed outbound webhooks, an <a href="/n8n-social-media-node">n8n community node</a> — designed for whatever agent your team actually uses. There is no "AI features" tier. AI is the caller, not the seat.',
+      },
+      { type: 'h2', text: 'Two different shapes of "AI social media"' },
+      {
+        type: 'p',
+        text: 'It is worth naming the distinction explicitly, because both are called "AI-powered":',
+      },
+      {
+        type: 'ul',
+        items: [
+          '<strong>AI-assisted dashboards</strong> — Hootsuite Wisdom, Buffer\'s AI Assistant, Later\'s captioning. A human sits in front of a composer; a chat panel drafts, summarises, or suggests. The human still clicks Publish. The AI is a productivity feature.',
+          '<strong>AI-native platforms</strong> — Posta. Every primitive (create, schedule, publish, list, comments, analytics) is a tool call. An LLM, a n8n workflow, or a custom agent drives the platform end-to-end. The human is optional, and if present, is reviewing outputs — not writing captions.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'Neither is wrong. They are shaped for different teams. But naming it clarifies the buying decision: if your team plans to have a human in every publishing decision, Hootsuite\'s Social OS is coherent. If you want an agent to close the loop — <a href="/blog/webhook-driven-social-media-agent-loops">draft, publish, listen, react</a> — a dashboard-first product is the wrong primitive, no matter how good its chat panel is.',
+      },
+      { type: 'h2', text: 'Wisdom, Perch, Nest, Lumen, Parliament — what each app actually is' },
+      {
+        type: 'p',
+        text: 'Social OS is a rebrand-and-repackage of Hootsuite\'s existing features into named "apps." Roughly:',
+      },
+      {
+        type: 'ul',
+        items: [
+          '<strong>Perch</strong> — the compose + schedule + calendar view. What you already knew as the Hootsuite dashboard.',
+          '<strong>Nest</strong> — social inbox and customer care. Replies, routing, tags.',
+          '<strong>Lumen</strong> — listening + intelligence (Talkwalker-derived). Brand mentions, sentiment, competitive tracking.',
+          '<strong>Parliament</strong> — employee advocacy. Give staff pre-approved posts to reshare from their own accounts.',
+          '<strong>Wisdom</strong> — the chatbot layer that sits <em>on top</em> of all four apps.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'Every one of those modules assumes a human seat. Wisdom "generates content ideas" and "moves from insight to action within unified workflows" — but "action" in each case still means a Hootsuite user pressing a button. Wisdom does not expose an external API surface that another agent can call. It is Hootsuite\'s copilot for Hootsuite users.',
+      },
+      { type: 'h2', text: 'What "AI-native" concretely means at Posta' },
+      {
+        type: 'p',
+        text: 'Posta shipped in an era where LLMs were assumed. We designed the platform so that the same interface a creator uses by hand is the interface an agent uses on a loop. In practice that shows up as:',
+      },
+      {
+        type: 'ul',
+        items: [
+          '<strong>MCP server</strong> — one <code>npx posta-mcp</code>, one API token, and Claude Desktop / Claude Code / Cursor / Windsurf / Zed can create, schedule, publish, and inspect posts as typed tool calls. See <a href="/mcp-social-media-server">the MCP server page</a>.',
+          '<strong>Public REST API with OpenAPI spec</strong> — on every paid tier, not gated to Enterprise. See <a href="/developers">developer docs</a>.',
+          '<strong>HMAC-signed outbound webhooks</strong> — <code>post.published</code>, <code>post.failed</code>, <code>post.scheduled</code> — for closed-loop agent pipelines.',
+          '<strong>n8n community node</strong> — verified, drag-and-drop primitives for the visual-workflow crowd.',
+          '<strong>Claude Code skill</strong> — post from a terminal by describing what you want in plain English.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'None of that is a "features" tier. It is the product. If tomorrow another MCP client ships (Cursor, Zed, Windsurf already work), Posta works with it the same day, no rollout required.',
+      },
+      { type: 'h2', text: 'Where the "AI upsell" pattern breaks down' },
+      {
+        type: 'p',
+        text: 'The tell that Hootsuite\'s AI is bolted on is pricing shape. Wisdom is bundled into the same per-seat tiers that predate it. If your team has one developer and one on-call person driving thousands of agent-triggered posts a month, you are paying two enterprise seats to feed a machine — a cost model designed for a marketing department, not an autonomous pipeline. See <a href="/blog/agent-posting-cost-comparison-vs-buffer-hootsuite">the cost-model comparison</a> for the full sketch, but the shape is: per-user × per-channel scales with your team; flat-tier scales with your usage.',
+      },
+      {
+        type: 'p',
+        text: 'That works fine for a 20-person agency running 40 client accounts by hand. It works badly for a two-person team running an <a href="/agentic-social-media-scheduler">agentic social media scheduler</a> that never sleeps.',
+      },
+      { type: 'h2', text: 'When to still pick Hootsuite' },
+      {
+        type: 'p',
+        text: 'Be honest about it — there are teams for whom Social OS is a fine buy:',
+      },
+      {
+        type: 'ul',
+        items: [
+          '<strong>Large agencies</strong> with mature approval workflows, multiple client brands, and staff who work inside a dashboard all day. Hootsuite\'s permission model and governance are mature.',
+          '<strong>Enterprise compliance shops</strong> that need SSO, audit trails, and a vendor with a legal team big enough to sign an MSA next Tuesday.',
+          '<strong>Teams that want listening + publishing + inbox in one seat</strong>. Posta focuses on publishing; Lumen\'s listening surface is broader.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'If none of those match — and specifically if you want your <em>agents</em> to run the loop instead of your seats — an API- and MCP-first tool is the shape to pick. That is what Posta is.',
+      },
+      { type: 'h2', text: 'Where to go from here' },
+      {
+        type: 'p',
+        text: 'Start with the <a href="/agentic-social-media-scheduler">agentic social media scheduler</a> page for the positioning, or go straight to the <a href="/mcp-social-media-server">MCP server</a> or <a href="/developers">REST API</a> docs. Not sure which developer surface fits? Read <a href="/blog/mcp-vs-n8n-vs-claude-code-for-social-media">MCP vs n8n vs Claude Code for social media</a>. <a href="/signup">14-day free trial</a>, no credit card, full API access on day one.',
+      },
+    ],
+  },
+  {
+    slug: 'n8n-webhook-rce-and-safe-social-media-automation',
+    title: 'When n8n itself is the attack surface: what CVE-2026-21858 means for social-media automation',
+    description:
+      'Critical unauthenticated RCE in n8n (Ni8mare, CVSS 10.0) let attackers pull credentials from any exposed webhook. Here is what it means if you automate social posting on raw n8n — and how Posta MCP changes the shape.',
+    date: '2026-07-20',
+    updated: '2026-07-20',
+    author: 'Posta Team',
+    tags: ['Security', 'n8n', 'MCP', 'Webhooks'],
+    body: [
+      {
+        type: 'p',
+        text: 'In early 2026 The Hacker News reported <a href="https://thehackernews.com/2026/01/critical-n8n-vulnerability-cvss-100.html" target="_blank" rel="noopener">CVE-2026-21858 ("Ni8mare")</a> — an unauthenticated remote code execution flaw in n8n\'s webhook handler, CVSS 10.0. Any publicly reachable n8n instance running the affected versions could be taken over without a password. The attack chain was mundane: a malformed Content-Type header on a webhook POST let an attacker read <code>~/.n8n/database.sqlite</code>, extract admin credentials and encryption secrets, forge an admin cookie, add an <em>Execute Command</em> node to a workflow, and run arbitrary shell commands on the host.',
+      },
+      {
+        type: 'p',
+        text: 'A patch (n8n <code>1.121.0</code>, released 2025-11-18) fixes it, and further CVEs affecting <code>&lt;1.121.0</code> followed through Q1 2026 — see the running <a href="https://www.rapid7.com/blog/post/etr-ni8mare-n8scape-flaws-multiple-critical-vulnerabilities-affecting-n8n/" target="_blank" rel="noopener">Rapid7 summary</a>. If you self-host n8n, update immediately, restrict webhook exposure, and rotate any credentials n8n has stored. That advice is not new.',
+      },
+      {
+        type: 'p',
+        text: 'What is more interesting is the second-order question: <em>what does this mean for the shape of your social-media automation stack?</em> This post is an honest look at that — from Posta, but with real recommendations regardless of whether you use us.',
+      },
+      { type: 'h2', text: 'Why n8n is such a juicy target' },
+      {
+        type: 'p',
+        text: 'n8n\'s value proposition is that it holds credentials for <em>everything</em>. Your social media OAuth tokens, your Notion API key, your OpenAI key, your Slack incoming webhook, your Airtable PAT. All encrypted at rest, all sitting in one SQLite file. When an RCE like Ni8mare hits, an attacker doesn\'t get one credential — they get the whole vault.',
+      },
+      {
+        type: 'p',
+        text: 'For social-media automations specifically, that means a compromised n8n can post to LinkedIn as you, comment as you on TikTok, DM as you on Instagram, and delete your scheduled queue. Depending on your industry, that is a reportable incident.',
+      },
+      { type: 'h2', text: 'The n8n team is doing the right things' },
+      {
+        type: 'p',
+        text: 'To be clear: n8n patched fast, published details, and the community has been thoughtful. This is not a "don\'t use n8n" post — we ship a <a href="/n8n-social-media-node">verified Posta node</a> for it, and it powers most of our <a href="/workflows">workflow templates</a>. Every dependency ships a critical CVE eventually. The mitigation is not "avoid tools that had a CVE" (nobody\'s left standing). It is "understand what your dependency is holding, and design accordingly."',
+      },
+      { type: 'h2', text: 'The shape a scoped API layer gives you' },
+      {
+        type: 'p',
+        text: 'Here is the concrete design pattern this CVE argues for: <strong>hold platform tokens in one place and expose only a scoped, purpose-built API to the rest of your stack</strong>. If n8n is one workflow engine among several — Claude Code, Cursor MCP tools, a Vercel cron job, a Zapier fallback — none of them should hold your raw LinkedIn OAuth token. They should hold an API token to a service that knows how to post, and only how to post.',
+      },
+      {
+        type: 'p',
+        text: 'That is what Posta is when you drive it from n8n: the LinkedIn / TikTok / Instagram / YouTube / Bluesky / Threads / Pinterest / Facebook OAuth tokens live in Posta\'s vault, not in n8n\'s SQLite. n8n holds a single <code>POSTA_API_TOKEN</code>. If n8n is compromised, the attacker can post-on-your-behalf via Posta — which is bad, but recoverable in one rotate — but cannot exfiltrate your platform OAuth tokens directly. There is no LinkedIn refresh token in <code>database.sqlite</code> to steal.',
+      },
+      { type: 'h2', text: 'The MCP layer as a second boundary' },
+      {
+        type: 'p',
+        text: 'The same shape applies for LLM-driven agents. When Claude Code or Cursor calls <a href="/mcp-social-media-server">the Posta MCP server</a>, the MCP tool call runs in a bounded surface: it can call the documented set of Posta API endpoints, nothing else. There is no <em>Execute Command</em> node, no ability to shell out, no filesystem access. The MCP protocol is designed so that the agent\'s capability surface = the tool schema. If tomorrow someone finds an LLM-prompt-injection path that gets an agent to try to exfiltrate credentials, the MCP server has none to give — the API token is scoped, the platform tokens are Posta-side.',
+      },
+      {
+        type: 'p',
+        text: 'This isn\'t unique to Posta — it\'s the argument for any well-scoped hosted platform sitting between your agent and the raw social APIs. What Posta specifically ships is the primitives (MCP server, REST API, n8n node) so that whichever automation layer you use, the credentials stay on our side of the boundary.',
+      },
+      { type: 'h2', text: 'Concrete hygiene checklist' },
+      {
+        type: 'p',
+        text: 'Whether or not you use Posta, if you run social-media automation on self-hosted n8n:',
+      },
+      {
+        type: 'ul',
+        items: [
+          '<strong>Patch immediately</strong> — n8n ≥ 1.121.0 (and follow-up releases). Self-hosted n8n behind Cloudflare Access or a VPN reduces blast radius further.',
+          '<strong>Do not put n8n webhooks on the public internet</strong> unless you have to. Prefer inbound-only via a tunnel (Cloudflare Tunnel, Tailscale Funnel).',
+          '<strong>Hold platform OAuth tokens in a scoped intermediary</strong> (Posta, or your own thin API service). Give n8n an API token, not a refresh token.',
+          '<strong>Rotate every credential n8n has ever seen</strong> if you were on a vulnerable version and Internet-exposed. Not "the ones you think were used" — every one.',
+          '<strong>Turn on HMAC verification</strong> on any inbound webhooks your workflows accept. Posta signs all outbound webhooks with HMAC-SHA256 — see <a href="/blog/webhook-driven-social-media-agent-loops">the webhook loops post</a> for verification patterns.',
+        ],
+      },
+      { type: 'h2', text: 'What "n8n-safe social media automation" looks like in practice' },
+      {
+        type: 'p',
+        text: 'The shape we recommend is unchanged from what we shipped last year — this CVE just makes the case sharper:',
+      },
+      {
+        type: 'ol',
+        items: [
+          'OAuth into every social network <em>through Posta</em> once. Tokens live in Posta\'s vault, encrypted at rest, never touch your n8n instance.',
+          'Generate a <code>POSTA_API_TOKEN</code> scoped to your account. Store it in n8n\'s credential vault as a Header Auth credential.',
+          'Build n8n workflows using the <a href="/n8n-social-media-node">Posta node</a> — create posts, schedule, publish, listen for webhooks — none of which requires n8n to know a single platform token.',
+          'If n8n is compromised, rotate <em>one</em> API token in Posta. Every platform connection stays intact.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'Same shape works for MCP-driven agents (Claude Desktop, Cursor, Windsurf) via <a href="/mcp-social-media-server">Posta\'s MCP server</a>, and for anything that speaks HTTP via the <a href="/developers">REST API</a>. The idea is the same: one place holds the platform credentials; everything else holds a scoped token to that place.',
+      },
+      { type: 'h2', text: 'Bottom line' },
+      {
+        type: 'p',
+        text: 'The Ni8mare CVE isn\'t a reason to abandon n8n. It is a reason to look at where your platform credentials actually live and ask: <em>if this workflow engine is compromised tomorrow, what walks out the door?</em> If the answer is "our entire social media presence for every brand we run," it\'s worth taking half a day to migrate the credentials into a scoped intermediary.',
+      },
+      {
+        type: 'p',
+        text: 'For an end-to-end template, see the <a href="/blog/webhook-driven-social-media-agent-loops">webhook-driven agent loops</a> post, or browse <a href="/workflows">the n8n workflow templates</a> — every one holds only the Posta token, never a platform token. <a href="/signup">Start a 14-day free trial</a> to try the shape.',
+      },
+    ],
+  },
 ]
 
 /** Posts newest-first — used by the index and SEO generators. */
