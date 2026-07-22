@@ -164,19 +164,19 @@
   </url>
   <url>
     <loc>https://getposta.app/terms</loc>
-    <lastmod>2024-12-10</lastmod>
+    <lastmod>2026-07-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://getposta.app/privacy</loc>
-    <lastmod>2024-12-10</lastmod>
+    <lastmod>2026-07-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://getposta.app/impressum</loc>
-    <lastmod>2024-12-10</lastmod>
+    <loc>https://getposta.app/legal-notice</loc>
+    <lastmod>2026-07-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>

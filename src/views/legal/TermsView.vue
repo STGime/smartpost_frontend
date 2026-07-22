@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useHead } from '@unhead/vue'
+import { legalStrings as L } from '@/data/legalStrings'
 
 useHead({
   title: 'Posta - Create once. Post everywhere. - Terms of Service',
@@ -35,11 +36,16 @@ const currentYear = new Date().getFullYear()
 
       <main class="content">
         <h1>Posta &mdash; Create once. Post everywhere. &mdash; Terms of Service</h1>
-        <p class="last-updated">Last updated: March 2026</p>
+        <p class="last-updated">Effective {{ L.effectiveDate }} · Version {{ L.documentVersion }}</p>
 
         <p>
-          Welcome to Posta &mdash; Create once. Post everywhere. These Terms of Service ("Terms") govern your access to and use of the
-          Posta (available at getposta.app) platform, website, and services (collectively, the "Service") operated by Posta ("we", "us", or "our").
+          These Terms of Service ("Terms") govern your access to and use of the
+          Posta platform, website, and services available at getposta.app
+          (collectively, the "Service"). The Service is operated by
+          <strong>{{ L.legalEntity }}</strong>, a {{ L.entityType }}
+          registered at {{ L.registeredAddress }}, Estonian commercial-register
+          code {{ L.registryNumber }} ("we", "us", or "our"). Full company
+          details are on our <RouterLink to="/legal-notice">Legal Notice</RouterLink>.
         </p>
         <p>
           By accessing or using our Service, you agree to be bound by these Terms. If you do not agree to
@@ -174,18 +180,36 @@ const currentYear = new Date().getFullYear()
           modifications constitutes acceptance of the updated Terms.
         </p>
 
-        <h2>14. Governing Law</h2>
+        <h2>14. Governing Law and Jurisdiction</h2>
         <p>
-          These Terms shall be governed by and construed in accordance with the laws of the jurisdiction
-          in which Posta operates, without regard to its conflict of law provisions.
+          These Terms are governed by the laws of {{ L.governingLaw }}, without
+          regard to conflict-of-law rules. The competent forum for disputes
+          arising from these Terms is {{ L.courtOfJurisdiction }}, subject to
+          any mandatory consumer-protection provisions of the user's country of
+          residence within the European Union.
         </p>
 
-        <h2>15. Contact Us</h2>
+        <h2>15. Hosting and Data Location</h2>
         <p>
-          If you have any questions about these Terms, please contact us at:
+          The Service is hosted on Google Cloud Platform (Iowa, United States)
+          with the database on Supabase (AWS eu-west-1, Ireland). Media assets
+          are stored on Google Cloud Storage. Posta is <strong>not</strong> an
+          EU-sovereign-hosted service — parts of the infrastructure are
+          operated by US-parent companies and may be subject to US legislation
+          in addition to EU law. Personal data is processed in accordance with
+          our <RouterLink to="/privacy">Privacy Policy</RouterLink>.
+        </p>
+
+        <h2>16. Contact Us</h2>
+        <p>
+          {{ L.legalEntity }}<br />
+          {{ L.registeredAddress }}<br />
+          Estonian register code: {{ L.registryNumber }}
         </p>
         <p>
-          <strong>Email:</strong> <a href="mailto:hello@getposta.app" class="contact-link">hello@getposta.app</a>
+          <strong>Support:</strong> <a :href="`mailto:${L.supportEmail}`" class="contact-link">{{ L.supportEmail }}</a><br />
+          <strong>Legal notices:</strong> <a :href="`mailto:${L.noticesEmail}`" class="contact-link">{{ L.noticesEmail }}</a><br />
+          <strong>Data-protection matters:</strong> <a :href="`mailto:${L.dpoEmail}`" class="contact-link">{{ L.dpoEmail }}</a>
         </p>
       </main>
     </div>
@@ -197,7 +221,7 @@ const currentYear = new Date().getFullYear()
           <a href="mailto:hello@getposta.app">Contact</a>
           <RouterLink to="/terms">Terms of Service</RouterLink>
           <RouterLink to="/privacy">Privacy Policy</RouterLink>
-          <RouterLink to="/impressum">Impressum</RouterLink>
+          <RouterLink to="/legal-notice">Legal Notice</RouterLink>
         </div>
       </div>
     </footer>

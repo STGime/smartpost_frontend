@@ -39,7 +39,7 @@ Posta is a multi-platform social media scheduler that publishes once to LinkedIn
 
 - [Terms of Service](https://getposta.app/terms)
 - [Privacy Policy](https://getposta.app/privacy)
-- [Impressum](https://getposta.app/impressum)
+- [Legal Notice](https://getposta.app/legal-notice)
 - [Full content for LLMs](https://getposta.app/llms-full.txt) — Concatenated product documentation as Markdown.
 
 <!-- BLOG:START -->

@@ -64,13 +64,13 @@ const openWaitingList = (source: WaitingListSource) => {
 
     <footer class="footer">
       <div class="footer-inner">
-        <div>&copy; {{ currentYear }} Posta. All rights reserved.</div>
+        <div>&copy; {{ currentYear }} Posta. Operated by Eurobase OÜ (Estonia). All rights reserved.</div>
         <div class="footer-links">
           <RouterLink to="/blog">Blog</RouterLink>
           <a href="mailto:hello@getposta.app">Contact</a>
           <RouterLink to="/terms">Terms of Service</RouterLink>
           <RouterLink to="/privacy">Privacy Policy</RouterLink>
-          <RouterLink to="/impressum">Impressum</RouterLink>
+          <RouterLink to="/legal-notice">Legal Notice</RouterLink>
         </div>
         <div class="footer-section">
           <div class="footer-heading">Product</div>

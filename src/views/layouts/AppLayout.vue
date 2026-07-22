@@ -184,7 +184,7 @@ onMounted(() => {
             <a href="mailto:hello@getposta.app">Contact</a>
             <RouterLink to="/terms">Terms of Service</RouterLink>
             <RouterLink to="/privacy">Privacy Policy</RouterLink>
-            <RouterLink to="/impressum">Impressum</RouterLink>
+            <RouterLink to="/legal-notice">Legal Notice</RouterLink>
           </div>
         </div>
       </footer>

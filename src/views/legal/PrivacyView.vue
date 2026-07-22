@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useHead } from '@unhead/vue'
+import { legalStrings as L } from '@/data/legalStrings'
 
 useHead({
   title: 'Posta - Create once. Post everywhere. - Privacy Policy',
@@ -35,15 +36,22 @@ const currentYear = new Date().getFullYear()
 
       <main class="content">
         <h1>Posta &mdash; Create once. Post everywhere. &mdash; Privacy Policy</h1>
-        <p class="last-updated">Last updated: February 2026</p>
+        <p class="last-updated">Effective {{ L.effectiveDate }} · Version {{ L.documentVersion }}</p>
 
         <p>
-          At Posta &mdash; Create once. Post everywhere. (available at getposta.app) ("we", "us", or "our"), we are committed to protecting
-          your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information
-          when you use our platform and services (the "Service").
+          This Privacy Policy explains how <strong>{{ L.legalEntity }}</strong>,
+          a {{ L.entityType }} registered at {{ L.registeredAddress }} (Estonian
+          commercial-register code {{ L.registryNumber }}) ("we", "us", or
+          "our"), collects, uses, discloses, and safeguards your information
+          when you use the Posta platform and services available at
+          getposta.app (the "Service").
         </p>
         <p>
-          Please read this Privacy Policy carefully. By using the Service, you consent to the practices
+          {{ L.legalEntity }} is the <strong>data controller</strong> for the
+          personal data described here, within the meaning of the EU General
+          Data Protection Regulation (Regulation 2016/679, "GDPR") and the
+          Estonian Personal Data Protection Act. Please read this Privacy
+          Policy carefully. By using the Service, you consent to the practices
           described in this policy.
         </p>
 
@@ -122,17 +130,30 @@ const currentYear = new Date().getFullYear()
           </tbody>
         </table>
 
-        <h2>3. Data Storage and Security</h2>
+        <h2>3. Data Storage, Security, and Hosting</h2>
 
         <h3>3.1 Where We Store Your Data</h3>
         <ul>
-          <li><strong>User data and metadata:</strong> Stored in Supabase (PostgreSQL databases)</li>
-          <li><strong>Media files:</strong> Stored in Google Cloud Storage with encryption at rest</li>
-          <li><strong>OAuth tokens:</strong> Encrypted using AES-256 before storage</li>
-          <li><strong>Payment data:</strong> Processed and stored by LemonSqueezy (we do not store card details)</li>
+          <li><strong>User data and metadata:</strong> Supabase-managed PostgreSQL, region AWS <code>eu-west-1</code> (Dublin, Ireland).</li>
+          <li><strong>Media files:</strong> Google Cloud Storage, region <code>us-central1</code> (Iowa, United States), encrypted at rest.</li>
+          <li><strong>Application servers:</strong> Google Compute Engine, region <code>us-central1</code> (Iowa, United States).</li>
+          <li><strong>OAuth tokens:</strong> Encrypted using AES-256 before storage.</li>
+          <li><strong>Payment data:</strong> Processed and stored by LemonSqueezy (Ireland). We do not store card details.</li>
         </ul>
 
-        <h3>3.2 Security Measures</h3>
+        <h3>3.2 Data-sovereignty statement (important)</h3>
+        <p>
+          Although {{ L.legalEntity }} is an Estonian company subject to EU
+          law, the Posta service is <strong>not</strong> an EU-sovereign-hosted
+          product. Application servers and media storage run on Google Cloud
+          Platform, whose parent company is subject to United States
+          legislation (including the CLOUD Act). If EU-only data sovereignty
+          is a hard requirement for your organisation, Posta is not the right
+          fit today. We disclose this here explicitly rather than let it
+          surface later.
+        </p>
+
+        <h3>3.3 Security Measures</h3>
         <p>We implement appropriate technical and organizational measures to protect your data:</p>
         <ul>
           <li>Encryption in transit (TLS/HTTPS) and at rest</li>
@@ -171,7 +192,14 @@ const currentYear = new Date().getFullYear()
           <li><strong>Objection:</strong> Object to certain types of processing</li>
           <li><strong>Withdrawal:</strong> Withdraw consent where processing is based on consent</li>
         </ul>
-        <p>To exercise these rights, please contact us at <a href="mailto:hello@getposta.app" class="contact-link">hello@getposta.app</a>.</p>
+        <p>
+          To exercise these rights, please contact
+          <a :href="`mailto:${L.dpoEmail}`" class="contact-link">{{ L.dpoEmail }}</a>.
+          You also have the right to lodge a complaint with the Estonian Data
+          Protection Inspectorate
+          (<a href="https://www.aki.ee/en" target="_blank" rel="noopener" class="contact-link">Andmekaitse Inspektsioon</a>)
+          or the supervisory authority in your EU country of residence.
+        </p>
 
         <h2>7. Cookies and Tracking</h2>
         <p>We use essential cookies to:</p>
@@ -184,9 +212,18 @@ const currentYear = new Date().getFullYear()
 
         <h2>8. International Data Transfers</h2>
         <p>
-          Your data may be transferred to and processed in countries other than your own. We ensure
-          appropriate safeguards are in place for such transfers, including standard contractual clauses
-          where required.
+          As disclosed in Section 3, Posta processes personal data in Google
+          Cloud's <code>us-central1</code> region (Iowa, USA) in addition to
+          the EU. Google Cloud Platform is certified under the EU-U.S. Data
+          Privacy Framework (DPF) and, where the DPF does not apply, transfers
+          rely on the European Commission's Standard Contractual Clauses (SCCs)
+          plus technical safeguards (encryption in transit and at rest,
+          access controls, audit logging).
+        </p>
+        <p>
+          You have the right, under Articles 13 and 15 GDPR, to receive
+          information about the specific safeguards in place — please contact
+          our data-protection address below.
         </p>
 
         <h2>9. Children's Privacy</h2>
@@ -204,9 +241,16 @@ const currentYear = new Date().getFullYear()
         </p>
 
         <h2>11. Contact Us</h2>
-        <p>If you have questions about this Privacy Policy or our data practices, please contact us:</p>
         <p>
-          <strong>Email:</strong> <a href="mailto:hello@getposta.app" class="contact-link">hello@getposta.app</a>
+          <strong>Data controller:</strong> {{ L.legalEntity }}<br />
+          <strong>Address:</strong> {{ L.registeredAddress }}<br />
+          <strong>Estonian register code:</strong> {{ L.registryNumber }}
+        </p>
+        <p>
+          <strong>Data-protection matters, subject-access requests, and breach reports:</strong>
+          <a :href="`mailto:${L.dpoEmail}`" class="contact-link">{{ L.dpoEmail }}</a><br />
+          <strong>General enquiries:</strong>
+          <a :href="`mailto:${L.supportEmail}`" class="contact-link">{{ L.supportEmail }}</a>
         </p>
       </main>
     </div>
@@ -218,7 +262,7 @@ const currentYear = new Date().getFullYear()
           <a href="mailto:hello@getposta.app">Contact</a>
           <RouterLink to="/terms">Terms of Service</RouterLink>
           <RouterLink to="/privacy">Privacy Policy</RouterLink>
-          <RouterLink to="/impressum">Impressum</RouterLink>
+          <RouterLink to="/legal-notice">Legal Notice</RouterLink>
         </div>
       </div>
     </footer>

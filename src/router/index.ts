@@ -19,9 +19,16 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/legal/PrivacyView.vue'),
   },
   {
+    path: '/legal-notice',
+    name: 'legal-notice',
+    component: () => import('@/views/legal/LegalNoticeView.vue'),
+  },
+  // Redirect the old German-style Impressum URL to the Estonian legal notice.
+  // Keeps deep links + external references (footer of older blog posts,
+  // outbound emails) working after the 2026-07 entity change.
+  {
     path: '/impressum',
-    name: 'impressum',
-    component: () => import('@/views/legal/ImpressumView.vue'),
+    redirect: '/legal-notice',
   },
   // SEO landing pages
   {
