@@ -33,7 +33,7 @@ const ROUTES = [
   '/developers',
   '/terms',
   '/privacy',
-  '/impressum',
+  '/legal-notice',
   // Blog: index + one route per post, derived from src/data/blog.ts
   '/blog',
   ...sortedPosts.map((p) => `/blog/${p.slug}`),
