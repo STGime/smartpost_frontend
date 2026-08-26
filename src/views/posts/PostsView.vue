@@ -173,7 +173,7 @@ const cancelDelete = () => {
           <span v-if="post.media?.length > 1" class="media-count">
             +{{ post.media.length - 1 }}
           </span>
-          <span :class="['post-badge', `badge-${post.status}`]">{{ post.status }}</span>
+          <span :class="['post-badge', `badge-${post.status}`]">{{ (post.status || '').replace(/_/g, ' ') }}</span>
           <button
             class="delete-btn"
             @click="openDeleteModal($event, post.id)"
@@ -485,6 +485,12 @@ const cancelDelete = () => {
 }
 
 .badge-processing {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-partially_posted {
   background: rgba(245, 158, 11, 0.2);
   color: #fcd34d;
   border: 1px solid rgba(245, 158, 11, 0.3);

@@ -76,7 +76,7 @@ const getStatusClass = (status: string) => {
                     {{ formatTime(post.scheduledAt || post.publishedAt || post.createdAt) }}
                   </span>
                   <span :class="['status-badge', getStatusClass(post.status)]">
-                    {{ post.status }}
+                    {{ (post.status || '').replace(/_/g, ' ') }}
                   </span>
                 </div>
 

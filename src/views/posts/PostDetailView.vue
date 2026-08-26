@@ -231,7 +231,7 @@ const useAsTemplate = () => {
       <div class="card detail-card">
         <div class="status-row">
           <span :class="['status-badge', `badge-${post.status}`]">
-            {{ post.status }}
+            {{ (post.status || '').replace(/_/g, ' ') }}
           </span>
           <span class="created-date">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
