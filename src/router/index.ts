@@ -319,6 +319,14 @@ const router = createRouter({
   },
 })
 
+// Signed-in app and auth pages use the brighter app palette (see style.css)
+const APP_THEME_PREFIXES = ['/app', '/login', '/signup', '/forgot-password', '/reset-password', '/oauth', '/auth']
+router.afterEach((to) => {
+  if (typeof document === 'undefined') return
+  const isApp = APP_THEME_PREFIXES.some((prefix) => to.path === prefix || to.path.startsWith(`${prefix}/`))
+  document.documentElement.classList.toggle('theme-app', isApp)
+})
+
 // Cache for onboarding status to avoid repeated API calls
 let onboardingStatus: { checked: boolean; completed: boolean } = { checked: false, completed: false }
 
