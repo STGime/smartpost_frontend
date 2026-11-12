@@ -51,7 +51,7 @@ The frontend is a Vue 3 + Vite SPA hosted on Google Cloud Storage with Cloudflar
 
 ### Deploy New Version
 ```bash
-cd /Users/stefangimeson/smartpost_frontend
+cd smartpost_frontend
 ./deploy.sh
 ```
 
@@ -81,7 +81,7 @@ gsutil ls -l gs://getposta.app/
 When you have code changes to deploy:
 
 ```bash
-cd /Users/stefangimeson/smartpost_frontend
+cd smartpost_frontend
 
 # Run the deploy script
 ./deploy.sh

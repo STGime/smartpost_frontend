@@ -34,52 +34,50 @@ const signupEnabled = isSignupEnabled()
 
 <style scoped>
 .cta-section {
-  text-align: center;
-  padding: 48px 24px;
-  margin: 40px 0 0;
-  border-radius: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.2), rgba(15, 23, 42, 0.98));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px 32px;
+  padding: 28px;
+  margin: 56px 0 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--ink-1);
 }
 
 .cta-heading {
   font-size: 22px;
   font-weight: 600;
-  margin-bottom: 10px;
+  line-height: 1.25;
   letter-spacing: -0.02em;
 }
 
 .cta-subtext {
-  font-size: 14px;
-  color: var(--muted);
-  max-width: 480px;
-  margin: 0 auto 24px;
+  grid-column: 1;
+  font-size: 15px;
+  color: var(--fg-2);
+  max-width: 60ch;
 }
 
 .cta-actions {
+  grid-column: 2;
+  grid-row: 1 / span 2;
   display: flex;
-  justify-content: center;
   gap: 12px;
-}
-
-.btn-primary {
-  border: none;
-  cursor: pointer;
-  padding: 12px 24px;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 500;
-  background: radial-gradient(circle at top left, #6366f1, #4f46e5);
-  color: #e5e7eb;
-  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.8);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
 }
 
 .arrow {
   font-size: 15px;
-  transform: translateY(0.5px);
+}
+
+@media (max-width: 640px) {
+  .cta-section {
+    grid-template-columns: 1fr;
+    padding: 22px;
+  }
+  .cta-actions {
+    grid-column: 1;
+    grid-row: auto;
+  }
 }
 </style>

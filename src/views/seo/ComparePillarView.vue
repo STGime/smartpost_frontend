@@ -400,63 +400,78 @@ useHead({
 
 <style scoped>
 .hero {
-  margin-bottom: 40px;
+  padding-bottom: 40px;
 }
 
 h1 {
-  font-size: clamp(1.7rem, 2.6vw, 2.4rem);
-  line-height: 1.15;
-  letter-spacing: -0.03em;
-  margin-bottom: 16px;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  margin-bottom: 18px;
+  max-width: 30ch;
 }
 
 .hero-sub {
   font-size: 16px;
-  color: var(--muted);
-  max-width: 820px;
-  line-height: 1.6;
+  color: var(--fg-2);
+  max-width: 68ch;
+  line-height: 1.65;
   margin-bottom: 12px;
 }
 
-.hero-sub a {
-  color: var(--accent-light);
+.hero-sub a,
+.content-section a,
+.compare-footnote a {
+  color: var(--text);
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration-color: var(--signal);
+  text-underline-offset: 3px;
+  transition: color 0.15s;
+}
+
+.hero-sub a:hover,
+.content-section a:hover,
+.compare-footnote a:hover {
+  color: var(--signal);
 }
 
 .content-section {
-  margin-bottom: 36px;
+  border-top: 1px solid var(--line);
+  padding: 32px 0;
 }
 
-.content-section h2 {
-  font-size: 18px;
+.content-section h2,
+.faq-section h2 {
+  font-size: 22px;
   font-weight: 600;
-  margin-bottom: 12px;
-}
-
-.content-section p {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.7;
-  max-width: 820px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
   margin-bottom: 14px;
 }
 
-.content-section a {
-  color: var(--accent-light);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+.content-section p {
+  font-size: 15px;
+  color: var(--fg-2);
+  line-height: 1.65;
+  max-width: 68ch;
+  margin-bottom: 14px;
 }
 
 .diff-list {
   list-style: disc;
   padding-left: 22px;
-  max-width: 820px;
+  max-width: 68ch;
   display: grid;
   gap: 8px;
-  font-size: 14px;
-  line-height: 1.7;
-  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--fg-2);
+  margin-bottom: 14px;
+}
+
+.diff-list ::marker {
+  color: var(--fg-3);
 }
 
 .diff-list strong {
@@ -464,159 +479,155 @@ h1 {
   font-weight: 600;
 }
 
-.compare-table-wrap {
-  margin: 16px 0 8px;
-  border-radius: 14px;
-  overflow-x: auto;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  background: rgba(15, 23, 42, 0.4);
-}
-
-.compare-table {
-  width: 100%;
-  min-width: 900px;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-.compare-table thead {
-  background: rgba(99, 102, 241, 0.08);
-}
-
-.compare-table th,
-.compare-table td {
-  text-align: left;
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-  vertical-align: top;
-}
-
-.compare-table thead th {
-  font-weight: 600;
-  color: var(--text);
-  font-size: 11px;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-.compare-table tbody th {
-  font-weight: 500;
-  color: var(--muted);
-  white-space: nowrap;
-}
-
-.compare-table tbody td {
-  color: var(--text);
-}
-
-.compare-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.compare-footnote {
-  margin-top: 8px;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.compare-footnote a {
-  color: var(--accent-light);
-  text-decoration: underline;
-}
-
+.compare-table-wrap,
 .decision-table-wrap {
-  margin: 12px 0;
-  border-radius: 14px;
+  margin: 18px 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
   overflow-x: auto;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  background: rgba(15, 23, 42, 0.4);
+  -webkit-overflow-scrolling: touch;
 }
 
+.compare-table,
 .decision-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
 }
 
-.decision-table thead {
-  background: rgba(99, 102, 241, 0.08);
+.compare-table {
+  min-width: 900px;
 }
 
+.compare-table th,
+.compare-table td,
 .decision-table th,
 .decision-table td {
   text-align: left;
-  padding: 10px 14px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
 }
 
+.compare-table tbody tr:last-child > *,
+.decision-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.compare-table thead th,
 .decision-table thead th {
-  font-weight: 600;
-  color: var(--text);
-  font-size: 12px;
+  background: var(--ink-1);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fg-3);
+  white-space: nowrap;
 }
 
+.compare-table tbody th {
+  font-weight: 500;
+  color: var(--fg-2);
+  white-space: nowrap;
+}
+
+.compare-table tbody td,
 .decision-table tbody td {
   color: var(--text);
 }
 
+.compare-table tbody tr,
+.decision-table tbody tr {
+  transition: background-color 0.15s;
+}
+
+.compare-table tbody tr:hover,
+.decision-table tbody tr:hover {
+  background: var(--ink-1);
+}
+
+/* Posta column: the one highlighted column */
+.compare-table thead th:nth-child(2) {
+  color: var(--signal);
+  border-bottom-color: var(--signal);
+}
+
+.compare-table tbody td:nth-child(2) {
+  background: var(--signal-soft);
+}
+
 .decision-table tbody td:first-child {
-  color: var(--muted);
+  color: var(--fg-2);
+}
+
+.compare-footnote {
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--fg-3);
+}
+
+.content-section p.compare-footnote {
+  font-size: 12px;
+  color: var(--fg-3);
+  line-height: 1.6;
 }
 
 .tool-callout {
-  margin-bottom: 22px;
-  padding: 16px 18px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 12px;
-  background: rgba(15, 23, 42, 0.5);
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+  max-width: 68ch;
+}
+
+.tool-callout:first-of-type {
+  border-top: 1px solid var(--line);
+  margin-top: 6px;
 }
 
 .tool-callout h3 {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
+  line-height: 1.4;
   margin-bottom: 8px;
   color: var(--text);
 }
 
-.tool-callout p {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.65;
+.content-section .tool-callout p {
   margin: 0;
 }
 
 .tool-callout a {
-  color: var(--accent-light);
-  text-decoration: underline;
   margin-left: 6px;
 }
 
 .faq-section {
-  margin: 48px 0 36px;
-}
-
-.faq-section h2 {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 20px;
+  border-top: 1px solid var(--line);
+  padding: 32px 0 40px;
 }
 
 .faq-list {
-  display: grid;
-  gap: 18px;
-  max-width: 820px;
+  max-width: 760px;
+  border-top: 1px solid var(--line);
+}
+
+.faq-item {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
 }
 
 .faq-item h3 {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
+  line-height: 1.4;
   margin-bottom: 6px;
   color: var(--text);
 }
 
 .faq-item p {
-  font-size: 14px;
-  color: var(--muted);
+  font-size: 15px;
+  color: var(--fg-2);
   line-height: 1.65;
+  max-width: 68ch;
 }
 </style>

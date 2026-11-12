@@ -1,7 +1,9 @@
 import sharp from "sharp";
+import { fileURLToPath } from "node:url";
 
-const OUT = "/Users/stefangimeson/smartpost_frontend/public/assets/workflows/og";
-const LOGO = "/Users/stefangimeson/smartpost_frontend/public/assets/posta_logo_512.png";
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
+const OUT = `${ROOT}public/assets/workflows/og`;
+const LOGO = `${ROOT}public/assets/posta_logo_512.png`;
 const FONT = "'Liberation Sans','DejaVu Sans','Helvetica Neue',Arial,sans-serif";
 const W = 1200, H = 630;
 

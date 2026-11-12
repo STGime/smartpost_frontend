@@ -5,7 +5,7 @@
 // this module — update here and every legal surface stays in sync.
 //
 // Company data mirrors what appears on the sister property eurobase.app;
-// see /Users/stefangimeson/eurobase/src/data/legalStrings.ts.
+// see src/data/legalStrings.ts in the eurobase project.
 //
 // IMPORTANT: Eurobase OÜ operates BOTH Eurobase (an EU-sovereign BaaS)
 // AND Posta (this product). The two have very different data-sovereignty
