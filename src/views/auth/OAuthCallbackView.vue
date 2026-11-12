@@ -21,10 +21,16 @@ onMounted(async () => {
     try {
       await socialAccountsStore.fetchAccounts()
       // Keep the result details (e.g. how many Facebook Pages were added) for the banner
-      const { connected, skipped } = route.query
+      const { connected, skipped, failed } = route.query
       router.push({
         name: 'accounts',
-        query: { platform, success: 'true', ...(connected ? { connected } : {}), ...(skipped ? { skipped } : {}) },
+        query: {
+          platform,
+          success: 'true',
+          ...(connected ? { connected } : {}),
+          ...(skipped ? { skipped } : {}),
+          ...(failed ? { failed } : {}),
+        },
       })
     } catch {
       error.value = 'Failed to refresh accounts'

@@ -159,7 +159,8 @@ const handleConnectBluesky = async () => {
 
         <p v-if="platform.id === 'facebook'" class="platform-note">
           Every Page you select on Facebook's "Edit access" step is added as its own account.
-          To add another Page later, connect Facebook again and select it.
+          To add another Page later, connect Facebook again and select it. To remove a Page for
+          good, disconnect it here and deselect it in Facebook.
         </p>
 
         <!-- Bluesky special form -->
