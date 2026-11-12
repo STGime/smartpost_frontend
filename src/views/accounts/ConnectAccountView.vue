@@ -257,6 +257,7 @@ const handleConnectBluesky = async () => {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 24px;
+  flex-wrap: wrap;
 }
 
 .page-header h1 {
@@ -267,12 +268,16 @@ const handleConnectBluesky = async () => {
 
 .page-header p {
   font-size: 14px;
-  color: var(--muted);
+  color: var(--fg-2);
 }
 
 .btn-icon {
   width: 16px;
   height: 16px;
+}
+
+.alert-error {
+  margin-bottom: 16px;
 }
 
 /* Loading State */
@@ -282,21 +287,30 @@ const handleConnectBluesky = async () => {
   padding: 64px;
 }
 
-/* Platforms Grid */
+/* Platforms list: hairline rows inside one panel */
 .platforms-grid {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
 .platform-card {
-  padding: 18px;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 0;
+}
+
+.platform-card + .platform-card {
+  border-top: 1px solid var(--line);
 }
 
 .platform-header {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .platform-info {
@@ -305,7 +319,7 @@ const handleConnectBluesky = async () => {
 }
 
 .platform-name {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   margin-bottom: 4px;
 }
@@ -316,48 +330,53 @@ const handleConnectBluesky = async () => {
 }
 
 .support-tag {
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
+  padding: 1px 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  font-family: var(--font-mono);
   font-size: 10px;
-  background: rgba(100, 116, 139, 0.15);
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: var(--fg-3);
+  text-transform: lowercase;
 }
 
 .connect-btn {
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 500;
-  background: var(--accent);
-  color: white;
-  border: none;
+  background: var(--text);
+  color: var(--ink-0);
+  border: 1px solid var(--text);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background-color 0.15s, border-color 0.15s;
 }
 
 .connect-btn:hover:not(:disabled) {
-  opacity: 0.9;
+  background: #ffffff;
+  border-color: #ffffff;
 }
 
-.btn-disabled {
-  background: rgba(100, 116, 139, 0.2);
-  color: var(--muted);
+.connect-btn.btn-disabled {
+  background: transparent;
+  border-color: var(--line-strong);
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
   cursor: not-allowed;
 }
 
 /* Bluesky Form */
 .bluesky-form {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
 }
 
 .bluesky-note {
   font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 14px;
+  color: var(--fg-2);
+  margin-bottom: 12px;
 }
 
 .form-stack {
@@ -371,21 +390,22 @@ const handleConnectBluesky = async () => {
   flex-direction: column;
 }
 
+/* Bluesky brand blue kept: the button identifies the platform */
 .btn-bluesky {
   width: 100%;
   padding: 10px 16px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 500;
-  background: #0085FF;
+  background: #0085ff;
   color: white;
-  border: none;
+  border: 1px solid #0085ff;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background-color 0.15s;
 }
 
 .btn-bluesky:hover:not(:disabled) {
-  background: #0070DD;
+  background: #0070dd;
 }
 
 .btn-bluesky:disabled {
@@ -397,18 +417,19 @@ const handleConnectBluesky = async () => {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: 16px;
 }
 
 .modal-content {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  background: var(--ink-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   max-width: 480px;
   width: 100%;
   overflow: hidden;
@@ -416,121 +437,114 @@ const handleConnectBluesky = async () => {
 
 .modal-header {
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding: 24px 24px 16px;
-  text-align: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
 }
 
 .modal-icon {
-  width: 48px;
-  height: 48px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-shrink: 0;
 }
 
 .modal-header h2 {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
   margin: 0;
 }
 
 .modal-body {
-  padding: 0 24px 24px;
+  padding: 16px 20px 20px;
 }
 
 .modal-description {
   font-size: 14px;
-  color: var(--muted);
-  text-align: center;
-  margin-bottom: 20px;
+  color: var(--fg-2);
+  margin-bottom: 16px;
 }
 
 .modal-steps {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
 }
 
 .step {
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  padding: 10px 12px;
+}
+
+.step + .step {
+  border-top: 1px solid var(--line);
 }
 
 .step-number {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: white;
+  font-family: var(--font-mono);
   font-size: 12px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: var(--signal);
   flex-shrink: 0;
+  padding-top: 1px;
 }
 
 .step-text {
   font-size: 13px;
   color: var(--text);
-  padding-top: 2px;
 }
 
 .modal-reassurance {
   font-size: 12px;
-  color: var(--muted);
-  text-align: center;
-  padding: 12px;
-  background: rgba(34, 197, 94, 0.1);
-  border-radius: var(--radius-md);
+  color: var(--fg-2);
+  padding: 10px 12px;
+  background: var(--success-soft);
+  border: 1px solid rgba(95, 191, 138, 0.35);
+  border-radius: var(--radius-sm);
   margin: 0;
 }
 
 .modal-actions {
   display: flex;
-  gap: 10px;
-  padding: 16px 24px;
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.btn-cancel,
+.btn-open-platform,
+.btn-continue {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .btn-cancel {
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
-  font-size: 13px;
-  font-weight: 500;
   background: transparent;
-  color: var(--muted);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  transition: all 0.15s;
+  color: var(--fg-2);
+  border: 1px solid var(--line-strong);
 }
 
 .btn-cancel:hover {
-  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--fg-3);
   color: var(--text);
 }
 
 .btn-open-platform {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
-  font-size: 13px;
-  font-weight: 500;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--ink-1);
   color: var(--text);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  transition: all 0.15s;
+  border: 1px solid var(--line-strong);
 }
 
 .btn-open-platform svg {
@@ -539,23 +553,20 @@ const handleConnectBluesky = async () => {
 }
 
 .btn-open-platform:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--ink-2);
+  border-color: var(--fg-3);
 }
 
 .btn-continue {
   flex: 1;
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
-  font-size: 13px;
-  font-weight: 500;
-  background: var(--accent);
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: all 0.15s;
+  background: var(--text);
+  color: var(--ink-0);
+  border: 1px solid var(--text);
+  white-space: nowrap;
 }
 
 .btn-continue:hover {
-  opacity: 0.9;
+  background: #ffffff;
+  border-color: #ffffff;
 }
 </style>

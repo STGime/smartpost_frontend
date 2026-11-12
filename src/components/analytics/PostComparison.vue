@@ -176,16 +176,20 @@ const isWinner = (postIndex: number, metric: typeof metrics[number]) => {
 }
 
 .selector-label {
-  font-size: 13px;
-  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-3);
 }
 
 .post-select-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
   max-height: 300px;
   overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
 }
 
 .post-select-item {
@@ -193,62 +197,60 @@ const isWinner = (postIndex: number, metric: typeof metrics[number]) => {
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  border-left: 2px solid transparent;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background-color 0.15s;
+}
+
+.post-select-item + .post-select-item {
+  border-top: 1px solid var(--line);
 }
 
 .post-select-item:hover {
-  background: rgba(15, 23, 42, 0.8);
+  background: var(--ink-2);
 }
 
 .post-select-item.selected {
-  border-color: var(--accent);
-  background: var(--accent-soft);
+  border-left-color: var(--signal);
+  background: var(--signal-soft);
 }
 
 .post-select-check {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--border);
-  border-radius: 3px;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
   flex-shrink: 0;
-  color: var(--accent-light);
 }
 
 .post-select-item.selected .post-select-check {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--signal);
+  border-color: var(--signal);
 }
 
 .post-select-check svg {
-  width: 14px;
-  height: 14px;
-  color: white;
+  width: 12px;
+  height: 12px;
+  color: var(--ink-0);
 }
 
 .post-select-caption {
   flex: 1;
+  min-width: 0;
   font-size: 13px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.post-select-views {
-  font-size: 11px;
-  color: var(--accent-light);
-  flex-shrink: 0;
-}
-
+.post-select-views,
 .post-select-engagement {
-  font-size: 12px;
-  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-3);
   flex-shrink: 0;
 }
 
@@ -256,36 +258,38 @@ const isWinner = (postIndex: number, metric: typeof metrics[number]) => {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .selector-hint {
-  font-size: 12px;
-  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-3);
 }
 
 .compare-error {
   font-size: 13px;
-  color: #f87171;
+  color: #f2a594;
   padding: 8px 12px;
-  background: rgba(248, 113, 113, 0.1);
-  border: 1px solid rgba(248, 113, 113, 0.2);
+  background: var(--error-soft);
+  border: 1px solid rgba(229, 103, 79, 0.45);
   border-radius: var(--radius-sm);
 }
 
 .btn-compare {
-  padding: 8px 18px;
+  padding: 7px 16px;
   font-size: 13px;
   font-weight: 500;
-  background: linear-gradient(135deg, var(--accent), var(--cyan));
-  border: none;
-  border-radius: var(--radius-md);
-  color: white;
+  background: var(--text);
+  border: 1px solid var(--text);
+  border-radius: var(--radius-sm);
+  color: var(--ink-0);
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition: background-color 0.15s;
 }
 
 .btn-compare:hover:not(:disabled) {
-  opacity: 0.9;
+  background: #ffffff;
 }
 
 .btn-compare:disabled {
@@ -300,16 +304,17 @@ const isWinner = (postIndex: number, metric: typeof metrics[number]) => {
   padding: 6px 12px;
   font-size: 12px;
   background: none;
-  border: 1px solid var(--border);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
-  color: var(--muted);
+  color: var(--fg-2);
   cursor: pointer;
   margin-bottom: 16px;
+  transition: color 0.15s, border-color 0.15s;
 }
 
 .btn-clear:hover {
   color: var(--text);
-  border-color: var(--accent);
+  border-color: var(--fg-3);
 }
 
 .comparison-results {
@@ -323,26 +328,30 @@ const isWinner = (postIndex: number, metric: typeof metrics[number]) => {
 .comparison-header {
   display: flex;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 }
 
 .metric-label-cell {
   width: 100px;
   flex-shrink: 0;
-  font-size: 12px;
-  color: var(--muted);
-  text-transform: capitalize;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-3);
   display: flex;
   align-items: center;
 }
 
 .comparison-post-header {
   flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 8px;
-  background: rgba(15, 23, 42, 0.5);
+  background: var(--ink-2);
+  border: 1px solid var(--line);
   border-radius: var(--radius-sm);
 }
 
@@ -356,8 +365,8 @@ const isWinner = (postIndex: number, metric: typeof metrics[number]) => {
 .comparison-row {
   display: flex;
   gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
 }
 
 .comparison-metric-cell {
@@ -370,62 +379,67 @@ const isWinner = (postIndex: number, metric: typeof metrics[number]) => {
 .metric-bar-track {
   flex: 1;
   height: 6px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 3px;
+  background: var(--ink-2);
+  border-radius: 1px;
   overflow: hidden;
 }
 
 .metric-bar {
   height: 100%;
-  border-radius: 3px;
-  background: var(--muted);
-  transition: width 0.3s ease;
+  border-radius: 1px;
+  background: var(--fg-3);
+  transition: width 0.15s ease;
   min-width: 2px;
 }
 
 .metric-bar.winner {
-  background: var(--accent);
+  background: var(--signal);
 }
 
 .metric-value {
+  font-family: var(--font-mono);
   font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-2);
   width: 48px;
   text-align: right;
   flex-shrink: 0;
 }
 
 .metric-value.winner {
-  color: var(--accent-light);
-  font-weight: 600;
+  color: var(--signal);
+  font-weight: 500;
 }
 
 .pro-badge {
+  font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 2px 8px;
-  background: linear-gradient(135deg, var(--accent), var(--cyan));
-  border-radius: var(--radius-sm);
-  color: white;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border: 1px solid rgba(242, 169, 59, 0.5);
+  border-radius: 2px;
+  color: var(--signal);
 }
 
 .card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 0;
 }
 
 .card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
 }
 
 .card-header h2 {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
 }
 

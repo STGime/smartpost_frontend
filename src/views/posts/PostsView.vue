@@ -251,23 +251,24 @@ const cancelDelete = () => {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .page-header h1 {
   font-size: 22px;
   font-weight: 600;
+  letter-spacing: -0.01em;
   margin-bottom: 4px;
 }
 
 .page-header p {
   font-size: 14px;
-  color: var(--muted);
+  color: var(--fg-2);
 }
 
 .btn-icon {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 
 /* Filter & Sort Bar */
@@ -275,45 +276,46 @@ const cancelDelete = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .status-tabs {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   flex-wrap: wrap;
 }
 
 .tab-btn {
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border);
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
   background: transparent;
-  color: var(--muted);
+  color: var(--fg-2);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: border-color 0.12s, color 0.12s, background-color 0.12s;
   white-space: nowrap;
 }
 
 .tab-btn:hover {
-  border-color: var(--border-hover);
+  border-color: var(--line-strong);
   color: var(--text);
 }
 
 .tab-btn.active {
-  background: var(--accent-soft);
-  border-color: rgba(99, 102, 241, 0.4);
-  color: #a5b4fc;
+  background: var(--signal-soft);
+  border-color: var(--signal);
+  color: var(--signal);
 }
 
 .sort-select {
-  padding: 6px 12px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background: var(--bg-card);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--ink-2);
   color: var(--text);
   font-size: 13px;
   cursor: pointer;
@@ -322,11 +324,11 @@ const cancelDelete = () => {
 }
 
 .sort-select:hover {
-  border-color: var(--border-hover);
+  border-color: var(--line-strong);
 }
 
 .sort-select:focus {
-  border-color: rgba(99, 102, 241, 0.4);
+  border-color: var(--signal);
 }
 
 /* Loading State */
@@ -343,15 +345,10 @@ const cancelDelete = () => {
 }
 
 .empty-icon {
-  width: 56px;
-  height: 56px;
-  margin: 0 auto 16px;
-  border-radius: var(--radius-full);
-  background: var(--accent-soft);
+  margin: 0 auto 12px;
   display: flex;
-  align-items: center;
   justify-content: center;
-  color: #a5b4fc;
+  color: var(--fg-3);
 }
 
 .empty-icon svg {
@@ -360,42 +357,56 @@ const cancelDelete = () => {
 }
 
 .empty-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   margin-bottom: 4px;
 }
 
 .empty-sub {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--fg-2);
   margin-bottom: 20px;
 }
 
-/* Posts Grid */
+/* Posts: table rows with hairline separators.
+   .post-media is left static so the status tag + delete button
+   (absolute children) anchor to the row, not the thumbnail. */
 .posts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--ink-1);
+  overflow: hidden;
 }
 
 .post-card {
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  overflow: hidden;
-  transition: all 0.2s;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 150px 10px 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+  transition: background-color 0.12s;
+}
+
+.post-card:last-child {
+  border-bottom: 0;
 }
 
 .post-card:hover {
-  border-color: var(--border-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-soft);
+  background: var(--ink-2);
 }
 
 .post-media {
-  position: relative;
-  aspect-ratio: 16 / 10;
-  background: rgba(15, 23, 42, 0.9);
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  background: var(--ink-2);
 }
 
 .post-media img {
@@ -404,131 +415,120 @@ const cancelDelete = () => {
   object-fit: cover;
 }
 
-.video-indicator {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-full);
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  pointer-events: none;
-}
-
-.video-indicator svg {
-  width: 24px;
-  height: 24px;
-  margin-left: 3px;
-}
-
-.media-count {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  padding: 4px 8px;
-  border-radius: var(--radius-full);
-  font-size: 11px;
-  font-weight: 500;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  backdrop-filter: blur(8px);
-}
-
 .post-media-empty {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--muted);
+  color: var(--fg-3);
 }
 
 .post-media-empty svg {
-  width: 32px;
-  height: 32px;
+  width: 18px;
+  height: 18px;
 }
 
+/* Thumbnail overlays: positioned against the row (thumb is 48px at left 14px) */
+.video-indicator {
+  position: absolute;
+  top: 50%;
+  left: 38px;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  pointer-events: none;
+}
+
+.video-indicator svg {
+  width: 11px;
+  height: 11px;
+  margin-left: 1px;
+}
+
+.media-count {
+  position: absolute;
+  bottom: 12px;
+  left: 16px;
+  padding: 0 3px;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 14px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+}
+
+/* Status tag */
 .post-badge {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  font-size: 11px;
+  top: 50%;
+  right: 54px;
+  transform: translateY(-50%);
+  padding: 2px 6px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
   font-weight: 500;
-  text-transform: capitalize;
-  backdrop-filter: blur(8px);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-3);
 }
 
-.badge-posted {
-  background: rgba(34, 197, 94, 0.2);
-  color: #bbf7d0;
-  border: 1px solid rgba(34, 197, 94, 0.3);
+.badge-posted,
+.badge-published {
+  color: var(--success);
 }
 
-.badge-scheduled {
-  background: rgba(59, 130, 246, 0.2);
-  color: #93c5fd;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.badge-draft {
-  background: rgba(100, 116, 139, 0.2);
-  color: #94a3b8;
-  border: 1px solid rgba(100, 116, 139, 0.3);
-}
-
+.badge-scheduled,
+.badge-partially_posted,
 .badge-processing {
-  background: rgba(245, 158, 11, 0.2);
-  color: #fcd34d;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: var(--signal);
 }
 
 .badge-failed {
-  background: rgba(239, 68, 68, 0.2);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--error);
 }
 
 .delete-btn {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
-  width: 32px;
-  height: 32px;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
   border-radius: var(--radius-sm);
-  background: rgba(239, 68, 68, 0.9);
-  border: none;
-  color: white;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--fg-3);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  transition: opacity 0.15s, background 0.15s;
-}
-
-.post-card:hover .delete-btn {
-  opacity: 1;
+  transition: color 0.12s, border-color 0.12s, background-color 0.12s;
 }
 
 .delete-btn:hover {
-  background: rgba(220, 38, 38, 1);
+  color: var(--error);
+  border-color: rgba(229, 103, 79, 0.5);
+  background: var(--error-soft);
 }
 
 .delete-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
 }
 
 .post-body {
-  padding: 14px;
+  flex: 1;
+  min-width: 0;
 }
 
 .post-caption {
@@ -536,32 +536,35 @@ const cancelDelete = () => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .post-meta {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
-  color: var(--muted);
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-3);
+  white-space: nowrap;
 }
 
 .unread-pill {
-  margin-left: auto;
-  background: var(--accent-soft);
-  color: var(--accent-light);
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  font-size: 11px;
-  font-weight: 600;
+  padding: 0 5px;
+  border: 1px solid var(--signal);
+  border-radius: 2px;
+  color: var(--signal);
+  font-size: 10.5px;
+  font-weight: 500;
 }
 
 .meta-dot {
   width: 3px;
   height: 3px;
+  flex-shrink: 0;
   border-radius: 50%;
-  background: var(--muted);
+  background: var(--fg-3);
 }
 
 .post-platforms {
@@ -572,13 +575,22 @@ const cancelDelete = () => {
 
 .more-platforms {
   font-size: 11px;
-  font-weight: 500;
-  color: var(--muted);
+  color: var(--fg-3);
   margin-left: 2px;
 }
 
-.no-accounts {
-  color: var(--muted);
+@media (max-width: 500px) {
+  .post-card {
+    padding-right: 128px;
+  }
+
+  .post-badge {
+    right: 46px;
+  }
+
+  .delete-btn {
+    right: 8px;
+  }
 }
 
 /* Load More */
@@ -586,9 +598,9 @@ const cancelDelete = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  margin-top: 24px;
-  padding: 16px;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 12px;
 }
 
 .load-more-btn {
@@ -596,20 +608,20 @@ const cancelDelete = () => {
   align-items: center;
   justify-content: center;
   min-width: 120px;
-  padding: 10px 24px;
-  border-radius: var(--radius-md);
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  padding: 8px 20px;
+  border-radius: var(--radius-sm);
+  background: var(--ink-1);
+  border: 1px solid var(--line);
   color: var(--text);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: border-color 0.12s, background-color 0.12s;
 }
 
 .load-more-btn:hover:not(:disabled) {
-  border-color: var(--border-hover);
-  background: rgba(148, 163, 184, 0.08);
+  border-color: var(--line-strong);
+  background: var(--ink-2);
 }
 
 .load-more-btn:disabled {
@@ -618,13 +630,14 @@ const cancelDelete = () => {
 }
 
 .load-more-info {
-  font-size: 12px;
-  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-3);
 }
 
 .spinner-sm {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-width: 2px;
 }
 </style>

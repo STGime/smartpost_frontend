@@ -119,19 +119,19 @@ const copy = async (value: string, field: string) => {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: 16px;
 }
 
 .modal-content {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  background: var(--ink-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   max-width: 540px;
   width: 100%;
   max-height: 90vh;
@@ -142,48 +142,49 @@ const copy = async (value: string, field: string) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
 }
 
 .modal-header h3 {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
 }
 
 .close-btn {
   background: none;
-  border: none;
-  color: var(--muted);
+  border: 1px solid transparent;
+  color: var(--fg-3);
   cursor: pointer;
   padding: 4px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   display: flex;
+  transition: color 0.15s, border-color 0.15s;
 }
 
 .close-btn:hover {
   color: var(--text);
-  background: rgba(100, 116, 139, 0.15);
+  border-color: var(--line-strong);
 }
 
 .close-btn svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 .modal-body {
-  padding: 24px;
+  padding: 20px;
 }
 
 .preview {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(15, 23, 42, 0.4);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  background: var(--ink-0);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   min-height: 160px;
 }
 
@@ -200,18 +201,19 @@ const copy = async (value: string, field: string) => {
   align-items: center;
   gap: 8px;
   padding: 40px;
-  color: var(--muted);
+  color: var(--fg-3);
+  font-size: 13px;
 }
 
 .preview-placeholder svg {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
 }
 
 .details {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  border-top: 1px solid var(--line);
 }
 
 .row {
@@ -219,14 +221,16 @@ const copy = async (value: string, field: string) => {
   grid-template-columns: 120px 1fr;
   gap: 12px;
   align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
 }
 
 .row dt {
-  font-size: 13px;
-  color: var(--muted);
-  font-weight: 500;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-3);
 }
 
 .row dd {
@@ -237,12 +241,13 @@ const copy = async (value: string, field: string) => {
 }
 
 .row code {
-  font-family: var(--font-mono, ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text);
-  background: rgba(15, 23, 42, 0.5);
-  padding: 4px 8px;
-  border-radius: var(--radius-sm, 6px);
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  padding: 3px 7px;
+  border-radius: 2px;
   overflow-wrap: anywhere;
 }
 
@@ -253,38 +258,49 @@ const copy = async (value: string, field: string) => {
 
 .copy-btn {
   flex-shrink: 0;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 4px 10px;
-  border-radius: var(--radius-md);
-  background: rgba(100, 116, 139, 0.15);
-  color: var(--text);
-  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg-2);
+  border: 1px solid var(--line-strong);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: color 0.15s, border-color 0.15s;
 }
 
 .copy-btn:hover {
-  background: rgba(100, 116, 139, 0.25);
+  color: var(--text);
+  border-color: var(--fg-3);
 }
 
 .open-original {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-top: 20px;
+  margin-top: 16px;
   font-size: 14px;
   font-weight: 500;
-  color: #60a5fa;
+  color: var(--signal);
   text-decoration: none;
 }
 
 .open-original:hover {
   text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .open-original svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
+}
+
+@media (max-width: 420px) {
+  .row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
 }
 </style>

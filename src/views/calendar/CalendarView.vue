@@ -257,98 +257,102 @@ const selectedDatePosts = computed(() => {
 .page-header h1 {
   font-size: 22px;
   font-weight: 600;
+  letter-spacing: -0.01em;
   margin-bottom: 4px;
 }
 
 .page-header p {
   font-size: 14px;
-  color: var(--muted);
+  color: var(--fg-2);
 }
 
 /* Calendar Navigation */
 .calendar-nav {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .nav-btn {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border);
-  color: var(--muted);
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  color: var(--fg-2);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition: background-color 0.12s, color 0.12s, border-color 0.12s;
 }
 
 .nav-btn:hover {
-  background: rgba(15, 23, 42, 0.9);
+  background: var(--ink-2);
   color: var(--text);
-  border-color: var(--border-hover);
+  border-color: var(--line-strong);
 }
 
 .nav-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 
 .month-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   min-width: 180px;
   text-align: center;
 }
 
 .today-btn {
   margin-left: auto;
-  padding: 8px 16px;
-  border-radius: var(--radius-full);
-  background: var(--accent-soft);
-  border: 1px solid rgba(79, 70, 229, 0.3);
-  color: #c7d2fe;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--text);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: border-color 0.12s, color 0.12s;
 }
 
 .today-btn:hover {
-  background: rgba(79, 70, 229, 0.25);
+  border-color: var(--signal);
+  color: var(--signal);
 }
 
 /* Status Legend */
 .status-legend {
   display: flex;
-  gap: 20px;
-  margin-bottom: 16px;
-  padding: 10px 14px;
-  background: rgba(15, 23, 42, 0.4);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
+  gap: 18px;
+  margin-bottom: 12px;
+  padding: 8px 2px;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
-  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-3);
 }
 
 .legend-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
 }
 
 .legend-dot.scheduled {
-  background: #3b82f6;
+  background: var(--signal);
 }
 
 .legend-dot.posted {
@@ -360,7 +364,7 @@ const selectedDatePosts = computed(() => {
 }
 
 .legend-dot.draft {
-  background: #94a3b8;
+  background: var(--fg-3);
 }
 
 /* Loading State */
@@ -372,9 +376,8 @@ const selectedDatePosts = computed(() => {
 
 /* Calendar Container */
 .calendar-container {
-  background: rgba(15, 23, 42, 0.3);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
   overflow: hidden;
 }
 
@@ -386,7 +389,7 @@ const selectedDatePosts = computed(() => {
   .month-title {
     order: -1;
     width: 100%;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     text-align: left;
   }
 

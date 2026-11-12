@@ -66,21 +66,22 @@ const handleExportPdf = async () => {
 .btn-export {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
+  gap: 6px;
+  padding: 7px 12px;
+  font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 500;
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid var(--border);
+  background: var(--ink-1);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   color: var(--text);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background-color 0.15s, border-color 0.15s;
 }
 
 .btn-export:hover:not(:disabled) {
-  background: rgba(15, 23, 42, 0.8);
-  border-color: var(--accent);
+  background: var(--ink-2);
+  border-color: var(--fg-3);
 }
 
 .btn-export:disabled {

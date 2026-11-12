@@ -65,49 +65,60 @@ const getStatusIcon = (status: HashtagLimitStatus): string => {
 .hashtag-warnings {
   display: flex;
   flex-direction: column;
-  gap: 6px;
   margin-top: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--ink-0);
 }
 
 .warning-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 13px;
+  padding: 6px 10px;
+  font-size: 12px;
+  border-left: 2px solid transparent;
+}
+
+.warning-item + .warning-item {
+  border-top: 1px solid var(--line);
 }
 
 .warning-icon {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .platform-name {
+  font-family: var(--font-mono);
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .warning-message {
-  opacity: 0.9;
+  color: var(--fg-2);
+  min-width: 0;
 }
 
 /* Status colors */
 .status-ok {
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.2);
-  color: #86efac;
+  border-left-color: var(--success);
+  color: var(--success);
 }
 
 .status-warning {
-  background: rgba(234, 179, 8, 0.1);
-  border: 1px solid rgba(234, 179, 8, 0.2);
-  color: #fde047;
+  border-left-color: var(--signal);
+  color: var(--signal);
 }
 
 .status-exceeded {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  color: #fca5a5;
+  border-left-color: var(--error);
+  color: var(--error);
+}
+
+.status-exceeded .warning-message {
+  color: #f2a594;
 }
 </style>

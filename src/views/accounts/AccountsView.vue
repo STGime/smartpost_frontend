@@ -217,6 +217,7 @@ const closeModal = () => {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 24px;
+  flex-wrap: wrap;
 }
 
 .page-header h1 {
@@ -227,31 +228,33 @@ const closeModal = () => {
 
 .page-header p {
   font-size: 14px;
-  color: var(--muted);
+  color: var(--fg-2);
 }
 
 .btn-icon {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 
-/* Loading State */
+/* Banners */
+.error-banner,
+.success-banner {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
 .error-banner {
   background: var(--error-soft);
-  color: var(--error);
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  font-size: 0.9rem;
+  border: 1px solid rgba(229, 103, 79, 0.45);
+  color: #f2a594;
 }
 
 .success-banner {
   background: var(--success-soft);
-  color: var(--success);
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  font-size: 0.9rem;
+  border: 1px solid rgba(95, 191, 138, 0.45);
+  color: #a8dcbf;
 }
 
 .oauth-banner {
@@ -262,11 +265,12 @@ const closeModal = () => {
 
 .oauth-banner-body {
   flex: 1;
+  min-width: 0;
 }
 
 .oauth-banner-hint {
   margin: 6px 0 0;
-  font-size: 0.85rem;
+  font-size: 12px;
   opacity: 0.85;
 }
 
@@ -274,10 +278,11 @@ const closeModal = () => {
   background: transparent;
   border: 0;
   color: inherit;
-  font-size: 1.25rem;
+  font-size: 18px;
   line-height: 1;
   cursor: pointer;
   opacity: 0.7;
+  transition: opacity 0.15s;
 }
 
 .oauth-banner-close:hover {
@@ -297,20 +302,21 @@ const closeModal = () => {
 }
 
 .empty-icon {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   margin: 0 auto 16px;
-  border-radius: var(--radius-full);
-  background: rgba(6, 182, 212, 0.15);
+  border-radius: var(--radius-md);
+  background: var(--ink-2);
+  border: 1px solid var(--line-strong);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #67e8f9;
+  color: var(--signal);
 }
 
 .empty-icon svg {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
 }
 
 .empty-title {
@@ -321,15 +327,18 @@ const closeModal = () => {
 
 .empty-sub {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--fg-2);
   margin-bottom: 20px;
 }
 
-/* Accounts List */
+/* Accounts List: hairline rows inside one panel */
 .accounts-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
 .account-card {
@@ -337,7 +346,18 @@ const closeModal = () => {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 0;
+  transition: background-color 0.15s;
+}
+
+.account-card + .account-card {
+  border-top: 1px solid var(--line);
+}
+
+.account-card:hover {
+  background: var(--ink-2);
 }
 
 @media (max-width: 600px) {
@@ -355,95 +375,116 @@ const closeModal = () => {
 .account-info {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  min-width: 0;
 }
 
 .account-details {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
+  min-width: 0;
 }
 
 .account-name {
   font-size: 14px;
   font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .account-username {
-  font-size: 13px;
-  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--fg-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .account-platform {
+  font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--muted);
-  text-transform: capitalize;
-  margin-top: 2px;
+  color: var(--fg-3);
+  text-transform: lowercase;
 }
 
 .account-actions {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .status-badge {
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 7px;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 500;
-  text-transform: capitalize;
+  text-transform: lowercase;
+  color: var(--fg-2);
+}
+
+.status-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 .status-active {
-  background: var(--success-soft);
-  color: #bbf7d0;
+  border-color: rgba(95, 191, 138, 0.5);
+  color: var(--success);
 }
 
-.status-expired {
-  background: var(--warning-soft);
-  color: #fcd34d;
-}
-
+.status-expired,
 .status-error,
 .status-revoked {
-  background: var(--error-soft);
-  color: #fca5a5;
+  border-color: rgba(229, 103, 79, 0.5);
+  color: var(--error);
 }
 
 .disconnect-btn {
   padding: 6px 12px;
   border-radius: var(--radius-sm);
   font-size: 13px;
-  color: var(--muted);
-  background: none;
-  border: 1px solid var(--border);
+  color: var(--fg-2);
+  background: transparent;
+  border: 1px solid var(--line-strong);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .disconnect-btn:hover {
   background: var(--error-soft);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
+  border-color: rgba(229, 103, 79, 0.45);
+  color: #f2a594;
 }
 
 /* Disconnect Modal */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: 16px;
 }
 
 .modal-content {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  background: var(--ink-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   max-width: 400px;
   width: 100%;
   overflow: hidden;
@@ -451,57 +492,52 @@ const closeModal = () => {
 
 .modal-header {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 24px 24px 16px;
-  text-align: center;
+  gap: 10px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
 }
 
 .modal-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-shrink: 0;
 }
 
 .modal-icon.warning {
-  background: var(--warning-soft);
-  color: #fcd34d;
+  color: var(--signal);
 }
 
 .modal-icon svg {
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
 }
 
 .modal-header h2 {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
   margin: 0;
 }
 
 .modal-body {
-  padding: 0 24px 24px;
+  padding: 16px 20px 20px;
 }
 
 .account-preview {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  margin-bottom: 16px;
+  padding: 10px 12px;
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
 }
 
 .account-preview-details {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
+  min-width: 0;
 }
 
 .account-preview-name {
@@ -510,67 +546,59 @@ const closeModal = () => {
 }
 
 .account-preview-username {
+  font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--muted);
+  color: var(--fg-2);
 }
 
 .modal-description {
   font-size: 14px;
-  color: var(--muted);
-  text-align: center;
+  color: var(--fg-2);
   margin: 0;
 }
 
 .modal-actions {
   display: flex;
-  gap: 10px;
-  padding: 16px 24px;
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid var(--border);
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.btn-cancel,
+.btn-disconnect {
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .btn-cancel {
-  flex: 1;
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
-  font-size: 13px;
-  font-weight: 500;
   background: transparent;
-  color: var(--muted);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  transition: all 0.15s;
+  color: var(--fg-2);
+  border: 1px solid var(--line-strong);
 }
 
 .btn-cancel:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--fg-3);
   color: var(--text);
 }
 
-.btn-cancel:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 .btn-disconnect {
-  flex: 1;
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
-  font-size: 13px;
-  font-weight: 500;
-  background: #ef4444;
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: all 0.15s;
+  background: var(--error-soft);
+  color: #f2a594;
+  border: 1px solid rgba(229, 103, 79, 0.45);
 }
 
 .btn-disconnect:hover:not(:disabled) {
-  background: #dc2626;
+  background: rgba(229, 103, 79, 0.2);
 }
 
+.btn-cancel:disabled,
 .btn-disconnect:disabled {
-  opacity: 0.7;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 </style>

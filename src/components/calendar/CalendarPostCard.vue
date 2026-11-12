@@ -64,21 +64,24 @@ const getStatusClass = (status: string) => {
 .calendar-post-card {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   width: 100%;
-  padding: 4px 6px;
-  border-radius: 4px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border);
+  min-width: 0;
+  padding: 3px 5px;
+  border-radius: 2px;
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  color: var(--text);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background-color 0.12s, border-color 0.12s;
   font-size: 11px;
   text-align: left;
+  overflow: hidden;
 }
 
 .calendar-post-card:hover {
-  background: rgba(15, 23, 42, 0.9);
-  border-color: var(--border-hover);
+  background: var(--ink-3);
+  border-color: var(--line-strong);
 }
 
 .status-dot {
@@ -92,29 +95,28 @@ const getStatusClass = (status: string) => {
   background: var(--success);
 }
 
-.status-scheduled {
-  background: #3b82f6;
+.status-scheduled,
+.status-processing {
+  background: var(--signal);
 }
 
 .status-failed {
   background: var(--error);
 }
 
-.status-processing {
-  background: var(--warning);
-}
-
 .status-draft {
-  background: #94a3b8;
+  background: var(--fg-3);
 }
 
 .post-time {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
   color: var(--text);
-  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1;
+  min-width: 0;
 }
 
 .post-platforms {
@@ -125,12 +127,10 @@ const getStatusClass = (status: string) => {
 }
 
 .extra-count {
+  font-family: var(--font-mono);
   font-size: 9px;
-  font-weight: 600;
-  color: var(--muted);
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
-  padding: 1px 3px;
+  color: var(--fg-3);
+  padding: 1px 2px;
   line-height: 1;
 }
 

@@ -59,19 +59,19 @@ const signOut = () => {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: 16px;
 }
 
 .modal-content {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  background: var(--ink-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   max-width: 420px;
   width: 100%;
   overflow: hidden;
@@ -79,106 +79,106 @@ const signOut = () => {
 
 .modal-header {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 32px 24px 16px;
-  text-align: center;
+  gap: 12px;
+  padding: 22px 20px 10px;
 }
 
 .icon-wrapper {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-full);
-  background: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--signal-soft);
+  border: 1px solid rgba(242, 169, 59, 0.45);
+  color: var(--signal);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
 }
 
 .icon-wrapper svg {
-  width: 28px;
-  height: 28px;
+  width: 18px;
+  height: 18px;
 }
 
 .modal-header h3 {
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 600;
 }
 
 .modal-body {
-  padding: 0 24px 24px;
-  text-align: center;
+  padding: 0 20px 22px 64px;
 }
 
 .modal-body p {
   font-size: 14px;
-  color: var(--muted);
+  color: var(--fg-2);
   line-height: 1.6;
 }
 
 .modal-footer {
   display: flex;
-  gap: 12px;
-  padding: 16px 24px;
-  border-top: 1px solid var(--border);
-  background: rgba(15, 23, 42, 0.3);
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.btn-signout,
+.btn-choose-plan {
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .btn-signout {
-  flex: 1;
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 500;
-  background: rgba(100, 116, 139, 0.15);
-  color: var(--text);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  transition: background 0.15s;
+  background: transparent;
+  color: var(--fg-2);
+  border-color: var(--line-strong);
 }
 
 .btn-signout:hover {
-  background: rgba(100, 116, 139, 0.25);
+  color: var(--text);
+  border-color: var(--fg-3);
 }
 
 .btn-choose-plan {
-  flex: 1;
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 500;
-  background: var(--accent);
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: background 0.15s;
+  background: var(--text);
+  color: var(--ink-0);
+  border-color: var(--text);
 }
 
 .btn-choose-plan:hover {
-  background: var(--accent-hover, var(--accent));
-  filter: brightness(1.1);
+  background: #fff;
+  border-color: #fff;
 }
 
-/* Transition */
+@media (max-width: 420px) {
+  .modal-body {
+    padding-left: 20px;
+  }
+
+  .btn-signout,
+  .btn-choose-plan {
+    flex: 1;
+  }
+}
+
+/* Transition: short opacity fade */
 .modal-enter-active,
 .modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.modal-enter-active .modal-content,
-.modal-leave-active .modal-content {
-  transition: transform 0.2s ease;
+  transition: opacity 0.15s ease;
 }
 
 .modal-enter-from,
 .modal-leave-to {
   opacity: 0;
-}
-
-.modal-enter-from .modal-content,
-.modal-leave-to .modal-content {
-  transform: scale(0.95);
 }
 </style>

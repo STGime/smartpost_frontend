@@ -56,18 +56,61 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50">
-    <div class="text-center">
-      <div v-if="isLoading" class="space-y-4">
-        <div class="animate-spin h-12 w-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
-        <p class="text-gray-600">Connecting your account...</p>
+  <div class="callback-page">
+    <div class="callback-container">
+      <div v-if="isLoading" class="callback-state">
+        <div class="spinner"></div>
+        <p>Connecting your account...</p>
       </div>
-      <div v-else-if="error" class="space-y-4">
-        <p class="text-red-600">{{ error }}</p>
-        <RouterLink to="/app/accounts" class="text-purple-600 hover:text-purple-500">
+      <div v-else-if="error" class="callback-state">
+        <p class="callback-error">{{ error }}</p>
+        <RouterLink to="/app/accounts" class="callback-link">
           Back to accounts
         </RouterLink>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.callback-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  background: var(--ink-0);
+}
+
+.callback-container {
+  text-align: center;
+  max-width: 400px;
+}
+
+.callback-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.callback-state p {
+  color: var(--fg-2);
+  font-size: 14px;
+}
+
+.callback-state .callback-error {
+  color: var(--error);
+}
+
+.callback-link {
+  color: var(--signal);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.callback-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+</style>

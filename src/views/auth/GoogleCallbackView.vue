@@ -101,11 +101,13 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px 20px;
+  padding: 32px 16px;
+  background: var(--ink-0);
 }
 
 .callback-container {
   text-align: center;
+  max-width: 400px;
 }
 
 .loading-state {
@@ -116,7 +118,7 @@ onMounted(() => {
 }
 
 .loading-state p {
-  color: var(--muted);
+  color: var(--fg-2);
   font-size: 14px;
 }
 
@@ -128,14 +130,17 @@ onMounted(() => {
 }
 
 .error-icon {
-  width: 48px;
-  height: 48px;
+  display: flex;
+  padding: 8px;
   color: var(--error);
+  background: var(--error-soft);
+  border: 1px solid rgba(229, 103, 79, 0.45);
+  border-radius: var(--radius-sm);
 }
 
 .error-icon svg {
-  width: 100%;
-  height: 100%;
+  width: 24px;
+  height: 24px;
 }
 
 .error-state h2 {
@@ -144,7 +149,7 @@ onMounted(() => {
 }
 
 .error-state p {
-  color: var(--muted);
+  color: var(--fg-2);
   font-size: 14px;
   margin-bottom: 8px;
 }
