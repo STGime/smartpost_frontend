@@ -274,22 +274,23 @@ useHead({
 
 <style scoped>
 .hero {
-  margin-bottom: 40px;
+  margin-bottom: 48px;
 }
 
 h1 {
-  font-size: clamp(2rem, 3.3vw, 2.8rem);
-  line-height: 1.08;
-  letter-spacing: -0.04em;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
   margin-bottom: 16px;
 }
 
 .hero-sub {
   font-size: 16px;
-  color: var(--muted);
-  max-width: 760px;
-  line-height: 1.6;
-  margin-bottom: 18px;
+  color: var(--fg-2);
+  max-width: 68ch;
+  line-height: 1.65;
+  margin-bottom: 24px;
 }
 
 .hero-links {
@@ -298,50 +299,40 @@ h1 {
   flex-wrap: wrap;
 }
 
-.hero-links .btn-primary,
-.hero-links .btn-secondary {
-  font-size: 13px;
-  padding: 10px 16px;
-  border-radius: 999px;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
+.content-section,
+.faq-section {
+  padding: 36px 0;
+  border-top: 1px solid var(--line);
 }
 
-.hero-links .btn-primary {
-  background: var(--accent);
-  color: white;
-  border: 1px solid var(--accent);
-}
-
-.hero-links .btn-secondary {
-  background: rgba(15, 23, 42, 0.85);
-  color: var(--text);
-  border: 1px solid rgba(148, 163, 184, 0.4);
-}
-
-.content-section {
-  margin-bottom: 36px;
-}
-
-.content-section h2 {
-  font-size: 18px;
+.content-section h2,
+.faq-section h2 {
+  font-size: 22px;
   font-weight: 600;
-  margin-bottom: 12px;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  margin-bottom: 14px;
 }
 
 .content-section p {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.7;
-  max-width: 760px;
+  font-size: 15px;
+  color: var(--fg-2);
+  line-height: 1.65;
+  max-width: 68ch;
   margin-bottom: 14px;
 }
 
 .content-section a {
-  color: var(--accent-light);
+  color: var(--text);
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+  transition: text-decoration-color 0.15s;
+}
+
+.content-section a:hover {
+  text-decoration-color: var(--signal);
 }
 
 .content-section strong {
@@ -349,45 +340,50 @@ h1 {
   font-weight: 600;
 }
 
-.content-section code,
-.endpoint-path,
 code {
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
-  font-size: 12px;
-  background: rgba(79, 70, 229, 0.15);
-  color: #a5b4fc;
-  padding: 1px 6px;
-  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  background: var(--ink-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  overflow-wrap: anywhere;
 }
 
 .code-block {
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
-  font-size: 12px;
-  background: rgba(2, 6, 23, 0.85);
-  color: #e2e8f0;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: var(--ink-1);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
   padding: 14px 16px;
   overflow-x: auto;
-  margin: 12px 0;
-  line-height: 1.55;
+  margin: 14px 0;
+  line-height: 1.6;
   white-space: pre;
+  max-width: 100%;
 }
 
 .code-block code {
   background: transparent;
+  border: 0;
   color: inherit;
   padding: 0;
   border-radius: 0;
   font-size: inherit;
+  overflow-wrap: normal;
 }
 
 .endpoint-block {
-  margin: 18px 0;
-  padding: 14px 16px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 12px;
-  background: rgba(15, 23, 42, 0.5);
+  margin: 0;
+  padding: 20px 0;
+  border-top: 1px solid var(--line);
+}
+
+.endpoint-block:first-of-type {
+  margin-top: 20px;
 }
 
 .endpoint-head {
@@ -398,76 +394,88 @@ code {
   flex-wrap: wrap;
 }
 
+.endpoint-path {
+  font-size: 14px;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--text);
+}
+
 .method-pill {
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 4px;
-  letter-spacing: 0.05em;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 2px;
+  letter-spacing: 0.1em;
+  border: 1px solid var(--line-strong);
+  color: var(--fg-2);
 }
 
 .method-get {
-  background: rgba(34, 197, 94, 0.18);
-  color: #86efac;
+  color: var(--success);
+  border-color: var(--line-strong);
 }
 
 .method-post {
-  background: rgba(99, 102, 241, 0.2);
-  color: #a5b4fc;
+  color: var(--text);
 }
 
-.endpoint-summary {
-  font-size: 13px;
-  color: var(--muted);
-  margin: 4px 0 6px 0;
+.content-section .endpoint-summary {
+  font-size: 14px;
+  color: var(--fg-2);
+  margin: 4px 0 0;
 }
 
 .endpoint-block .code-block {
-  margin: 8px 0 0 0;
+  margin: 12px 0 0;
 }
 
 .event-list {
   list-style: none;
   padding: 0;
-  margin: 8px 0 14px;
-  display: grid;
-  gap: 6px;
-  max-width: 760px;
+  margin: 8px 0 18px;
+  max-width: 68ch;
+  border-top: 1px solid var(--line);
 }
 
 .event-list li {
   font-size: 14px;
-  color: var(--muted);
+  color: var(--fg-2);
   line-height: 1.6;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
 }
 
-.faq-section {
-  margin: 48px 0 36px;
-}
-
-.faq-section h2 {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 20px;
+.event-list code {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin-right: 4px;
+  color: var(--text);
 }
 
 .faq-list {
-  display: grid;
-  gap: 18px;
-  max-width: 760px;
+  max-width: 68ch;
+  border-top: 1px solid var(--line);
+}
+
+.faq-item {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
 }
 
 .faq-item h3 {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   margin-bottom: 6px;
   color: var(--text);
 }
 
 .faq-item p {
-  font-size: 14px;
-  color: var(--muted);
+  font-size: 15px;
+  color: var(--fg-2);
   line-height: 1.65;
 }
 </style>

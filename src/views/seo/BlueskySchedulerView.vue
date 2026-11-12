@@ -214,108 +214,120 @@ useHead({
 
 <style scoped>
 .hero {
-  margin-bottom: 40px;
+  padding-bottom: 40px;
 }
 
 h1 {
-  font-size: clamp(2rem, 3.3vw, 2.8rem);
-  line-height: 1.08;
-  letter-spacing: -0.04em;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  color: var(--text);
   margin-bottom: 16px;
 }
 
 .hero-sub {
   font-size: 16px;
-  color: var(--muted);
-  max-width: 720px;
-  line-height: 1.6;
+  color: var(--fg-2);
+  max-width: 68ch;
+  line-height: 1.65;
 }
 
-.content-section {
-  margin-bottom: 36px;
+.content-section,
+.faq-section {
+  border-top: 1px solid var(--line);
+  padding: 36px 0;
 }
 
-.content-section h2 {
-  font-size: 18px;
+.content-section h2,
+.faq-section h2 {
+  font-size: 22px;
   font-weight: 600;
-  margin-bottom: 12px;
-}
-
-.content-section p {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.7;
-  max-width: 720px;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  color: var(--text);
   margin-bottom: 14px;
 }
 
-.content-section code {
-  background: rgba(79, 70, 229, 0.15);
-  border-radius: 4px;
-  padding: 1px 6px;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
-  font-size: 12px;
-  color: #a5b4fc;
+.content-section p {
+  font-size: 15px;
+  color: var(--fg-2);
+  line-height: 1.65;
+  max-width: 68ch;
+  margin-bottom: 14px;
+}
+
+.content-section p:last-child {
+  margin-bottom: 0;
+}
+
+.content-section p code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  color: var(--text);
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 1px 5px;
 }
 
 .format-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 10px;
-  margin: 14px 0;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 1px;
+  margin: 16px 0;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
 .format-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  background: rgba(15, 23, 42, 0.85);
+  align-items: baseline;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--ink-0);
 }
 
 .format-label {
-  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fg-3);
 }
 
 .format-size {
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
-  color: #a5b4fc;
-  font-size: 11px;
-  background: rgba(79, 70, 229, 0.15);
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-
-.faq-section {
-  margin: 48px 0 36px;
-}
-
-.faq-section h2 {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 20px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+  text-align: right;
 }
 
 .faq-list {
-  display: grid;
-  gap: 18px;
-  max-width: 760px;
+  max-width: 68ch;
+  border-top: 1px solid var(--line);
+}
+
+.faq-item {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
 }
 
 .faq-item h3 {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 6px;
+  line-height: 1.4;
   color: var(--text);
+  margin-bottom: 6px;
 }
 
 .faq-item p {
-  font-size: 14px;
-  color: var(--muted);
+  font-size: 15px;
+  color: var(--fg-2);
   line-height: 1.65;
 }
 </style>

@@ -130,82 +130,89 @@ useHead({
 }
 
 h1 {
-  font-size: clamp(2rem, 3.3vw, 2.8rem);
-  line-height: 1.08;
-  letter-spacing: -0.04em;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
   margin-bottom: 16px;
 }
 
 .hero-sub {
   font-size: 16px;
-  color: var(--muted);
-  max-width: 680px;
-  line-height: 1.6;
+  color: var(--fg-2);
+  max-width: 68ch;
+  line-height: 1.65;
 }
 
 .hero-note {
   font-size: 14px;
-  color: var(--muted);
-  margin-top: 10px;
+  color: var(--fg-2);
+  max-width: 68ch;
+  line-height: 1.65;
+  margin-top: 12px;
 }
 
 .hero-note a {
-  color: var(--accent-light);
-  text-decoration: none;
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s;
 }
 
 .hero-note a:hover {
-  text-decoration: underline;
+  text-decoration-color: var(--signal);
 }
 
 .wf-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
 .wf-card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   padding: 22px;
-  border-radius: 16px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  background: linear-gradient(to bottom right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.96));
+  min-width: 0;
+  background: var(--ink-0);
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  transition: background-color 0.15s;
 }
 
 .wf-card:hover {
-  border-color: rgba(165, 180, 252, 0.4);
-  box-shadow: 0 0 24px rgba(99, 102, 241, 0.12);
-  transform: translateY(-2px);
+  background: var(--ink-1);
 }
 
 .wf-card-meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  font-family: var(--font-mono);
   font-size: 11px;
 }
 
 .wf-badge {
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(99, 102, 241, 0.18);
-  color: #c7d2fe;
-  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 2px;
+  border: 1px solid var(--line-strong);
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .wf-tag {
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  color: #a5b4fc;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  padding: 2px 7px;
+  border-radius: 2px;
+  border: 1px solid var(--line);
+  color: var(--fg-3);
 }
 
 .wf-card-title {
@@ -216,8 +223,8 @@ h1 {
 }
 
 .wf-card-summary {
-  font-size: 13px;
-  color: var(--muted);
+  font-size: 14px;
+  color: var(--fg-2);
   line-height: 1.6;
   flex: 1;
 }
@@ -231,33 +238,45 @@ h1 {
 }
 
 .wf-node {
-  font-size: 10.5px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   padding: 2px 7px;
-  border-radius: 6px;
-  background: rgba(148, 163, 184, 0.12);
-  color: var(--muted);
+  border-radius: 2px;
+  border: 1px solid var(--line);
+  background: var(--ink-1);
+  color: var(--fg-2);
   white-space: nowrap;
 }
 
+.wf-card:hover .wf-node {
+  background: var(--ink-2);
+}
+
 .wf-arrow {
-  font-size: 10px;
-  color: rgba(148, 163, 184, 0.5);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-3);
 }
 
 .wf-card-read {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--accent-light);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--fg-2);
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  transition: color 0.15s;
+}
+
+.wf-card:hover .wf-card-read {
+  color: var(--text);
 }
 
 .wf-card:hover .arrow {
-  transform: translateX(3px);
+  color: var(--signal);
 }
 
 .arrow {
-  transition: transform 0.2s;
+  transition: color 0.15s;
 }
 </style>

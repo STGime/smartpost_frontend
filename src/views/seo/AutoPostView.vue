@@ -130,67 +130,77 @@ useHead({
 
 <style scoped>
 .hero {
-  margin-bottom: 40px;
+  padding-bottom: 40px;
 }
 
 h1 {
-  font-size: clamp(2rem, 3.3vw, 2.8rem);
-  line-height: 1.08;
-  letter-spacing: -0.04em;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
   margin-bottom: 16px;
+  max-width: 22ch;
 }
 
 .hero-sub {
-  font-size: 16px;
-  color: var(--muted);
-  max-width: 640px;
+  font-size: 17px;
+  color: var(--fg-2);
+  max-width: 62ch;
   line-height: 1.6;
 }
 
 .content-section {
-  margin-bottom: 36px;
+  border-top: 1px solid var(--line);
+  padding: 32px 0;
 }
 
-.content-section h2 {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-
-.content-section p {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.7;
-  max-width: 720px;
-  margin-bottom: 14px;
-}
-
-.faq-section {
-  margin: 48px 0 36px;
-}
-
+.content-section h2,
 .faq-section h2 {
   font-size: 22px;
   font-weight: 600;
-  margin-bottom: 20px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+}
+
+.content-section p {
+  font-size: 15px;
+  color: var(--fg-2);
+  line-height: 1.65;
+  max-width: 68ch;
+  margin-bottom: 14px;
+}
+
+.content-section p:last-child {
+  margin-bottom: 0;
+}
+.faq-section {
+  border-top: 1px solid var(--line);
+  padding: 32px 0 40px;
 }
 
 .faq-list {
-  display: grid;
-  gap: 18px;
   max-width: 760px;
+  border-top: 1px solid var(--line);
+}
+
+.faq-item {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
 }
 
 .faq-item h3 {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
+  line-height: 1.4;
   margin-bottom: 6px;
   color: var(--text);
 }
 
 .faq-item p {
-  font-size: 14px;
-  color: var(--muted);
+  font-size: 15px;
+  color: var(--fg-2);
   line-height: 1.65;
+  max-width: 68ch;
 }
 </style>

@@ -201,138 +201,168 @@ useHead({
 
 <style scoped>
 .hero {
-  margin-bottom: 40px;
+  padding-bottom: 40px;
 }
 
 h1 {
-  font-size: clamp(2rem, 3.3vw, 2.8rem);
-  line-height: 1.08;
-  letter-spacing: -0.04em;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  color: var(--text);
   margin-bottom: 16px;
 }
 
 .hero-sub {
   font-size: 16px;
-  color: var(--muted);
-  max-width: 640px;
-  line-height: 1.6;
+  color: var(--fg-2);
+  max-width: 68ch;
+  line-height: 1.65;
 }
 
-.content-section {
-  margin-bottom: 36px;
+.content-section,
+.faq-section {
+  border-top: 1px solid var(--line);
+  padding: 36px 0;
 }
 
-.content-section h2 {
-  font-size: 18px;
+.content-section h2,
+.faq-section h2 {
+  font-size: 22px;
   font-weight: 600;
-  margin-bottom: 12px;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  margin-bottom: 14px;
 }
 
 .content-section p {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.7;
-  max-width: 720px;
+  font-size: 15px;
+  color: var(--fg-2);
+  line-height: 1.65;
+  max-width: 68ch;
   margin-bottom: 14px;
+}
+
+.content-section p:last-child {
+  margin-bottom: 0;
+}
+
+.hero-sub a,
+.content-section p a,
+.content-section li a,
+.faq-a a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+  transition: color 0.15s, text-decoration-color 0.15s;
+}
+
+.hero-sub a:hover,
+.content-section p a:hover,
+.content-section li a:hover,
+.faq-a a:hover {
+  color: var(--signal);
+  text-decoration-color: var(--signal);
 }
 
 .steps-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 14px;
+  gap: 1px;
+  margin-top: 16px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
 .step-card {
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  background: rgba(15, 23, 42, 0.85);
-  padding: 14px;
+  background: var(--ink-0);
+  padding: 20px;
 }
 
 .step-number {
+  font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 700;
-  color: var(--muted);
-  margin-bottom: 6px;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
+  color: var(--fg-3);
+  margin-bottom: 10px;
 }
 
 .step-title {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
-  margin-bottom: 4px;
+  line-height: 1.4;
+  color: var(--text);
+  margin-bottom: 6px;
 }
 
 .step-body {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.5;
+  font-size: 14px;
+  color: var(--fg-2);
+  line-height: 1.6;
 }
 
 .features-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 14px;
+  gap: 1px;
+  margin-top: 16px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
 .feature-card {
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  background: rgba(15, 23, 42, 0.85);
-  padding: 14px;
+  background: var(--ink-0);
+  padding: 20px;
 }
 
 .feature-title {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
-  margin-bottom: 4px;
+  line-height: 1.4;
+  color: var(--text);
+  margin-bottom: 6px;
 }
 
 .feature-body {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.5;
+  font-size: 14px;
+  color: var(--fg-2);
+  line-height: 1.6;
 }
 
 .faq-grid {
-  display: grid;
-  gap: 16px;
-  margin-top: 14px;
+  max-width: 68ch;
+  border-top: 1px solid var(--line);
 }
 
 .faq-item {
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  background: rgba(15, 23, 42, 0.85);
-  padding: 14px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
 }
 
 .faq-q {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
+  line-height: 1.4;
+  color: var(--text);
   margin-bottom: 6px;
 }
 
 .faq-a {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.6;
+  font-size: 15px;
+  color: var(--fg-2);
+  line-height: 1.65;
 }
 
-.faq-a a {
-  color: var(--text);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-@media (max-width: 600px) {
-  .steps-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
+@media (max-width: 640px) {
+  .steps-grid,
   .features-grid {
     grid-template-columns: minmax(0, 1fr);
   }

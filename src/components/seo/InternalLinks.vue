@@ -48,43 +48,46 @@ const filteredLinks = computed(() =>
 
 <style scoped>
 .internal-links {
-  margin-top: 40px;
+  margin-top: 56px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
 }
 
 .internal-links-heading {
-  font-size: 15px;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   margin-bottom: 14px;
-  color: var(--muted);
+  color: var(--fg-3);
 }
 
 .links-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0 24px;
 }
 
 .link-card {
-  font-size: 13px;
-  padding: 10px 16px;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  background: rgba(15, 23, 42, 0.85);
-  color: var(--text);
+  font-size: 14px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--fg-2);
   text-decoration: none;
-  display: inline-flex;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 6px;
-  transition: border-color 0.2s, background 0.2s;
+  transition: color 0.15s;
 }
 
 .link-card:hover {
-  border-color: rgba(148, 163, 184, 0.7);
-  background: rgba(15, 23, 42, 0.95);
+  color: var(--text);
 }
 
 .link-arrow {
-  color: var(--muted);
+  color: var(--fg-3);
   font-size: 14px;
 }
 </style>

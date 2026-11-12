@@ -286,144 +286,163 @@ Credentials → Add → Posta
 
 <style scoped>
 .hero {
-  margin-bottom: 40px;
+  margin-bottom: 48px;
 }
 
 h1 {
-  font-size: clamp(2rem, 3.3vw, 2.8rem);
-  line-height: 1.08;
-  letter-spacing: -0.04em;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
   margin-bottom: 16px;
 }
 
 .hero-sub {
   font-size: 16px;
-  color: var(--muted);
-  max-width: 680px;
-  line-height: 1.6;
-}
-
-.hero-sub code,
-.faq-a code,
-.feature-body code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.9em;
-  background: rgba(148, 163, 184, 0.12);
-  padding: 1px 4px;
-  border-radius: 4px;
+  color: var(--fg-2);
+  max-width: 68ch;
+  line-height: 1.65;
 }
 
 .content-section {
-  margin-bottom: 36px;
+  padding: 36px 0;
+  border-top: 1px solid var(--line);
 }
 
 .content-section h2 {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 600;
-  margin-bottom: 12px;
-}
-
-.content-section p {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.7;
-  max-width: 720px;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
   margin-bottom: 14px;
 }
 
+.content-section p {
+  font-size: 15px;
+  color: var(--fg-2);
+  line-height: 1.65;
+  max-width: 68ch;
+  margin-bottom: 14px;
+}
+
+.content-section p a,
+.feature-body a,
+.faq-a a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s;
+}
+
+.content-section p a:hover,
+.feature-body a:hover,
+.faq-a a:hover {
+  text-decoration-color: var(--signal);
+}
+
+.hero-sub code,
+.content-section p code,
+.feature-body code,
+.faq-a code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  color: var(--text);
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  overflow-wrap: anywhere;
+}
+
 .code-block {
-  margin: 14px 0;
-  padding: 14px;
-  border-radius: 10px;
-  background: rgba(2, 6, 23, 0.85);
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  margin: 14px 0 18px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--ink-1);
+  border: 1px solid var(--line);
   overflow-x: auto;
-  font-size: 12px;
-  line-height: 1.55;
-  color: #cbd5e1;
+  max-width: 100%;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
 }
 
 .code-block code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-family: var(--font-mono);
   white-space: pre;
 }
 
 .features-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 14px;
+  gap: 1px;
+  margin-top: 18px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
 .feature-card {
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  background: rgba(15, 23, 42, 0.85);
-  padding: 14px;
+  min-width: 0;
+  background: var(--ink-0);
+  padding: 18px 20px;
 }
 
 .link-card {
   display: block;
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.2s, transform 0.2s;
+  transition: background-color 0.15s;
 }
 
 .link-card:hover {
-  border-color: rgba(165, 180, 252, 0.5);
-  transform: translateY(-2px);
+  background: var(--ink-1);
+}
+
+.link-card:hover .feature-title {
+  color: var(--text);
 }
 
 .feature-title {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
-  margin-bottom: 4px;
+  line-height: 1.35;
+  margin-bottom: 6px;
+  color: var(--text);
 }
 
 .feature-body {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
-.feature-body a {
-  color: var(--accent-light);
-  text-decoration: none;
-}
-
-.feature-body a:hover {
-  text-decoration: underline;
-}
-
-.faq-grid {
-  display: grid;
-  gap: 16px;
-  margin-top: 14px;
-}
-
-.faq-item {
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  background: rgba(15, 23, 42, 0.85);
-  padding: 14px;
-}
-
-.faq-q {
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-
-.faq-a {
-  font-size: 12px;
-  color: var(--muted);
+  font-size: 14px;
+  color: var(--fg-2);
   line-height: 1.6;
 }
 
-.faq-a a {
+.faq-grid {
+  margin-top: 18px;
+  max-width: 68ch;
+  border-top: 1px solid var(--line);
+}
+
+.faq-item {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.faq-q {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 6px;
   color: var(--text);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+}
+
+.faq-a {
+  font-size: 15px;
+  color: var(--fg-2);
+  line-height: 1.65;
 }
 
 @media (max-width: 600px) {
