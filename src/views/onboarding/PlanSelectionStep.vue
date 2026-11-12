@@ -194,7 +194,7 @@ const getFilteredFeatures = (plan: PricingPlan) => {
 .pricing-footnote {
   margin-top: 16px;
   font-size: 12px;
-  color: var(--muted);
+  color: var(--fg-3);
   text-align: center;
 }
 
@@ -206,11 +206,11 @@ const getFilteredFeatures = (plan: PricingPlan) => {
 .step-header h1 {
   font-size: 24px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .step-header p {
-  color: var(--muted);
+  color: var(--fg-2);
   font-size: 15px;
 }
 
@@ -223,52 +223,58 @@ const getFilteredFeatures = (plan: PricingPlan) => {
 
 .interval-toggle {
   display: inline-flex;
-  padding: 4px;
-  border-radius: var(--radius-md);
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid var(--border);
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  background: var(--ink-1);
+  border: 1px solid var(--line);
 }
 
 .toggle-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 18px;
-  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  border-radius: 3px;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 500;
-  color: var(--muted);
+  color: var(--fg-2);
   background: none;
   border: none;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.toggle-btn:hover {
+  color: var(--text);
 }
 
 .toggle-btn.active {
-  background: var(--accent);
-  color: white;
+  background: var(--ink-3);
+  color: var(--text);
 }
 
 .save-badge {
-  padding: 2px 6px;
-  border-radius: var(--radius-full);
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 600;
-  background: rgba(22, 163, 74, 0.2);
-  color: #86efac;
-  border: 1px solid rgba(22, 163, 74, 0.4);
+  font-weight: 500;
+  color: var(--success);
+  border: 1px solid rgba(95, 191, 138, 0.5);
 }
 
 /* Loading / Error */
 .loading-state {
   display: flex;
   justify-content: center;
-  padding: 64px;
+  padding: 64px 16px;
 }
 
 .error-state {
   text-align: center;
-  padding: 32px;
+  padding: 32px 16px;
   color: var(--error);
 }
 
@@ -276,87 +282,88 @@ const getFilteredFeatures = (plan: PricingPlan) => {
 .plans-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
+  gap: 16px;
 }
 
 .plan-card {
-  position: relative;
-  padding: 24px;
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border);
-  background: rgba(15, 23, 42, 0.6);
+  padding: 22px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--ink-1);
   display: flex;
   flex-direction: column;
-  transition: border-color 0.2s, transform 0.2s;
+  transition: border-color 0.15s;
 }
 
 .plan-card:hover {
-  border-color: var(--border-hover);
-  transform: translateY(-2px);
+  border-color: var(--line-strong);
 }
 
 .plan-card.featured {
-  border-color: var(--accent);
-  background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.15), rgba(15, 23, 42, 0.8));
+  border-color: var(--signal);
 }
 
 .trial-badge,
 .popular-badge {
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
+  align-self: flex-start;
+  padding: 3px 7px;
+  border-radius: 2px;
+  border: 1px solid;
+  font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 600;
-  color: white;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   white-space: nowrap;
 }
 
 .trial-badge {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: var(--success);
+  border-color: rgba(95, 191, 138, 0.5);
 }
 
 .popular-badge {
-  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: var(--signal);
+  border-color: rgba(242, 169, 59, 0.5);
+  background: var(--signal-soft);
 }
 
 /* Plan Header */
 .plan-header {
-  text-align: center;
   margin-bottom: 16px;
-  padding-top: 8px;
+  padding-top: 14px;
 }
 
 .plan-name {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .plan-price {
   display: flex;
   align-items: baseline;
-  justify-content: center;
   gap: 2px;
 }
 
 .price-amount {
-  font-size: 36px;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 500;
   color: var(--text);
   letter-spacing: -0.02em;
 }
 
 .price-period {
-  font-size: 14px;
-  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--fg-3);
 }
 
 .billed-note {
-  font-size: 12px;
-  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-3);
   margin-top: 2px;
 }
 
@@ -366,9 +373,9 @@ const getFilteredFeatures = (plan: PricingPlan) => {
   flex-direction: column;
   gap: 6px;
   padding: 12px 0;
-  margin-bottom: 12px;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
 .limit-row {
@@ -379,23 +386,24 @@ const getFilteredFeatures = (plan: PricingPlan) => {
 }
 
 .limit-value {
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-weight: 500;
   min-width: 28px;
   color: var(--text);
 }
 
 .limit-label {
-  color: var(--muted);
+  color: var(--fg-2);
 }
 
 /* Features */
 .plan-features {
   list-style: none;
   padding: 0;
-  margin: 0 0 24px 0;
+  margin: 0 0 22px 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
   flex: 1;
 }
 
@@ -408,46 +416,15 @@ const getFilteredFeatures = (plan: PricingPlan) => {
 }
 
 .check-icon {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   color: var(--success);
   flex-shrink: 0;
 }
 
-/* Buttons */
+/* Buttons: global .btn-primary / .btn-secondary supply the look */
 .btn-select {
   width: 100%;
-  padding: 12px 20px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
-}
-
-.btn-select.btn-primary {
-  background: var(--accent);
-  color: white;
-  border: none;
-}
-
-.btn-select.btn-primary:hover {
-  background: var(--accent-hover);
-}
-
-.btn-select.btn-secondary {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text);
-}
-
-.btn-select.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--border-hover);
-}
-
-.btn-select:active {
-  transform: scale(0.98);
 }
 
 @media (max-width: 640px) {

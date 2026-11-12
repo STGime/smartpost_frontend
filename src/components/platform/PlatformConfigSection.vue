@@ -263,7 +263,7 @@ const getPlatformName = (platform: SocialPlatform) => {
 .platform-config-section {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .section-header {
@@ -282,25 +282,27 @@ const getPlatformName = (platform: SocialPlatform) => {
 }
 
 .section-label svg {
-  width: 18px;
-  height: 18px;
-  color: var(--muted);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--fg-3);
 }
 
 .settings-count {
   margin-left: auto;
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  background: var(--accent-soft);
-  color: #a5b4fc;
+  padding: 2px 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 500;
+  color: var(--fg-2);
 }
 
 .section-hint {
+  margin-left: 24px;
   font-size: 12px;
-  color: var(--muted);
-  margin-left: 26px;
+  color: var(--fg-3);
 }
 
 .platform-accordions {
@@ -310,7 +312,8 @@ const getPlatformName = (platform: SocialPlatform) => {
 }
 
 .platform-accordion {
-  border: 1px solid var(--border);
+  background: var(--ink-1);
+  border: 1px solid var(--line);
   border-radius: var(--radius-md);
   overflow: hidden;
 }
@@ -320,19 +323,20 @@ const getPlatformName = (platform: SocialPlatform) => {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px;
-  background: rgba(15, 23, 42, 0.6);
+  padding: 10px 14px;
+  background: var(--ink-1);
   border: none;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background-color 0.15s;
 }
 
 .accordion-header:hover {
-  background: rgba(15, 23, 42, 0.8);
+  background: var(--ink-2);
 }
 
-.accordion-header :deep(.platform-icon) {
-  flex-shrink: 0;
+.accordion-header:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: -2px;
 }
 
 .platform-name {
@@ -343,19 +347,25 @@ const getPlatformName = (platform: SocialPlatform) => {
 
 .chevron {
   margin-left: auto;
-  width: 18px;
-  height: 18px;
-  color: var(--muted);
-  transition: transform 0.2s;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--fg-3);
+  transition: transform 0.15s;
 }
 
 .chevron.expanded {
   transform: rotate(180deg);
 }
 
+/* Panels sit flush inside the accordion: drop their own frame and duplicate header */
 .accordion-content > :deep(.config-panel) {
   border: none;
   border-radius: 0;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--line);
+}
+
+.accordion-content > :deep(.config-panel > .config-header) {
+  display: none;
 }
 </style>

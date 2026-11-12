@@ -117,19 +117,19 @@ const getStatusClass = (status: string) => {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: 16px;
 }
 
 .modal-content {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  background: var(--ink-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   max-width: 500px;
   width: 100%;
   max-height: 80vh;
@@ -142,41 +142,42 @@ const getStatusClass = (status: string) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 20px;
-  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
 }
 
 .modal-header h3 {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
 }
 
 .close-btn {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
   background: transparent;
-  border: none;
-  color: var(--muted);
+  border: 1px solid transparent;
+  color: var(--fg-3);
   cursor: pointer;
-  transition: color 0.15s, background 0.15s;
+  transition: color 0.12s, background-color 0.12s;
 }
 
 .close-btn:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--ink-2);
 }
 
 .close-btn svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
 }
 
 .modal-body {
-  padding: 16px 20px;
   overflow-y: auto;
   flex: 1;
 }
@@ -184,21 +185,22 @@ const getStatusClass = (status: string) => {
 .empty-day {
   text-align: center;
   padding: 32px;
-  color: var(--muted);
+  color: var(--fg-2);
   font-size: 14px;
 }
 
 .posts-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
 .post-item {
-  padding: 14px;
-  border-radius: var(--radius-md);
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid var(--border);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.post-item:last-child {
+  border-bottom: 0;
 }
 
 .post-header {
@@ -209,49 +211,44 @@ const getStatusClass = (status: string) => {
 }
 
 .post-time {
+  font-family: var(--font-mono);
   font-size: 13px;
-  font-weight: 500;
   color: var(--text);
 }
 
 .status-badge {
-  padding: 3px 8px;
-  border-radius: var(--radius-full);
-  font-size: 10px;
+  padding: 1px 6px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
   font-weight: 500;
-  text-transform: capitalize;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .badge-success {
-  background: rgba(34, 197, 94, 0.15);
-  color: #86efac;
+  color: var(--success);
 }
 
-.badge-accent {
-  background: rgba(59, 130, 246, 0.15);
-  color: #93c5fd;
+.badge-accent,
+.badge-warning {
+  color: var(--signal);
 }
 
 .badge-error {
-  background: rgba(239, 68, 68, 0.15);
-  color: #fca5a5;
-}
-
-.badge-warning {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fcd34d;
+  color: var(--error);
 }
 
 .badge-draft {
-  background: rgba(100, 116, 139, 0.15);
-  color: #94a3b8;
+  color: var(--fg-3);
 }
 
 .post-caption {
   font-size: 13px;
-  color: var(--text-secondary);
+  color: var(--fg-2);
   margin-bottom: 10px;
-  line-height: 1.4;
+  line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -261,19 +258,17 @@ const getStatusClass = (status: string) => {
 .post-platforms {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
   margin-bottom: 12px;
 }
 
 .platform-chip {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: var(--radius-full);
-  background: rgba(15, 23, 42, 0.6);
-  font-size: 11px;
-  color: var(--muted);
+  padding: 3px;
+  border-radius: 2px;
+  border: 1px solid var(--line);
+  background: var(--ink-2);
 }
 
 .post-actions {
@@ -281,35 +276,32 @@ const getStatusClass = (status: string) => {
   gap: 8px;
 }
 
-.btn-view {
-  padding: 6px 12px;
+.btn-view,
+.btn-cancel {
+  padding: 5px 12px;
   border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 500;
-  background: var(--accent-soft);
-  color: #c7d2fe;
-  border: 1px solid rgba(79, 70, 229, 0.3);
+  background: transparent;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background-color 0.12s, border-color 0.12s;
+}
+
+.btn-view {
+  color: var(--text);
+  border: 1px solid var(--line-strong);
 }
 
 .btn-view:hover {
-  background: rgba(79, 70, 229, 0.25);
+  background: var(--ink-2);
 }
 
 .btn-cancel {
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  font-weight: 500;
-  background: rgba(239, 68, 68, 0.1);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  cursor: pointer;
-  transition: background 0.15s;
+  color: var(--error);
+  border: 1px solid rgba(229, 103, 79, 0.5);
 }
 
 .btn-cancel:hover {
-  background: rgba(239, 68, 68, 0.2);
+  background: var(--error-soft);
 }
 </style>

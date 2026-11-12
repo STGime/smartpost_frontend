@@ -64,7 +64,7 @@ defineProps<{
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
@@ -93,9 +93,9 @@ defineProps<{
   height: 48px;
 }
 
-/* Platform-specific backgrounds */
+/* Platform-specific backgrounds (brand colours; Instagram's gradient is its logo) */
 .platform-tiktok {
-  background: linear-gradient(135deg, #000000, #25F4EE);
+  background: #000000;
   color: white;
 }
 
@@ -125,7 +125,7 @@ defineProps<{
 }
 
 .platform-threads {
-  background: linear-gradient(135deg, #000000, #333333);
+  background: #000000;
   color: white;
 }
 
@@ -133,6 +133,14 @@ defineProps<{
 .platform-twitter {
   background: #000000;
   color: white;
+}
+
+/* Black brand tiles need an edge to read on the graphite surfaces */
+.platform-tiktok,
+.platform-threads,
+.platform-x,
+.platform-twitter {
+  border: 1px solid var(--line-strong);
 }
 
 .platform-facebook {

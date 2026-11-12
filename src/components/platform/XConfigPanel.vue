@@ -235,33 +235,38 @@ const charLimit = 280
 </template>
 
 <style scoped>
+/* Shared config-panel look (kept identical across all platform panels) */
 .config-panel {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border);
+  background: var(--ink-1);
+  border: 1px solid var(--line);
   border-radius: var(--radius-md);
   overflow: hidden;
 }
 
 .config-header {
-  padding: 12px 16px;
-  background: rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
 }
 
 .platform-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-3);
 }
 
 .platform-badge svg {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
-.platform-badge.x {
+.platform-badge.x svg {
   color: var(--text);
 }
 
@@ -269,19 +274,21 @@ const charLimit = 280
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .config-field {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
 .field-label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
   font-size: 13px;
   font-weight: 500;
   color: var(--text);
@@ -289,41 +296,32 @@ const charLimit = 280
 
 .field-label .optional {
   font-weight: 400;
-  color: var(--muted);
-}
-
-.field-badge {
-  margin-left: auto;
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  background: var(--accent-soft);
-  color: #a5b4fc;
-  font-size: 11px;
-  font-weight: 500;
+  color: var(--fg-3);
 }
 
 .field-hint {
-  font-size: 11px;
-  color: var(--muted);
-}
-
-.field-hint.warning {
-  color: #f97316;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--fg-3);
 }
 
 .form-textarea {
   resize: vertical;
-  min-height: 70px;
+  min-height: 72px;
 }
 
-/* Toggle Switch */
+/* Toggle switch */
 .toggle-switch {
+  position: relative;
   display: flex;
   align-items: center;
 }
 
 .toggle-switch input {
-  display: none;
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
 
 .switch-label {
@@ -334,12 +332,16 @@ const charLimit = 280
 }
 
 .switch-track {
-  width: 44px;
-  height: 24px;
-  border-radius: 12px;
-  background: var(--border);
   position: relative;
-  transition: all 0.2s;
+  display: block;
+  width: 34px;
+  height: 20px;
+  flex-shrink: 0;
+  background: var(--ink-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
 }
 
 .switch-track::after {
@@ -347,72 +349,58 @@ const charLimit = 280
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 20px;
-  height: 20px;
+  width: 14px;
+  height: 14px;
+  background: var(--fg-2);
   border-radius: 50%;
-  background: white;
-  transition: all 0.2s;
+  transition: transform 0.15s, background-color 0.15s;
 }
 
 .toggle-switch input:checked + .switch-label .switch-track {
-  background: var(--accent);
+  background: var(--signal);
+  border-color: var(--signal);
 }
 
 .toggle-switch input:checked + .switch-label .switch-track::after {
-  left: 22px;
+  transform: translateX(14px);
+  background: var(--ink-0);
+}
+
+.toggle-switch input:focus-visible + .switch-label .switch-track {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
 }
 
 .switch-text {
-  font-size: 13px;
-  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-3);
 }
 
-/* Radio Group */
-.radio-group {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+.toggle-switch input:checked + .switch-label .switch-text {
+  color: var(--signal);
 }
 
-.radio-option {
-  flex: 1;
-  min-width: 90px;
+.field-badge {
+  margin-left: auto;
+  padding: 2px 6px;
+  background: var(--signal-soft);
+  border: 1px solid var(--signal);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--signal);
 }
 
-.radio-option input {
-  display: none;
+.field-hint.warning {
+  color: var(--error);
 }
 
-.radio-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px 12px;
-  border-radius: var(--radius-md);
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid var(--border);
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.radio-label svg {
-  width: 16px;
-  height: 16px;
-}
-
-.radio-option:hover .radio-label {
-  border-color: var(--border-hover);
-}
-
-.radio-option.active .radio-label {
-  background: var(--accent-soft);
-  border-color: var(--accent);
-  color: #a5b4fc;
-}
-
-/* Thread Preview */
+/* Thread preview */
 .thread-preview {
   display: flex;
   flex-direction: column;
@@ -429,50 +417,54 @@ const charLimit = 280
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  min-width: 0;
+  padding: 8px 10px;
+  background: var(--ink-0);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
   font-size: 12px;
 }
 
 .thread-part.over-limit {
-  border-color: #f97316;
+  border-color: var(--error);
 }
 
 .part-number {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--accent-soft);
-  color: #a5b4fc;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  font-size: 11px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
+  background: var(--signal-soft);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--signal);
 }
 
 .part-text {
   flex: 1;
-  color: var(--muted);
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--fg-2);
 }
 
 .part-count {
-  font-size: 11px;
-  color: var(--muted);
   flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-3);
 }
 
 .part-count.warning {
-  color: #f97316;
+  color: var(--error);
 }
 
-/* Alt Text Inputs */
+/* Alt text inputs */
 .alt-text-inputs {
   display: flex;
   flex-direction: column;
@@ -486,34 +478,98 @@ const charLimit = 280
 }
 
 .alt-index {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: rgba(148, 163, 184, 0.2);
-  color: var(--muted);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-3);
 }
 
 .alt-text-row .form-input {
   flex: 1;
+  min-width: 0;
 }
 
-/* Preview Section */
+/* Radio group */
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.radio-option {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 90px;
+}
+
+.radio-option input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  background: var(--ink-0);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--fg-2);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.radio-label svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.radio-option:hover .radio-label {
+  background: var(--ink-2);
+  color: var(--text);
+}
+
+.radio-option.active .radio-label {
+  background: var(--signal-soft);
+  border-color: var(--signal);
+  color: var(--text);
+}
+
+.radio-option.active .radio-label svg {
+  color: var(--signal);
+}
+
+.radio-option input:focus-visible + .radio-label {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+/* Preview */
 .preview-section {
-  margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--line);
 }
 
 .preview-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--muted);
   margin-bottom: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-3);
 }
 </style>

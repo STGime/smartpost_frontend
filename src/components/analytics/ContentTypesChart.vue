@@ -7,10 +7,10 @@ const props = defineProps<{
 }>()
 
 const typeColors: Record<string, string> = {
-  image: '#6366f1',
-  video: '#a855f7',
-  carousel: '#f97316',
-  document: '#22c55e',
+  image: 'var(--signal)',
+  video: 'var(--cyan)',
+  carousel: 'var(--fg-2)',
+  document: 'var(--green)',
 }
 
 const typeLabels: Record<string, string> = {
@@ -48,7 +48,7 @@ const formatNumber = (num: number): string => {
             <div class="content-type-label">
               <span
                 class="type-dot"
-                :style="{ background: typeColors[type.type] || '#6366f1' }"
+                :style="{ background: typeColors[type.type] || 'var(--signal)' }"
               ></span>
               <span class="type-name">{{ typeLabels[type.type] || type.type }}</span>
               <span class="type-count">{{ type.postCount }} posts</span>
@@ -60,7 +60,7 @@ const formatNumber = (num: number): string => {
               class="content-type-bar"
               :style="{
                 width: `${(type.avgEngagementRate / maxEngagement) * 100}%`,
-                background: typeColors[type.type] || '#6366f1',
+                background: typeColors[type.type] || 'var(--signal)',
               }"
             ></div>
           </div>
@@ -95,18 +95,20 @@ const formatNumber = (num: number): string => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
 }
 
 .content-type-label {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 
 .type-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: var(--radius-full);
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
   flex-shrink: 0;
 }
 
@@ -116,59 +118,65 @@ const formatNumber = (num: number): string => {
 }
 
 .type-count {
+  font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--muted);
+  color: var(--fg-3);
 }
 
 .type-rate {
+  font-family: var(--font-mono);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 .content-type-bar-track {
   height: 6px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 3px;
+  background: var(--ink-2);
+  border-radius: 1px;
   overflow: hidden;
 }
 
 .content-type-bar {
   height: 100%;
-  border-radius: 3px;
-  transition: width 0.3s ease;
+  border-radius: 1px;
+  transition: width 0.15s ease;
   min-width: 4px;
 }
 
 .content-type-stats {
   display: flex;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--muted);
+  color: var(--fg-3);
 }
 
 .no-data {
   text-align: center;
   padding: 32px;
-  color: var(--muted);
-  font-size: 14px;
+  color: var(--fg-3);
+  font-size: 13px;
 }
 
 .card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 0;
 }
 
 .card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
 }
 
 .card-header h2 {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
 }
 

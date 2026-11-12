@@ -33,7 +33,7 @@ const handleSubmit = async () => {
         <div class="logo-mark">
           <div class="logo-inner">P</div>
         </div>
-        <span class="logo-text">Posta</span>
+        <span class="logo-text">posta</span>
       </RouterLink>
 
       <div class="auth-card">
@@ -123,7 +123,7 @@ const handleSubmit = async () => {
 
       <p class="auth-footer">
         By continuing, you agree to our
-        <a href="/terms.html">Terms</a> and <a href="/privacy.html">Privacy Policy</a>.
+        <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>.
       </p>
     </div>
   </div>
@@ -135,7 +135,8 @@ const handleSubmit = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px 20px;
+  padding: 40px 16px;
+  background: var(--ink-0);
 }
 
 .auth-container {
@@ -148,71 +149,58 @@ const handleSubmit = async () => {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 
 .logo-text {
-  font-size: 22px;
+  font-size: 19px;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.01em;
 }
 
 .auth-card {
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border);
-  background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.1), rgba(15, 23, 42, 0.95));
-  padding: 28px 24px;
-  box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(18px);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--ink-1);
+  padding: 28px 24px 24px;
 }
 
 .auth-header {
-  text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .auth-header h1 {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .auth-header p {
   font-size: 14px;
-  color: var(--muted);
+  color: var(--fg-2);
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
+}
+
+.auth-form + .auth-form {
+  margin-top: 16px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
 }
 
-.input-wrapper {
-  position: relative;
-}
-
-.input-toggle {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: var(--muted);
-  font-size: 12px;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.input-toggle:hover {
-  color: var(--text);
+.form-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-3);
 }
 
 .form-footer {
@@ -223,21 +211,51 @@ const handleSubmit = async () => {
 
 .link-muted {
   font-size: 13px;
-  color: var(--muted);
-  transition: color 0.2s;
+  color: var(--fg-2);
+  transition: color 0.15s;
 }
 
 .link-muted:hover {
   color: var(--text);
 }
 
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper .form-input {
+  padding-right: 56px;
+}
+
+.input-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.15s;
+}
+
+.input-toggle:hover {
+  color: var(--text);
+}
+
 .link-accent {
-  color: var(--accent-light);
+  color: var(--signal);
   font-weight: 500;
 }
 
 .link-accent:hover {
   text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .btn-full {
@@ -247,17 +265,18 @@ const handleSubmit = async () => {
 .auth-switch {
   text-align: center;
   font-size: 13px;
-  color: var(--muted);
+  color: var(--fg-2);
 }
 
 .auth-footer {
   text-align: center;
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 24px;
+  font-size: 12px;
+  color: var(--fg-3);
+  margin-top: 20px;
 }
 
 .auth-footer a {
+  color: var(--fg-2);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -266,26 +285,29 @@ const handleSubmit = async () => {
   color: var(--text);
 }
 
+/* Google button: dark outlined, keeps Google's multi-colour logo */
 .btn-google {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   width: 100%;
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
-  background: #fff;
-  border: 1px solid #ddd;
-  color: #333;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--ink-2);
+  border: 1px solid var(--line-strong);
+  color: var(--text);
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 500;
+  line-height: 1.2;
   cursor: pointer;
-  transition: background 0.15s, box-shadow 0.15s;
+  transition: background-color 0.15s, border-color 0.15s;
 }
 
 .btn-google:hover {
-  background: #f8f8f8;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  background: var(--ink-3);
+  border-color: var(--fg-3);
 }
 
 .google-icon {
@@ -297,7 +319,6 @@ const handleSubmit = async () => {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 20px 0;
 }
 
 .divider::before,
@@ -305,12 +326,14 @@ const handleSubmit = async () => {
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--border);
+  background: var(--line);
 }
 
 .divider span {
-  font-size: 12px;
-  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--fg-3);
   text-transform: uppercase;
 }
 </style>

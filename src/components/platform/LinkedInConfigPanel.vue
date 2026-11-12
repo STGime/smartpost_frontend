@@ -246,33 +246,38 @@ const handleGenerateCarousel = async () => {
 </template>
 
 <style scoped>
+/* Shared config-panel look (kept identical across all platform panels) */
 .config-panel {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border);
+  background: var(--ink-1);
+  border: 1px solid var(--line);
   border-radius: var(--radius-md);
   overflow: hidden;
 }
 
 .config-header {
-  padding: 12px 16px;
-  background: rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
 }
 
 .platform-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-3);
 }
 
 .platform-badge svg {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
-.platform-badge.linkedin {
+.platform-badge.linkedin svg {
   color: #0A66C2;
 }
 
@@ -280,16 +285,21 @@ const handleGenerateCarousel = async () => {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .config-field {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
 .field-label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
   font-size: 13px;
   font-weight: 500;
   color: var(--text);
@@ -297,149 +307,143 @@ const handleGenerateCarousel = async () => {
 
 .field-label .optional {
   font-weight: 400;
-  color: var(--muted);
+  color: var(--fg-3);
 }
 
 .field-hint {
-  font-size: 11px;
-  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--fg-3);
 }
 
 .form-textarea {
   resize: vertical;
-  min-height: 70px;
+  min-height: 72px;
 }
 
-/* Radio Group */
+/* Radio group */
 .radio-group {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 8px;
 }
 
 .radio-option {
-  flex: 1;
-  min-width: 100px;
+  position: relative;
+  flex: 1 1 0;
+  min-width: 90px;
 }
 
 .radio-option input {
-  display: none;
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
 
-.radio-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px 12px;
-  border-radius: var(--radius-md);
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid var(--border);
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.radio-label svg {
-  width: 16px;
-  height: 16px;
-}
-
-.radio-option:hover .radio-label {
-  border-color: var(--border-hover);
-}
-
-.radio-option.active .radio-label {
-  background: var(--accent-soft);
-  border-color: var(--accent);
-  color: #a5b4fc;
-}
-
-/* Toggle Group */
+/* Toggle group */
 .toggle-group {
   display: flex;
   gap: 8px;
 }
 
 .toggle-btn {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.radio-label, .toggle-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 12px;
-  border-radius: var(--radius-md);
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid var(--border);
-  font-size: 12px;
-  color: var(--text);
+  padding: 9px 12px;
+  background: var(--ink-0);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--fg-2);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
 
-.toggle-btn svg {
+.radio-label svg, .toggle-btn svg {
   width: 16px;
   height: 16px;
+  flex-shrink: 0;
 }
 
-.toggle-btn:hover {
-  border-color: var(--border-hover);
+.radio-option:hover .radio-label, .toggle-btn:hover {
+  background: var(--ink-2);
+  color: var(--text);
 }
 
-.toggle-btn.active {
-  background: var(--accent-soft);
-  border-color: var(--accent);
-  color: #a5b4fc;
+.radio-option.active .radio-label, .toggle-btn.active {
+  background: var(--signal-soft);
+  border-color: var(--signal);
+  color: var(--text);
 }
 
-/* PDF Success Message */
+.radio-option.active .radio-label svg, .toggle-btn.active svg {
+  color: var(--signal);
+}
+
+.radio-option input:focus-visible + .radio-label {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+/* PDF success message */
 .pdf-success {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 12px 16px;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  border-radius: var(--radius-md);
-  margin-top: 8px;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--success-soft);
+  border: 1px solid rgba(95, 191, 138, 0.45);
+  border-radius: var(--radius-sm);
 }
 
 .pdf-success svg {
-  width: 20px;
-  height: 20px;
-  color: #22c55e;
-  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
   margin-top: 2px;
+  flex-shrink: 0;
+  color: var(--success);
 }
 
 .pdf-success-text {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .pdf-success-text strong {
-  color: #22c55e;
   font-size: 13px;
+  font-weight: 500;
+  color: var(--success);
 }
 
 .pdf-success-text span {
-  color: var(--muted);
   font-size: 12px;
+  color: var(--fg-2);
+  overflow-wrap: anywhere;
 }
 
-/* Preview Section */
+/* Preview */
 .preview-section {
-  margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--line);
 }
 
 .preview-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--muted);
   margin-bottom: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-3);
 }
 </style>

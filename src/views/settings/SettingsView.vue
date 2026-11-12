@@ -609,82 +609,64 @@ const handleDeleteAccount = async () => {
 
 .page-header p {
   font-size: 14px;
-  color: var(--muted);
+  color: var(--fg-2);
 }
 
 /* Settings Section */
 .settings-section {
-  padding: 20px;
+  padding: 18px 20px;
   margin-bottom: 16px;
 }
 
 .section-header {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  margin: -18px -20px 18px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
 }
 
 .section-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: var(--accent-soft);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--ink-2);
+  border: 1px solid var(--line);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #a5b4fc;
+  color: var(--fg-2);
   flex-shrink: 0;
 }
 
 .section-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
 }
 
-.section-icon-tokens {
-  background: rgba(34, 211, 238, 0.15);
-  color: #22d3ee;
+.section-header h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 1px;
 }
 
-.section-icon-security {
-  background: rgba(251, 191, 36, 0.15);
-  color: #fbbf24;
-}
-
-.section-icon-webhooks {
-  background: rgba(168, 85, 247, 0.15);
-  color: #a855f7;
+.section-header p {
+  font-size: 13px;
+  color: var(--fg-3);
 }
 
 .webhook-link-content {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 12px;
 }
 
 .webhook-description {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--fg-2);
   line-height: 1.5;
-}
-
-.section-icon-plan {
-  background: var(--success-soft);
-  color: #86efac;
-}
-
-.section-header h2 {
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.section-header p {
-  font-size: 13px;
-  color: var(--muted);
 }
 
 /* Form */
@@ -700,9 +682,18 @@ const handleDeleteAccount = async () => {
   gap: 6px;
 }
 
+.form-group .form-label {
+  margin-bottom: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-3);
+}
+
 .form-input-disabled {
-  background: rgba(31, 41, 55, 0.5);
-  color: var(--muted);
+  background: var(--ink-2);
+  color: var(--fg-2);
   cursor: not-allowed;
 }
 
@@ -711,12 +702,12 @@ const handleDeleteAccount = async () => {
 }
 
 .form-error {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--error);
 }
 
 .form-actions {
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 .input-with-actions {
@@ -740,9 +731,10 @@ const handleDeleteAccount = async () => {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 14px;
-  border-radius: var(--radius-md);
-  background: rgba(31, 41, 55, 0.5);
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--ink-2);
+  border: 1px solid var(--line);
 }
 
 .profile-value {
@@ -750,15 +742,10 @@ const handleDeleteAccount = async () => {
   color: var(--text);
 }
 
-.profile-value:empty::before,
-.value-with-edit .profile-value:not(:empty) + .btn-link {
-  color: var(--muted);
-}
-
 .btn-link {
   background: none;
   border: none;
-  color: var(--accent-light);
+  color: var(--signal);
   font-size: 13px;
   cursor: pointer;
   padding: 0;
@@ -772,7 +759,8 @@ const handleDeleteAccount = async () => {
 .token-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
 }
 
 .token-row {
@@ -780,9 +768,11 @@ const handleDeleteAccount = async () => {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 14px;
-  border-radius: var(--radius-md);
-  background: rgba(31, 41, 55, 0.5);
+  padding: 10px 12px;
+}
+
+.token-row + .token-row {
+  border-top: 1px solid var(--line);
 }
 
 .token-info {
@@ -793,19 +783,22 @@ const handleDeleteAccount = async () => {
 }
 
 .token-name {
-  font-size: 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
   font-weight: 500;
 }
 
 .token-meta {
-  font-size: 12px;
-  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-3);
 }
 
 .token-empty {
-  font-size: 13px;
-  color: var(--muted);
-  padding: 8px 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--fg-3);
+  padding: 4px 0;
 }
 
 .token-create-form {
@@ -817,16 +810,17 @@ const handleDeleteAccount = async () => {
 .token-reveal {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 10px;
-  padding: 14px;
-  border-radius: var(--radius-md);
-  background: rgba(34, 211, 238, 0.08);
-  border: 1px solid rgba(34, 211, 238, 0.2);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--signal-soft);
+  border: 1px solid rgba(242, 169, 59, 0.35);
 }
 
 .token-reveal-warning {
   font-size: 13px;
-  color: #22d3ee;
+  color: var(--signal);
   font-weight: 500;
   margin: 0;
 }
@@ -835,19 +829,22 @@ const handleDeleteAccount = async () => {
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
 }
 
 .token-value {
   flex: 1;
-  font-family: monospace;
-  font-size: 13px;
-  padding: 8px 12px;
-  border-radius: var(--radius-md);
-  background: rgba(15, 23, 42, 0.6);
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--ink-0);
+  border: 1px solid var(--line-strong);
+  color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  word-break: break-all;
 }
 
 /* Plan Info */
@@ -866,6 +863,7 @@ const handleDeleteAccount = async () => {
 
 .plan-details {
   flex: 1;
+  width: 100%;
 }
 
 .plan-name {
@@ -877,31 +875,34 @@ const handleDeleteAccount = async () => {
 
 .plan-badge {
   display: inline-flex;
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
-  font-size: 13px;
+  padding: 3px 8px;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 12px;
   font-weight: 500;
-  text-transform: capitalize;
-  background: linear-gradient(135deg, var(--accent), var(--cyan));
-  color: white;
+  text-transform: lowercase;
+  border: 1px solid rgba(242, 169, 59, 0.5);
+  color: var(--signal);
 }
 
 .plan-status {
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   color: var(--green);
-  text-transform: capitalize;
+  text-transform: lowercase;
 }
 
 .plan-trial {
-  font-size: 13px;
-  color: var(--accent-light);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--signal);
   margin-bottom: 12px;
 }
 
 .plan-limits {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  border-top: 1px solid var(--line);
 }
 
 .limit-item {
@@ -909,25 +910,29 @@ const handleDeleteAccount = async () => {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  padding: 8px 0;
   font-size: 13px;
+  border-bottom: 1px solid var(--line);
 }
 
 .limit-label {
-  color: var(--muted);
+  color: var(--fg-2);
 }
 
 .limit-value {
-  font-weight: 500;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Danger Zone */
 .danger-section {
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-color: rgba(229, 103, 79, 0.4);
 }
 
 .section-icon-danger {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  color: var(--error);
+  border-color: rgba(229, 103, 79, 0.4);
 }
 
 .danger-content {
@@ -938,14 +943,14 @@ const handleDeleteAccount = async () => {
 
 .danger-warning {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--fg-2);
   line-height: 1.5;
   margin-bottom: 12px;
 }
 
 .delete-list {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--fg-2);
   margin: 0 0 16px 0;
   padding-left: 20px;
 }
@@ -962,31 +967,8 @@ const handleDeleteAccount = async () => {
 
 .delete-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-top: 8px;
-}
-
-.btn-danger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 20px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  background: #ef4444;
-  color: white;
-}
-
-.btn-danger:hover:not(:disabled) {
-  background: #dc2626;
-}
-
-.btn-danger:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 </style>

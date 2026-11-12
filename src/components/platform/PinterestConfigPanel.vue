@@ -205,50 +205,60 @@ watch(() => props.account?.id, (newId, oldId) => {
 </template>
 
 <style scoped>
+/* Shared config-panel look (kept identical across all platform panels) */
 .config-panel {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border);
+  background: var(--ink-1);
+  border: 1px solid var(--line);
   border-radius: var(--radius-md);
   overflow: hidden;
 }
 
 .config-header {
-  padding: 12px 16px;
-  background: rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
 }
 
 .platform-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-3);
 }
 
 .platform-badge svg {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
-.platform-badge.pinterest {
-  color: #BD081C;
+.platform-badge.pinterest svg {
+  color: #E60023;
 }
 
 .config-body {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .config-field {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
 .field-label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
   font-size: 13px;
   font-weight: 500;
   color: var(--text);
@@ -256,49 +266,75 @@ watch(() => props.account?.id, (newId, oldId) => {
 
 .field-label .optional {
   font-weight: 400;
-  color: var(--muted);
+  color: var(--fg-3);
 }
 
 .field-label .required {
-  color: #ef4444;
+  color: var(--error);
 }
 
 .field-hint {
-  font-size: 11px;
-  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--fg-3);
 }
 
 .form-textarea {
   resize: vertical;
-  min-height: 70px;
+  min-height: 72px;
 }
 
 .form-textarea-sm {
   resize: vertical;
-  min-height: 50px;
+  min-height: 52px;
 }
 
+/* Select */
 .form-select {
+  width: 100%;
+  padding: 10px 36px 10px 12px;
+  background-color: var(--ink-0);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b717a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--text);
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 16px;
-  padding-right: 40px;
+  transition: border-color 0.15s;
 }
 
+.form-select:focus {
+  outline: none;
+  border-color: var(--signal);
+}
+
+.form-select option {
+  background: var(--ink-1);
+  color: var(--text);
+}
+
+.form-select option:disabled {
+  color: var(--fg-3);
+}
+
+/* Board picker states */
 .board-notice,
 .board-loading,
 .board-error {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px;
-  background: rgba(189, 8, 28, 0.1);
-  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  background: var(--ink-0);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
   font-size: 12px;
-  color: var(--muted);
+  color: var(--fg-2);
 }
 
 .board-notice svg,
@@ -306,26 +342,25 @@ watch(() => props.account?.id, (newId, oldId) => {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  color: #BD081C;
-}
-
-.board-loading {
-  background: rgba(100, 116, 139, 0.1);
+  color: var(--signal);
 }
 
 .board-error {
-  background: rgba(239, 68, 68, 0.1);
+  background: var(--error-soft);
+  border-color: rgba(229, 103, 79, 0.45);
+  color: #f2a594;
 }
 
 .board-error svg {
-  color: #ef4444;
+  color: var(--error);
 }
 
 .spinner-small {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-top-color: var(--accent);
+  flex-shrink: 0;
+  border: 2px solid var(--line-strong);
+  border-top-color: var(--signal);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -337,41 +372,43 @@ watch(() => props.account?.id, (newId, oldId) => {
 .retry-btn {
   margin-left: auto;
   padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 500;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid var(--border);
+  background: var(--ink-1);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
   color: var(--text);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background-color 0.15s, border-color 0.15s;
 }
 
 .retry-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--ink-2);
+  border-color: var(--fg-3);
 }
 
 .field-error {
-  border-color: #ef4444 !important;
-  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3);
+  border-color: var(--error) !important;
 }
 
 .field-error-text {
-  font-size: 11px;
-  color: #ef4444;
+  font-size: 12px;
+  color: var(--error);
 }
 
 /* Preview */
 .preview-section {
-  margin-top: 8px;
   padding-top: 16px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--line);
 }
 
 .preview-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text);
   margin-bottom: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-3);
 }
 </style>
