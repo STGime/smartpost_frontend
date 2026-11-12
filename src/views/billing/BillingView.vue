@@ -273,50 +273,55 @@ const handleManageSubscription = async () => {
 
 .page-header p {
   font-size: 14px;
-  color: var(--muted);
+  color: var(--fg-2);
 }
 
 /* Subscription Card */
 .subscription-card {
-  padding: 20px;
+  padding: 18px 20px;
   margin-bottom: 20px;
 }
 
 .subscription-header {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  margin: -18px -20px 16px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
 }
 
 .subscription-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: var(--success-soft);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--ink-2);
+  border: 1px solid var(--line);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #86efac;
+  color: var(--green);
   flex-shrink: 0;
 }
 
 .subscription-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
+}
+
+.trial-icon {
+  color: var(--signal);
 }
 
 .subscription-header h2 {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
 .subscription-header p {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--fg-3);
 }
 
 .subscription-content {
@@ -324,55 +329,61 @@ const handleManageSubscription = async () => {
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
+  flex-wrap: wrap;
+}
+
+.subscription-details {
+  min-width: 0;
 }
 
 .subscription-plan {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   text-transform: capitalize;
   margin-bottom: 4px;
 }
 
+.subscription-billing,
+.subscription-trial,
+.subscription-warning {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
 .subscription-billing {
-  font-size: 13px;
-  color: var(--muted);
+  color: var(--fg-2);
+}
+
+.subscription-trial,
+.subscription-warning {
+  color: var(--signal);
 }
 
 .subscription-warning {
-  font-size: 12px;
-  color: var(--warning);
   margin-top: 6px;
-}
-
-.subscription-trial {
-  font-size: 13px;
-  color: var(--accent-light);
-}
-
-.trial-icon {
-  background: var(--accent-soft) !important;
-  color: var(--accent-light) !important;
 }
 
 .current-limits,
 .current-usage {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-top: 10px;
+  font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--muted);
-}
-
-.current-limits .dot,
-.current-usage .dot {
-  opacity: 0.5;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-2);
 }
 
 .current-usage {
   margin-top: 4px;
   font-size: 11px;
-  opacity: 0.8;
+  color: var(--fg-3);
+}
+
+.dot {
+  color: var(--fg-3);
 }
 
 /* Plans Section */
@@ -385,7 +396,7 @@ const handleManageSubscription = async () => {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
 }
 
@@ -395,39 +406,42 @@ const handleManageSubscription = async () => {
 }
 
 .interval-toggle {
-  display: flex;
-  padding: 4px;
-  border-radius: var(--radius-md);
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid var(--border);
+  display: inline-flex;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
 }
 
 .toggle-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  font-family: var(--font-mono);
   font-size: 13px;
-  font-weight: 500;
-  color: var(--muted);
-  background: none;
+  color: var(--fg-2);
+  background: transparent;
   border: none;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.toggle-btn + .toggle-btn {
+  border-left: 1px solid var(--line-strong);
+}
+
+.toggle-btn:hover {
+  color: var(--text);
 }
 
 .toggle-btn.active {
-  background: var(--accent);
-  color: white;
+  background: var(--ink-2);
+  color: var(--text);
 }
 
 .save-badge {
-  padding: 2px 6px;
-  border-radius: var(--radius-full);
-  font-size: 10px;
-  background: var(--success-soft);
-  color: #86efac;
+  font-size: 11px;
+  color: var(--signal);
 }
 
 /* Loading State */
@@ -440,58 +454,63 @@ const handleManageSubscription = async () => {
 /* Plans Grid */
 .plans-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
   gap: 16px;
 }
 
 .pricing-footnote {
   margin-top: 16px;
   font-size: 12px;
-  color: var(--muted);
+  color: var(--fg-3);
   text-align: center;
 }
 
 .plan-card {
   position: relative;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  background: rgba(15, 23, 42, 0.6);
-  padding: 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--ink-1);
+  padding: 24px;
   display: flex;
   flex-direction: column;
 }
 
 .plan-card-featured {
-  border-color: var(--accent);
-  background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(15, 23, 42, 0.8));
+  border-color: var(--line-strong);
+}
+
+.plan-card-current {
+  border-color: rgba(95, 191, 138, 0.5);
 }
 
 .featured-badge,
 .current-badge {
   position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
+  top: 24px;
+  right: 24px;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 500;
-  background: var(--accent);
-  color: white;
+  padding: 3px 7px;
+  border: 1px solid var(--signal);
+  border-radius: 2px;
+  color: var(--signal);
+  white-space: nowrap;
 }
 
 .current-badge {
-  background: var(--success);
+  border-color: rgba(95, 191, 138, 0.5);
+  color: var(--success);
 }
 
-.plan-card-current {
-  border-color: var(--success);
+.plan-card-featured .current-badge {
+  top: 52px;
 }
 
 .empty-state {
   text-align: center;
   padding: 48px;
-  color: var(--muted);
+  color: var(--fg-3);
 }
 
 .plan-header {
@@ -499,39 +518,46 @@ const handleManageSubscription = async () => {
 }
 
 .plan-header h3 {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  padding-right: 110px;
 }
 
 .plan-price {
   display: flex;
   align-items: baseline;
-  gap: 2px;
+  gap: 4px;
 }
 
 .price-amount {
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
-.price-period {
-  font-size: 14px;
-  color: var(--muted);
+.price-period,
+.price-billed {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--fg-3);
 }
 
 .price-billed {
-  margin-top: 4px;
+  margin-top: 6px;
   font-size: 12px;
-  color: var(--muted);
 }
 
 .plan-features {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
   flex: 1;
 }
 
@@ -539,32 +565,30 @@ const handleManageSubscription = async () => {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  font-size: 13px;
-  color: var(--text-secondary);
+  font-size: 14px;
+  color: var(--fg-2);
 }
 
 .plan-features svg {
-  width: 16px;
-  height: 16px;
-  color: var(--green);
+  width: 14px;
+  height: 14px;
+  color: var(--success);
   flex-shrink: 0;
-  margin-top: 1px;
+  margin-top: 4px;
 }
 
 .plan-btn {
   width: 100%;
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
 }
 
 .plan-btn-current {
-  background: rgba(100, 116, 139, 0.2);
-  border: 1px solid var(--border);
-  color: var(--muted);
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--fg-3);
   cursor: not-allowed;
 }
 </style>

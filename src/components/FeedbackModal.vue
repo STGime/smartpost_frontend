@@ -169,12 +169,11 @@ const handleBackdropClick = (e: MouseEvent) => {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 16px;
   z-index: 1000;
 }
 
@@ -182,93 +181,111 @@ const handleBackdropClick = (e: MouseEvent) => {
   position: relative;
   width: 100%;
   max-width: 440px;
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border);
-  background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.15), rgba(15, 23, 42, 0.98));
-  padding: 32px 28px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line-strong);
+  background: var(--ink-1);
+  padding: 28px 24px 24px;
+  box-shadow: var(--shadow-lg);
 }
 
 .modal-close {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 12px;
+  right: 12px;
+  display: flex;
   background: none;
-  border: none;
-  color: var(--muted);
+  border: 1px solid transparent;
+  color: var(--fg-3);
   cursor: pointer;
   padding: 4px;
-  border-radius: var(--radius);
-  transition: color 0.2s, background 0.2s;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, border-color 0.15s;
 }
 
 .modal-close:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--line-strong);
 }
 
 .feedback-header {
-  text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
+  padding-right: 24px;
 }
 
-.feedback-header h2 {
-  font-size: 22px;
+.feedback-header h2,
+.success-state h2 {
+  font-size: 20px;
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .feedback-header p {
   font-size: 14px;
-  color: var(--muted);
+  color: var(--fg-2);
 }
 
 .feedback-form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+}
+
+.form-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-3);
 }
 
 .category-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 6px;
 }
 
 .category-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background: rgba(15, 23, 42, 0.5);
-  color: var(--muted);
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--ink-2);
+  color: var(--fg-2);
+  font-family: var(--font-sans);
   font-size: 13px;
+  text-align: left;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s, background-color 0.15s, color 0.15s;
 }
 
 .category-btn:hover {
-  border-color: var(--border-hover);
+  border-color: var(--line-strong);
   color: var(--text);
 }
 
-.category-btn-active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
+.category-btn-active,
+.category-btn-active:hover {
+  border-color: var(--signal);
+  background: var(--signal-soft);
   color: var(--text);
+}
+
+.category-btn-active .category-icon {
+  color: var(--signal);
 }
 
 .category-icon {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
 }
 
@@ -280,13 +297,15 @@ const handleBackdropClick = (e: MouseEvent) => {
 }
 
 .char-count {
+  margin-top: 4px;
+  font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--muted);
+  color: var(--fg-3);
   text-align: right;
 }
 
 .char-count-warn {
-  color: #f59e0b;
+  color: var(--signal);
 }
 
 .btn-full {
@@ -294,49 +313,35 @@ const handleBackdropClick = (e: MouseEvent) => {
 }
 
 /* Success state */
-.success-state {
-  text-align: center;
-  padding: 12px 0;
-}
-
 .success-icon {
-  color: #22c55e;
+  display: inline-flex;
+  padding: 8px;
   margin-bottom: 16px;
-  display: flex;
-  justify-content: center;
+  color: var(--success);
+  background: var(--success-soft);
+  border: 1px solid rgba(95, 191, 138, 0.45);
+  border-radius: var(--radius-sm);
 }
 
-.success-state h2 {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 8px;
+.success-icon svg {
+  width: 24px;
+  height: 24px;
 }
 
 .success-state p {
   font-size: 14px;
-  color: var(--muted);
+  color: var(--fg-2);
   margin-bottom: 24px;
 }
 
-/* Modal transitions */
+/* Modal transition: short opacity fade */
 .modal-enter-active,
 .modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.modal-enter-active .modal-content,
-.modal-leave-active .modal-content {
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition: opacity 0.15s ease;
 }
 
 .modal-enter-from,
 .modal-leave-to {
-  opacity: 0;
-}
-
-.modal-enter-from .modal-content,
-.modal-leave-to .modal-content {
-  transform: scale(0.95) translateY(-10px);
   opacity: 0;
 }
 </style>

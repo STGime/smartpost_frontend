@@ -212,29 +212,32 @@ watch(showLibrary, (show) => {
 }
 
 .tags-container {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 10px;
+  background: var(--ink-0);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px;
 }
 
 .tags-list {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .tag {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 8px;
-  background: var(--accent-soft);
-  border: 1px solid rgba(79, 70, 229, 0.3);
-  border-radius: var(--radius-full);
-  font-size: 13px;
-  color: #c7d2fe;
+  padding: 2px 4px 2px 7px;
+  background: var(--ink-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text);
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .tag-remove {
@@ -246,14 +249,13 @@ watch(showLibrary, (show) => {
   padding: 0;
   background: transparent;
   border: none;
-  color: currentColor;
-  opacity: 0.6;
+  color: var(--fg-3);
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition: color 0.15s;
 }
 
 .tag-remove:hover {
-  opacity: 1;
+  color: var(--error);
 }
 
 .tag-remove svg {
@@ -269,52 +271,66 @@ watch(showLibrary, (show) => {
 
 .input-wrapper {
   flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border);
+  background: var(--ink-1);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.input-wrapper:focus-within {
+  border-color: var(--signal);
 }
 
 .hash-prefix {
-  padding: 8px 0 8px 12px;
-  color: var(--muted);
+  padding: 7px 0 7px 10px;
+  color: var(--fg-3);
+  font-family: var(--font-mono);
   font-size: 14px;
 }
 
 .tag-input {
   flex: 1;
-  padding: 8px 12px 8px 4px;
+  min-width: 0;
+  padding: 7px 10px 7px 4px;
   background: transparent;
   border: none;
   color: var(--text);
-  font-size: 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
   outline: none;
 }
 
 .tag-input::placeholder {
-  color: var(--muted);
+  color: var(--fg-3);
 }
 
 .library-toggle {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 12px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border);
+  padding: 7px 10px;
+  background: var(--ink-1);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
-  color: var(--muted);
+  color: var(--fg-2);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
 
-.library-toggle:hover,
+.library-toggle:hover {
+  background: var(--ink-2);
+  border-color: var(--fg-3);
+  color: var(--text);
+}
+
 .library-toggle.active {
-  background: var(--accent-soft);
-  border-color: rgba(79, 70, 229, 0.3);
-  color: #c7d2fe;
+  background: var(--signal-soft);
+  border-color: var(--signal);
+  color: var(--signal);
 }
 
 .library-toggle svg {
@@ -329,11 +345,13 @@ watch(showLibrary, (show) => {
 }
 
 .library-count {
-  padding: 2px 6px;
-  background: rgba(79, 70, 229, 0.3);
-  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 500;
+  color: var(--fg-3);
+}
+
+.library-toggle.active .library-count {
+  color: var(--signal);
 }
 
 /* Library Dropdown */
@@ -342,9 +360,9 @@ watch(showLibrary, (show) => {
   bottom: 100%;
   left: 0;
   right: 0;
-  margin-bottom: 8px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  margin-bottom: 6px;
+  background: var(--ink-1);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   z-index: 100;
@@ -352,23 +370,28 @@ watch(showLibrary, (show) => {
 }
 
 .library-header {
-  padding: 10px;
-  border-bottom: 1px solid var(--border);
+  padding: 8px;
+  border-bottom: 1px solid var(--line);
 }
 
 .library-search {
   width: 100%;
-  padding: 8px 12px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border);
+  padding: 7px 10px;
+  background: var(--ink-0);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 13px;
   outline: none;
+  transition: border-color 0.15s;
+}
+
+.library-search::placeholder {
+  color: var(--fg-3);
 }
 
 .library-search:focus {
-  border-color: var(--accent);
+  border-color: var(--signal);
 }
 
 .library-content {
@@ -379,74 +402,83 @@ watch(showLibrary, (show) => {
 .library-loading,
 .library-empty,
 .library-error {
-  padding: 24px;
+  padding: 20px;
   text-align: center;
-  color: var(--muted);
+  color: var(--fg-3);
   font-size: 13px;
 }
 
 .library-error {
-  color: #fca5a5;
+  color: var(--error);
 }
 
 .library-tags {
-  padding: 8px;
+  padding: 4px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
 }
 
 .library-tag {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  background: transparent;
-  border: none;
+  padding: 5px 8px;
   border-radius: var(--radius-sm);
-  text-align: left;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background-color 0.15s;
 }
 
 .library-tag:hover {
-  background: rgba(79, 70, 229, 0.1);
+  background: var(--ink-2);
 }
 
 .library-tag-name {
   flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
   font-size: 13px;
   color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .library-tag-count {
+  font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--muted);
+  color: var(--fg-3);
 }
 
 .library-tag-delete {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   padding: 0;
   background: transparent;
   border: none;
   border-radius: var(--radius-sm);
-  color: var(--muted);
+  color: var(--fg-3);
   cursor: pointer;
   opacity: 0;
-  transition: all 0.15s;
+  transition: opacity 0.15s, color 0.15s, background-color 0.15s;
 }
 
-.library-tag:hover .library-tag-delete {
+.library-tag:hover .library-tag-delete,
+.library-tag-delete:focus-visible {
   opacity: 1;
 }
 
+@media (hover: none) {
+  .library-tag-delete {
+    opacity: 1;
+  }
+}
+
 .library-tag-delete:hover {
-  background: rgba(239, 68, 68, 0.2);
-  color: #fca5a5;
+  background: var(--error-soft);
+  color: var(--error);
 }
 
 .library-tag-delete svg {
@@ -464,11 +496,11 @@ watch(showLibrary, (show) => {
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: var(--muted);
+  color: var(--fg-2);
   cursor: pointer;
 }
 
 .checkbox-inline input {
-  accent-color: var(--accent);
+  accent-color: var(--signal);
 }
 </style>

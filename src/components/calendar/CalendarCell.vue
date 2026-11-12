@@ -48,42 +48,53 @@ const MAX_VISIBLE_POSTS = 3
 
 <style scoped>
 .calendar-cell {
+  position: relative;
+  min-width: 0;
   min-height: 100px;
   padding: 6px;
-  border: 1px solid var(--border);
-  background: rgba(15, 23, 42, 0.3);
+  background: var(--ink-0);
   display: flex;
   flex-direction: column;
   gap: 4px;
-  transition: background 0.15s;
+  transition: background-color 0.12s;
 }
 
 .calendar-cell:hover {
-  background: rgba(15, 23, 42, 0.5);
+  background: var(--ink-1);
 }
 
 .calendar-cell.is-today {
-  background: rgba(79, 70, 229, 0.08);
-  border-color: rgba(79, 70, 229, 0.3);
+  background: var(--ink-1);
 }
 
-.calendar-cell.other-month {
-  opacity: 0.5;
-  background: rgba(15, 23, 42, 0.15);
+.calendar-cell.is-today::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--signal);
+}
+
+.calendar-cell.other-month > * {
+  opacity: 0.4;
 }
 
 .day-number {
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 500;
-  color: var(--muted);
-  padding: 2px 4px;
+  color: var(--fg-3);
+  padding: 1px 3px;
+  width: fit-content;
+  font-variant-numeric: tabular-nums;
 }
 
 .day-number.today {
-  background: var(--accent);
-  color: white;
-  border-radius: 4px;
-  width: fit-content;
+  background: var(--signal);
+  color: var(--ink-0);
+  border-radius: 2px;
 }
 
 .cell-posts {
@@ -91,21 +102,23 @@ const MAX_VISIBLE_POSTS = 3
   flex-direction: column;
   gap: 3px;
   flex: 1;
+  min-width: 0;
   overflow: hidden;
 }
 
 .more-posts-btn {
+  font-family: var(--font-mono);
   font-size: 10px;
-  color: var(--accent-light);
+  color: var(--fg-2);
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 2px 4px;
+  padding: 1px 3px;
   text-align: left;
-  transition: color 0.15s;
+  transition: color 0.12s;
 }
 
 .more-posts-btn:hover {
-  color: var(--text);
+  color: var(--signal);
 }
 </style>

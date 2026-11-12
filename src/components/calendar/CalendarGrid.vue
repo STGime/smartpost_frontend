@@ -119,21 +119,20 @@ function getPostsForDate(dateKey: string): CalendarPost[] {
 <style scoped>
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 1px;
-  background: var(--border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
+  background: var(--line);
 }
 
 .weekday-header {
-  padding: 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
-  text-align: center;
-  background: rgba(15, 23, 42, 0.6);
+  padding: 8px 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fg-3);
+  text-align: left;
+  background: var(--ink-1);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
 }
 </style>

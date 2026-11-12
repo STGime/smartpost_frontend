@@ -134,7 +134,7 @@ onMounted(async () => {
         <div class="logo-mark">
           <div class="logo-inner">P</div>
         </div>
-        <span class="logo-text">Posta</span>
+        <span class="logo-text">posta</span>
       </div>
 
       <!-- Progress indicator -->
@@ -183,7 +183,8 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px 20px;
+  padding: 40px 16px;
+  background: var(--ink-0);
 }
 
 .onboarding-container {
@@ -196,13 +197,13 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 
 .logo-text {
-  font-size: 22px;
+  font-size: 19px;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.01em;
 }
 
 /* Progress Indicator */
@@ -210,7 +211,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 32px;
 }
 
@@ -218,37 +219,43 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  opacity: 0.5;
-  transition: opacity 0.2s;
-}
-
-.progress-step.active {
-  opacity: 1;
 }
 
 .step-number {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: rgba(79, 70, 229, 0.2);
-  border: 2px solid var(--accent);
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  background: var(--ink-1);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--accent-light);
-  transition: background 0.2s;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--fg-3);
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.progress-step.active .step-number {
+  border-color: var(--signal);
+  background: var(--signal-soft);
+  color: var(--signal);
 }
 
 .progress-step.completed .step-number {
-  background: var(--accent);
-  color: white;
+  border-color: rgba(95, 191, 138, 0.5);
+  background: var(--success-soft);
+  color: var(--success);
 }
 
 .step-label {
-  font-size: 13px;
-  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-3);
+  white-space: nowrap;
 }
 
 .progress-step.active .step-label {
@@ -256,14 +263,14 @@ onMounted(async () => {
 }
 
 .progress-line {
-  width: 60px;
-  height: 2px;
-  background: var(--border);
-  transition: background 0.2s;
+  width: 48px;
+  height: 1px;
+  background: var(--line-strong);
+  transition: background-color 0.15s;
 }
 
 .progress-line.active {
-  background: var(--accent);
+  background: var(--success);
 }
 
 /* Completing overlay */
@@ -273,35 +280,26 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  padding: 64px;
+  padding: 64px 16px;
 }
 
 .completing-overlay p {
-  color: var(--muted);
+  color: var(--fg-2);
   font-size: 14px;
 }
 
-/* Alert */
 .alert-error {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
   margin-bottom: 24px;
   text-align: center;
-  font-size: 14px;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 480px) {
   .progress-indicator {
-    flex-direction: column;
-    gap: 12px;
+    gap: 8px;
   }
 
   .progress-line {
-    width: 2px;
-    height: 20px;
+    width: 20px;
   }
 }
 </style>

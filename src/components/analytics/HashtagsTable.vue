@@ -124,15 +124,17 @@ const formatNumber = (num: number): string => {
 .hashtags-table th {
   text-align: left;
   padding: 8px 12px;
+  font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 600;
-  color: var(--muted);
+  font-weight: 500;
+  color: var(--fg-3);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--line-strong);
   cursor: pointer;
   white-space: nowrap;
   user-select: none;
+  transition: color 0.15s;
 }
 
 .hashtags-table th:hover {
@@ -140,12 +142,18 @@ const formatNumber = (num: number): string => {
 }
 
 .hashtags-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.hashtags-table td.col-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-2);
 }
 
 .hashtags-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--ink-2);
 }
 
 .col-tag {
@@ -158,72 +166,71 @@ const formatNumber = (num: number): string => {
 }
 
 .hashtag-tag {
-  font-weight: 500;
-  color: var(--accent-light);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text);
 }
 
 .engagement-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  background: var(--accent-soft);
-  border-radius: var(--radius-sm);
   font-weight: 500;
-  font-size: 12px;
+  color: var(--signal);
 }
 
 .show-more-btn {
   display: block;
   width: 100%;
-  padding: 10px;
-  margin-top: 8px;
+  padding: 9px;
+  margin-top: 12px;
   font-size: 13px;
   background: none;
-  border: 1px solid var(--border);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
-  color: var(--muted);
+  color: var(--fg-2);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: color 0.15s, border-color 0.15s;
 }
 
 .show-more-btn:hover {
   color: var(--text);
-  border-color: var(--accent);
+  border-color: var(--fg-3);
 }
 
 .pro-badge {
+  font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 2px 8px;
-  background: linear-gradient(135deg, var(--accent), var(--cyan));
-  border-radius: var(--radius-sm);
-  color: white;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border: 1px solid rgba(242, 169, 59, 0.5);
+  border-radius: 2px;
+  color: var(--signal);
 }
 
 .no-data {
   text-align: center;
   padding: 32px;
-  color: var(--muted);
-  font-size: 14px;
+  color: var(--fg-3);
+  font-size: 13px;
 }
 
 .card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 0;
 }
 
 .card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
 }
 
 .card-header h2 {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
 }
 

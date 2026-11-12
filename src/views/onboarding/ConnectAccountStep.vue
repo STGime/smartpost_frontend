@@ -131,17 +131,17 @@ const handleContinue = () => {
 
 .step-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 
 .step-header h1 {
   font-size: 24px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .step-header p {
-  color: var(--muted);
+  color: var(--fg-2);
   font-size: 15px;
 }
 
@@ -150,39 +150,42 @@ const handleContinue = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 48px 24px;
-  background: rgba(15, 23, 42, 0.6);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border);
+  text-align: center;
+  padding: 40px 24px;
+  background: var(--ink-1);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
 }
 
 .success-icon {
-  width: 64px;
-  height: 64px;
-  color: var(--success);
+  display: flex;
+  padding: 8px;
   margin-bottom: 16px;
+  color: var(--success);
+  background: var(--success-soft);
+  border: 1px solid rgba(95, 191, 138, 0.45);
+  border-radius: var(--radius-sm);
 }
 
 .success-icon svg {
-  width: 100%;
-  height: 100%;
+  width: 24px;
+  height: 24px;
 }
 
 .success-state h2 {
   font-size: 20px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .success-state p {
-  color: var(--muted);
+  color: var(--fg-2);
   font-size: 14px;
   margin-bottom: 24px;
 }
 
 .btn-continue {
-  padding: 12px 32px;
-  font-size: 14px;
+  padding: 10px 24px;
 }
 
 /* Platforms container */
@@ -194,44 +197,36 @@ const handleContinue = () => {
 
 .alert-error {
   width: 100%;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
   margin-bottom: 24px;
   text-align: center;
-  font-size: 14px;
 }
 
 .platforms-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
+  gap: 8px;
   width: 100%;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .platform-card {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  background: rgba(15, 23, 42, 0.6);
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--ink-1);
+  color: inherit;
+  font-family: var(--font-sans);
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  transition: border-color 0.15s, background-color 0.15s;
   text-align: left;
 }
 
 .platform-card:hover:not(:disabled) {
-  border-color: var(--border-hover);
-  background: rgba(15, 23, 42, 0.8);
-}
-
-.platform-card:active:not(:disabled) {
-  transform: scale(0.98);
+  border-color: var(--line-strong);
+  background: var(--ink-2);
 }
 
 .platform-card:disabled {
@@ -259,41 +254,38 @@ const handleContinue = () => {
 
 .platform-desc {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--fg-3);
 }
 
 .connecting-indicator {
   flex-shrink: 0;
 }
 
+/* Uses the global `spin` keyframes from style.css */
 .spinner-sm {
   width: 16px;
   height: 16px;
-  border: 2px solid var(--border);
-  border-top-color: var(--accent);
+  border: 2px solid var(--line-strong);
+  border-top-color: var(--signal);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .btn-skip {
-  padding: 10px 24px;
-  border-radius: var(--radius-md);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
   background: transparent;
-  border: none;
-  color: var(--muted);
+  border: 1px solid transparent;
+  color: var(--fg-2);
+  font-family: var(--font-sans);
   font-size: 14px;
   cursor: pointer;
-  transition: color 0.15s;
+  transition: color 0.15s, border-color 0.15s;
 }
 
 .btn-skip:hover {
   color: var(--text);
+  border-color: var(--line-strong);
 }
 
 @media (max-width: 640px) {

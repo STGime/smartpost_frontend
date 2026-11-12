@@ -40,7 +40,7 @@ const getCellStyle = (day: number, hour: number) => {
   if (intensity === 0) return {}
   const alpha = 0.15 + intensity * 0.85
   return {
-    background: `rgba(34, 197, 94, ${alpha})`,
+    background: `rgba(242, 169, 59, ${alpha})`,
   }
 }
 
@@ -91,11 +91,11 @@ const getTooltip = (day: number, hour: number): string => {
         <div class="heatmap-legend">
           <span class="legend-label">Less</span>
           <div class="legend-cells">
-            <div class="legend-cell" style="background: rgba(34, 197, 94, 0.1)"></div>
-            <div class="legend-cell" style="background: rgba(34, 197, 94, 0.3)"></div>
-            <div class="legend-cell" style="background: rgba(34, 197, 94, 0.5)"></div>
-            <div class="legend-cell" style="background: rgba(34, 197, 94, 0.7)"></div>
-            <div class="legend-cell" style="background: rgba(34, 197, 94, 1)"></div>
+            <div class="legend-cell" style="background: rgba(242, 169, 59, 0.1)"></div>
+            <div class="legend-cell" style="background: rgba(242, 169, 59, 0.3)"></div>
+            <div class="legend-cell" style="background: rgba(242, 169, 59, 0.5)"></div>
+            <div class="legend-cell" style="background: rgba(242, 169, 59, 0.7)"></div>
+            <div class="legend-cell" style="background: rgba(242, 169, 59, 1)"></div>
           </div>
           <span class="legend-label">More</span>
         </div>
@@ -119,38 +119,39 @@ const getTooltip = (day: number, hour: number): string => {
   min-width: 500px;
 }
 
-.heatmap-corner {
-  /* empty top-left corner */
+.heatmap-hour-label,
+.heatmap-day-label,
+.legend-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-3);
 }
 
 .heatmap-hour-label {
-  font-size: 10px;
-  color: var(--muted);
   text-align: center;
   padding-bottom: 4px;
 }
 
 .heatmap-day-label {
-  font-size: 11px;
-  color: var(--muted);
   display: flex;
   align-items: center;
   padding-right: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
+/* Amber ramp (transparent to --signal) painted over flat --ink-2 cells */
 .heatmap-cell {
   aspect-ratio: 1;
   min-width: 14px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.04);
+  border-radius: 1px;
+  background-color: var(--ink-2);
   cursor: default;
-  transition: transform 0.1s;
 }
 
 .heatmap-cell:hover {
-  transform: scale(1.2);
-  z-index: 1;
-  outline: 1px solid var(--accent-light);
+  outline: 1px solid var(--text);
+  outline-offset: -1px;
 }
 
 .heatmap-legend {
@@ -161,45 +162,41 @@ const getTooltip = (day: number, hour: number): string => {
   margin-top: 12px;
 }
 
-.legend-label {
-  font-size: 10px;
-  color: var(--muted);
-}
-
 .legend-cells {
   display: flex;
   gap: 2px;
 }
 
 .legend-cell {
-  width: 14px;
-  height: 14px;
-  border-radius: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 1px;
 }
 
 .no-data {
   text-align: center;
   padding: 32px;
-  color: var(--muted);
-  font-size: 14px;
+  color: var(--fg-3);
+  font-size: 13px;
 }
 
 .card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 0;
 }
 
 .card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
 }
 
 .card-header h2 {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
 }
 

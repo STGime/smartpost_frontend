@@ -33,13 +33,13 @@ const tierLabels: Record<string, string> = {
 <style scoped>
 .locked-feature {
   position: relative;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
 .locked-content {
   filter: blur(4px);
-  opacity: 0.4;
+  opacity: 0.35;
   pointer-events: none;
   user-select: none;
 }
@@ -50,7 +50,7 @@ const tierLabels: Record<string, string> = {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(12, 13, 15, 0.4);
   z-index: 10;
 }
 
@@ -59,42 +59,47 @@ const tierLabels: Record<string, string> = {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 24px;
+  padding: 20px 24px;
   text-align: center;
+  background: var(--ink-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  margin: 16px;
 }
 
 .lock-icon {
-  width: 32px;
-  height: 32px;
-  color: var(--muted);
+  width: 22px;
+  height: 22px;
+  color: var(--signal);
 }
 
 .locked-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text);
 }
 
 .locked-subtitle {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--fg-2);
 }
 
 .locked-cta {
   display: inline-flex;
   align-items: center;
   margin-top: 4px;
-  padding: 8px 20px;
+  padding: 7px 16px;
   font-size: 13px;
   font-weight: 500;
-  background: linear-gradient(135deg, var(--accent), var(--cyan));
-  border-radius: var(--radius-md);
-  color: white;
+  background: var(--text);
+  border: 1px solid var(--text);
+  border-radius: var(--radius-sm);
+  color: var(--ink-0);
   text-decoration: none;
-  transition: opacity 0.15s;
+  transition: background-color 0.15s;
 }
 
 .locked-cta:hover {
-  opacity: 0.9;
+  background: #ffffff;
 }
 </style>

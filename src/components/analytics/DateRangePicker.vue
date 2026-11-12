@@ -62,42 +62,46 @@ const handleApply = () => {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .date-input {
   padding: 5px 8px;
+  font-family: var(--font-mono);
   font-size: 12px;
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid var(--border);
+  background: var(--ink-0);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   color: var(--text);
   color-scheme: dark;
+  transition: border-color 0.15s;
 }
 
 .date-input:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--signal);
 }
 
 .date-separator {
-  font-size: 12px;
-  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-3);
 }
 
 .btn-apply {
   padding: 5px 12px;
   font-size: 12px;
   font-weight: 500;
-  background: var(--accent-soft);
-  border: 1px solid var(--accent);
+  background: var(--text);
+  border: 1px solid var(--text);
   border-radius: var(--radius-sm);
-  color: var(--text);
+  color: var(--ink-0);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background-color 0.15s;
 }
 
 .btn-apply:hover:not(:disabled) {
-  background: var(--accent);
+  background: #ffffff;
 }
 
 .btn-apply:disabled {

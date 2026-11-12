@@ -141,47 +141,51 @@ const handleGenerate = () => {
 
 <style scoped>
 .carousel-order-panel {
-  padding: 16px;
-  background: rgba(15, 23, 42, 0.4);
-  border: 1px solid var(--border);
+  padding: 14px;
+  background: var(--ink-0);
+  border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
 .carousel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .carousel-header h4 {
   margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-2);
 }
 
 .page-count {
-  font-size: 12px;
-  color: var(--muted);
-  background: rgba(79, 70, 229, 0.2);
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--signal);
+  border: 1px solid rgba(242, 169, 59, 0.5);
+  padding: 1px 6px;
+  border-radius: 2px;
 }
 
 .carousel-hint {
   font-size: 12px;
-  color: var(--muted);
-  margin: 0 0 12px 0;
+  color: var(--fg-3);
+  margin: 0 0 10px 0;
 }
 
 .carousel-items {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding: 8px 0;
-  margin-bottom: 16px;
+  padding: 2px 0 6px;
+  margin-bottom: 12px;
 }
 
 .carousel-item {
@@ -192,23 +196,24 @@ const handleGenerate = () => {
   border-radius: var(--radius-sm);
   overflow: hidden;
   cursor: grab;
-  border: 2px solid transparent;
-  transition: all 0.15s ease;
-  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--line);
+  transition: border-color 0.15s, opacity 0.15s;
+  background: var(--ink-2);
 }
 
 .carousel-item:hover {
-  border-color: var(--accent);
+  border-color: var(--line-strong);
 }
 
 .carousel-item.dragging {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: grabbing;
 }
 
 .carousel-item.drag-over {
-  border-color: var(--accent);
-  transform: scale(1.05);
+  border-color: var(--signal);
+  outline: 1px solid var(--signal);
+  outline-offset: -1px;
 }
 
 .carousel-item img {
@@ -221,16 +226,18 @@ const handleGenerate = () => {
   position: absolute;
   top: 4px;
   left: 4px;
-  width: 20px;
-  height: 20px;
-  background: var(--accent);
-  color: white;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  background: rgba(0, 0, 0, 0.75);
+  color: var(--signal);
+  font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-full);
+  border-radius: 2px;
   z-index: 1;
 }
 
@@ -240,8 +247,8 @@ const handleGenerate = () => {
   right: 4px;
   width: 20px;
   height: 20px;
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 2px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -253,10 +260,16 @@ const handleGenerate = () => {
   opacity: 1;
 }
 
+@media (hover: none) {
+  .drag-handle {
+    opacity: 1;
+  }
+}
+
 .drag-handle svg {
   width: 14px;
   height: 14px;
-  color: white;
+  color: var(--text);
 }
 
 .generate-btn {
@@ -265,19 +278,20 @@ const handleGenerate = () => {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 16px;
-  background: var(--accent);
-  color: white;
-  border: none;
-  border-radius: var(--radius-md);
+  padding: 9px 14px;
+  background: var(--text);
+  color: var(--ink-0);
+  border: 1px solid var(--text);
+  border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background-color 0.15s, border-color 0.15s;
 }
 
 .generate-btn:hover:not(:disabled) {
-  background: var(--accent-hover);
+  background: #ffffff;
+  border-color: #ffffff;
 }
 
 .generate-btn:disabled {
@@ -286,22 +300,24 @@ const handleGenerate = () => {
 }
 
 .generate-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 
+/* The svg reuses the global .spinner class; strip its ring styles */
 .generate-btn .spinner {
-  animation: spin 1s linear infinite;
+  border: none;
+  border-radius: 0;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
 .warning-text {
   font-size: 12px;
-  color: #fbbf24;
+  color: var(--signal);
   text-align: center;
   margin: 8px 0 0 0;
 }

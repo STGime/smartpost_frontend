@@ -25,30 +25,30 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-    <div class="max-w-md w-full space-y-8">
-      <div class="text-center">
-        <h1 class="text-3xl font-bold text-gray-900">Reset your password</h1>
-        <p class="mt-2 text-gray-600">We'll send you a link to reset your password</p>
+  <div class="auth-page">
+    <div class="auth-container">
+      <div class="auth-header">
+        <h1>Reset your password</h1>
+        <p>We'll send you a link to reset your password</p>
       </div>
 
-      <div v-if="submitted" class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+      <div v-if="submitted" class="alert-success">
         Check your email for a password reset link.
       </div>
 
-      <form v-else @submit.prevent="handleSubmit" class="mt-8 space-y-6 bg-white p-8 rounded-xl shadow-sm">
-        <div v-if="authStore.error" class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+      <form v-else @submit.prevent="handleSubmit" class="auth-card">
+        <div v-if="authStore.error" class="alert-error">
           {{ authStore.error }}
         </div>
 
-        <div>
-          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+        <div class="form-group">
+          <label for="email" class="form-label">Email</label>
           <input
             id="email"
             v-model="email"
             type="email"
             required
-            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            class="form-input"
             placeholder="you@example.com"
           />
         </div>
@@ -56,13 +56,13 @@ const handleSubmit = async () => {
         <button
           type="submit"
           :disabled="authStore.isLoading"
-          class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="btn-primary btn-full"
         >
           {{ authStore.isLoading ? 'Sending...' : 'Send reset link' }}
         </button>
 
-        <p class="text-center text-sm text-gray-600">
-          <RouterLink to="/login" class="text-purple-600 hover:text-purple-500 font-medium">
+        <p class="auth-switch">
+          <RouterLink to="/login" class="link-accent">
             Back to sign in
           </RouterLink>
         </p>
@@ -70,3 +70,76 @@ const handleSubmit = async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  background: var(--ink-0);
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-header {
+  margin-bottom: 20px;
+}
+
+.auth-header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.auth-header p {
+  font-size: 14px;
+  color: var(--fg-2);
+}
+
+.auth-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--ink-1);
+  padding: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-3);
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.auth-switch {
+  text-align: center;
+  font-size: 13px;
+}
+
+.link-accent {
+  color: var(--signal);
+  font-weight: 500;
+}
+
+.link-accent:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+</style>

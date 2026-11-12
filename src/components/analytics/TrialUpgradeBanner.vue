@@ -24,28 +24,22 @@
 
 <style scoped>
 .trial-banner {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(234, 88, 12, 0.1));
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  border-radius: var(--radius-lg);
-  padding: 14px 16px;
+  background: var(--signal-soft);
+  border: 1px solid rgba(242, 169, 59, 0.35);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
   margin-bottom: 24px;
 }
 
 .trial-banner-content {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .trial-banner-icon {
-  width: 36px;
-  height: 36px;
-  background: rgba(245, 158, 11, 0.2);
-  border-radius: var(--radius-md);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fcd34d;
+  color: var(--signal);
   flex-shrink: 0;
 }
 
@@ -60,39 +54,37 @@
 
 .trial-banner-text p {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--fg-2);
   line-height: 1.5;
 }
 
 .trial-banner-text strong {
-  color: #fcd34d;
+  color: var(--signal);
+  font-weight: 600;
 }
 
 .trial-banner-cta {
   flex-shrink: 0;
-  padding: 8px 18px;
+  padding: 7px 14px;
   font-size: 13px;
   font-weight: 500;
-  background: linear-gradient(135deg, #f59e0b, #ea580c);
-  border-radius: var(--radius-md);
-  color: white;
+  background: var(--text);
+  border: 1px solid var(--text);
+  border-radius: var(--radius-sm);
+  color: var(--ink-0);
   text-decoration: none;
-  transition: opacity 0.15s;
+  transition: background-color 0.15s;
   white-space: nowrap;
 }
 
 .trial-banner-cta:hover {
-  opacity: 0.9;
+  background: #ffffff;
 }
 
 @media (max-width: 600px) {
   .trial-banner-content {
     flex-direction: column;
     align-items: flex-start;
-  }
-
-  .trial-banner-cta {
-    align-self: flex-start;
   }
 }
 </style>

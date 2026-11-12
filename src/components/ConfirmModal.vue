@@ -54,19 +54,19 @@ const emit = defineEmits<{
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: 16px;
 }
 
 .modal-content {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  background: var(--ink-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   max-width: 400px;
   width: 100%;
   overflow: hidden;
@@ -74,118 +74,133 @@ const emit = defineEmits<{
 
 .modal-header {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 24px 24px 16px;
-  text-align: center;
+  gap: 12px;
+  padding: 20px 20px 10px;
 }
 
 .icon-wrapper {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
 }
 
 .icon-wrapper.danger {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
+  background: var(--error-soft);
+  border-color: rgba(229, 103, 79, 0.45);
+  color: var(--error);
 }
 
 .icon-wrapper.warning {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
+  background: var(--signal-soft);
+  border-color: rgba(242, 169, 59, 0.45);
+  color: var(--signal);
 }
 
 .icon-wrapper.default {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
+  background: var(--ink-2);
+  border-color: var(--line-strong);
+  color: var(--fg-2);
 }
 
 .icon-wrapper svg {
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
 }
 
 .modal-header h3 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
 }
 
 .modal-body {
-  padding: 0 24px 24px;
-  text-align: center;
+  padding: 0 20px 20px 64px;
 }
 
 .modal-body p {
   font-size: 14px;
-  color: var(--muted);
+  color: var(--fg-2);
   line-height: 1.5;
 }
 
 .modal-footer {
   display: flex;
-  gap: 12px;
-  padding: 16px 24px;
-  border-top: 1px solid var(--border);
-  background: rgba(15, 23, 42, 0.3);
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.btn-cancel,
+.btn-confirm {
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
 }
 
 .btn-cancel {
-  flex: 1;
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 500;
-  background: rgba(100, 116, 139, 0.15);
+  background: var(--ink-1);
   color: var(--text);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  transition: background 0.15s;
+  border-color: var(--line-strong);
 }
 
 .btn-cancel:hover {
-  background: rgba(100, 116, 139, 0.25);
-}
-
-.btn-confirm {
-  flex: 1;
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  transition: background 0.15s;
+  background: var(--ink-2);
+  border-color: var(--fg-3);
 }
 
 .btn-confirm.danger {
-  background: #dc2626;
-  color: white;
+  background: var(--error);
+  border-color: var(--error);
+  color: #fff;
 }
 
 .btn-confirm.danger:hover {
-  background: #b91c1c;
+  background: #d4573f;
+  border-color: #d4573f;
 }
 
 .btn-confirm.warning {
-  background: #d97706;
-  color: white;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
 .btn-confirm.warning:hover {
-  background: #b45309;
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .btn-confirm.default {
-  background: #2563eb;
-  color: white;
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--ink-0);
 }
 
 .btn-confirm.default:hover {
-  background: #1d4ed8;
+  background: #fff;
+  border-color: #fff;
+}
+
+@media (max-width: 420px) {
+  .modal-body {
+    padding-left: 20px;
+  }
+
+  .btn-cancel,
+  .btn-confirm {
+    flex: 1;
+  }
 }
 </style>
