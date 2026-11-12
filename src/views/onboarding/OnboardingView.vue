@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import PlanSelectionStep from './PlanSelectionStep.vue'
 import ConnectAccountStep from './ConnectAccountStep.vue'
+import { parseOAuthResult, type OAuthResult } from '@/utils/oauthResult'
 import { userService, paymentsService } from '@/services'
 import { resetOnboardingStatus } from '@/router'
 import type { BillingInterval } from '@/types'
@@ -20,6 +21,9 @@ const isRedirecting = ref(false)
 const error = ref<string | null>(null)
 
 const stepNumber = computed(() => (currentStep.value === 'plan' ? 1 : 2))
+
+// Result of a platform login that returned to onboarding (success or error)
+const oauthReturn = ref<OAuthResult | null>(null)
 
 const handlePlanSelected = async (planType: string, billingInterval: BillingInterval) => {
   selectedPlan.value = planType
@@ -57,10 +61,12 @@ const handlePlanSelected = async (planType: string, billingInterval: BillingInte
 }
 
 const handleAccountConnected = async () => {
+  oauthReturn.value = null
   await completeOnboarding()
 }
 
 const handleSkip = async () => {
+  oauthReturn.value = null
   await completeOnboarding()
 }
 
@@ -105,6 +111,15 @@ onMounted(async () => {
       return
     }
     // Otherwise stay on onboarding - plans will still load
+  }
+
+  // Handle return from a platform login started on the connect step
+  const result = parseOAuthResult(route.query)
+  if (result) {
+    oauthReturn.value = result
+    router.replace({ name: 'onboarding', query: {} })
+    currentStep.value = 'connect'
+    return
   }
 
   // Handle return from LemonSqueezy checkout
@@ -169,6 +184,7 @@ onMounted(async () => {
         />
         <ConnectAccountStep
           v-else-if="currentStep === 'connect'"
+          :oauth-return="oauthReturn"
           @connected="handleAccountConnected"
           @skip="handleSkip"
         />

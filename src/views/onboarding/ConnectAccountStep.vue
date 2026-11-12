@@ -3,6 +3,11 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useSocialAccountsStore } from '@/stores'
 import PlatformIcon from '@/components/PlatformIcon.vue'
 import type { SocialPlatform } from '@/types'
+import { describeOAuthSuccess, type OAuthResult } from '@/utils/oauthResult'
+
+const props = defineProps<{
+  oauthReturn?: OAuthResult | null
+}>()
 
 const emit = defineEmits<{
   connected: []
@@ -11,39 +16,60 @@ const emit = defineEmits<{
 
 const socialAccountsStore = useSocialAccountsStore()
 const isConnecting = ref<SocialPlatform | null>(null)
-const error = ref<string | null>(null)
+const error = ref<string | null>(props.oauthReturn?.error ?? null)
 
 // Platform configurations
 const platforms: { id: SocialPlatform; name: string; description: string }[] = [
   { id: 'instagram', name: 'Instagram', description: 'Share photos and reels' },
   { id: 'tiktok', name: 'TikTok', description: 'Upload short videos' },
   { id: 'youtube', name: 'YouTube', description: 'Upload videos and shorts' },
-  { id: 'facebook', name: 'Facebook', description: 'Post to your page' },
+  { id: 'facebook', name: 'Facebook', description: 'Post to your Pages' },
   // { id: 'x', name: 'X (Twitter)', description: 'Share tweets' }, // X not supported yet
   { id: 'linkedin', name: 'LinkedIn', description: 'Professional posts' },
   { id: 'pinterest', name: 'Pinterest', description: 'Create pins' },
   { id: 'threads', name: 'Threads', description: 'Share text posts' },
-  { id: 'bluesky', name: 'Bluesky', description: 'Decentralized social' },
+  // Bluesky connects with an app password, not a login redirect, so it is
+  // connected from Accounts after setup instead of here.
 ]
 
 const hasConnectedAccount = computed(() => socialAccountsStore.accounts.length > 0)
 
+// What to say on the success screen: the login result when we just returned
+// from one, otherwise the accounts that are connected.
+const connectedSummary = computed(() => {
+  const result = props.oauthReturn
+  if (result?.success) return describeOAuthSuccess(result)
+
+  const accounts = socialAccountsStore.accounts
+  const first = accounts[0]
+  if (accounts.length === 1 && first) return [`You've connected ${first.displayName || first.username}.`]
+  return [`You've connected ${accounts.length} accounts.`]
+})
+
+// A login result (success or error) stays on screen until the user continues
+const holdForResult = computed(() => !!props.oauthReturn)
+
 // Poll for account changes (in case OAuth completes in another tab)
 let pollInterval: ReturnType<typeof setInterval> | null = null
+let unmounted = false
 
 onMounted(async () => {
   await socialAccountsStore.fetchAccounts()
+  // The step may have closed while accounts were loading
+  if (unmounted) return
 
-  // Start polling while on this step
+  // Polling covers logins finished in another tab. When a login result is
+  // shown, accounts still refresh but the user continues manually.
   pollInterval = setInterval(async () => {
     await socialAccountsStore.fetchAccounts()
-    if (hasConnectedAccount.value) {
+    if (hasConnectedAccount.value && !holdForResult.value) {
       emit('connected')
     }
   }, 3000)
 })
 
 onUnmounted(() => {
+  unmounted = true
   if (pollInterval) {
     clearInterval(pollInterval)
   }
@@ -54,7 +80,11 @@ const handleConnect = async (platform: SocialPlatform) => {
   error.value = null
 
   try {
-    const response = await socialAccountsStore.initiateOAuth(platform)
+    // Come back to onboarding (not the backend's success page) after the login
+    const response = await socialAccountsStore.initiateOAuth(
+      platform,
+      `${window.location.origin}/app/onboarding`
+    )
     // Redirect to OAuth authorization URL
     window.location.href = response.authorizationUrl
   } catch (err) {
@@ -76,6 +106,10 @@ const handleContinue = () => {
       <p>Connect at least one social account to start posting.</p>
     </div>
 
+    <div v-if="error" class="alert-error step-error">
+      {{ error }}
+    </div>
+
     <!-- Success state -->
     <div v-if="hasConnectedAccount" class="success-state">
       <div class="success-icon">
@@ -84,7 +118,7 @@ const handleContinue = () => {
         </svg>
       </div>
       <h2>Account connected!</h2>
-      <p>You've connected {{ socialAccountsStore.accounts[0]?.displayName || socialAccountsStore.accounts[0]?.username }}</p>
+      <p v-for="line in connectedSummary" :key="line">{{ line }}</p>
       <button class="btn-primary btn-continue" @click="handleContinue">
         Continue to dashboard
       </button>
@@ -92,9 +126,6 @@ const handleContinue = () => {
 
     <!-- Platform grid -->
     <div v-else class="platforms-container">
-      <div v-if="error" class="alert-error">
-        {{ error }}
-      </div>
 
       <div class="platforms-grid">
         <button
@@ -117,6 +148,11 @@ const handleContinue = () => {
         </button>
       </div>
 
+      <p class="platform-notes">
+        <strong>Facebook:</strong> every Page you select during the Facebook login is added as its
+        own account. <strong>Bluesky</strong> can be connected from Accounts after setup.
+      </p>
+
       <button class="btn-skip" @click="emit('skip')">
         Skip for now
       </button>
@@ -127,6 +163,23 @@ const handleContinue = () => {
 <style scoped>
 .connect-account {
   width: 100%;
+}
+
+.step-error {
+  margin-bottom: 16px;
+}
+
+.platform-notes {
+  margin: 16px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--fg-2);
+  text-align: center;
+}
+
+.platform-notes strong {
+  color: var(--text);
+  font-weight: 500;
 }
 
 .step-header {

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { isSignupEnabled } from '@/config/featureFlags'
+import { OAUTH_RESULT_PARAMS, parseOAuthResult } from '@/utils/oauthResult'
 
 const routes: RouteRecordRaw[] = [
   // Public routes
@@ -378,9 +379,15 @@ router.beforeEach(async (to, _from, next) => {
       }
     }
 
-    // Redirect to onboarding if not completed
+    // Redirect to onboarding if not completed. A login result that the
+    // backend sent to the Accounts page (where its errors land) is passed on
+    // so onboarding can show it.
     if (!onboardingStatus.completed) {
-      next({ name: 'onboarding' })
+      const isOAuthReturn = to.name === 'accounts' && parseOAuthResult(to.query) !== null
+      const query = isOAuthReturn
+        ? Object.fromEntries(Object.entries(to.query).filter(([key]) => OAUTH_RESULT_PARAMS.includes(key)))
+        : {}
+      next({ name: 'onboarding', query })
       return
     }
   }
