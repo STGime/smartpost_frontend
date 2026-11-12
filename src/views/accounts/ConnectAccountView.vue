@@ -157,6 +157,11 @@ const handleConnectBluesky = async () => {
           </button>
         </div>
 
+        <p v-if="platform.id === 'facebook'" class="platform-note">
+          Every Page you select on Facebook's "Edit access" step is added as its own account.
+          To add another Page later, connect Facebook again and select it.
+        </p>
+
         <!-- Bluesky special form -->
         <div v-if="platform.id === 'bluesky'" class="bluesky-form">
           <p class="bluesky-note">
@@ -371,6 +376,12 @@ const handleConnectBluesky = async () => {
   margin-top: 14px;
   padding-top: 14px;
   border-top: 1px solid var(--line);
+}
+
+.platform-note {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--fg-2);
 }
 
 .bluesky-note {
