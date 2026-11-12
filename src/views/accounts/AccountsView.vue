@@ -18,7 +18,7 @@ const oauthBanner = ref<{ kind: 'success' | 'error'; platform: string; message: 
 const prettyPlatform = (p: string) => p.charAt(0).toUpperCase() + p.slice(1)
 
 const consumeOAuthQueryParams = () => {
-  const { platform, error, success } = route.query
+  const { platform, error, success, connected, skipped, failed } = route.query
   if (!platform) return
 
   const platformStr = String(platform)
@@ -29,14 +29,32 @@ const consumeOAuthQueryParams = () => {
       message: String(error),
     }
   } else if (success) {
-    oauthBanner.value = {
-      kind: 'success',
-      platform: platformStr,
-      message: `${prettyPlatform(platformStr)} connected successfully.`,
+    const connectedCount = Number(connected) || 0
+    const skippedCount = Number(skipped) || 0
+    let message = `${prettyPlatform(platformStr)} connected successfully.`
+    if (platformStr === 'facebook' && connectedCount > 1) {
+      message = `${connectedCount} Facebook Pages connected. Each Page is its own account.`
     }
+    const failedCount = Number(failed) || 0
+    if (skippedCount > 0) {
+      message += ` ${skippedCount} more Page${skippedCount === 1 ? ' was' : 's were'} not added because your plan's account limit is reached.`
+    }
+    if (failedCount > 0) {
+      message += ` ${failedCount} Page${failedCount === 1 ? '' : 's'} could not be connected. Please try again.`
+    }
+    oauthBanner.value = { kind: 'success', platform: platformStr, message }
   }
 
-  const { platform: _p, error: _e, success: _s, accountId: _a, ...rest } = route.query
+  const {
+    platform: _p,
+    error: _e,
+    success: _s,
+    accountId: _a,
+    connected: _c,
+    skipped: _k,
+    failed: _f,
+    ...rest
+  } = route.query
   router.replace({ path: route.path, query: rest })
 }
 

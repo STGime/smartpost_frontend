@@ -21,7 +21,7 @@ Posta supports eight networks today:
 3. **Instagram** — Feed (1080×1080, 1080×1350), Reels (1080×1920), Stories (1080×1920). Auto-format and face-aware cropping included.
 4. **YouTube** — full videos and Shorts. Title, description, tags, privacy status, category, "made for kids", subscriber notifications.
 5. **Pinterest** — single board or multi-board, with link, alt text, video cover frame selection.
-6. **Facebook** — feed, Reels, Stories. Page or personal posting.
+6. **Facebook** — feed, Reels, Stories. Pages only (Meta's API doesn't allow posting to personal profiles). Every Page you grant during the Facebook login is connected as its own account.
 7. **Bluesky** — posts and threads via AT Protocol, alt text, embed cards, language tags, content labels (e.g. NSFW, gore, spoiler).
 8. **Threads** — feed and Reels placement, image and video content.
 
@@ -40,7 +40,7 @@ Posta supports eight networks today:
 
 ## How Posta works (3-step flow)
 
-1. **Connect accounts.** OAuth into each network you publish on. Posta stores encrypted tokens and refreshes them automatically (60 days for LinkedIn, ~30 days for Pinterest, etc.).
+1. **Connect accounts.** OAuth into each network you publish on. For Facebook, each Page selected on Facebook's "Edit access" step becomes a separate account (each counts toward the plan's account limit); connect again to add more Pages. Posta stores encrypted tokens and refreshes them automatically (60 days for LinkedIn, ~30 days for Pinterest, etc.).
 2. **Compose a post.** Upload media, write a caption, pick which connected accounts to publish to. Optionally tweak per-platform configuration (visibility, privacy level, alt text, thread separator, etc.).
 3. **Schedule or publish.** Set a future time, or publish immediately. Posta queues the job, generates platform-specific media variants, calls each network's API, and writes back the platform post ID + URL so you can find the post later.
 

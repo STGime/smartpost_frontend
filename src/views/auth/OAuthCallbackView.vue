@@ -20,7 +20,18 @@ onMounted(async () => {
     // OAuth was completed server-side, just refresh accounts and redirect
     try {
       await socialAccountsStore.fetchAccounts()
-      router.push({ name: 'accounts' })
+      // Keep the result details (e.g. how many Facebook Pages were added) for the banner
+      const { connected, skipped, failed } = route.query
+      router.push({
+        name: 'accounts',
+        query: {
+          platform,
+          success: 'true',
+          ...(connected ? { connected } : {}),
+          ...(skipped ? { skipped } : {}),
+          ...(failed ? { failed } : {}),
+        },
+      })
     } catch {
       error.value = 'Failed to refresh accounts'
       isLoading.value = false
