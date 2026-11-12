@@ -1,32 +1,75 @@
+<script lang="ts">
+/** Outcome of a platform login that returned to onboarding. */
+export interface OAuthReturn {
+  platform: string
+  success: boolean
+  error: string | null
+  connected: number
+  skipped: number
+  failed: number
+}
+</script>
+
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useSocialAccountsStore } from '@/stores'
 import PlatformIcon from '@/components/PlatformIcon.vue'
 import type { SocialPlatform } from '@/types'
 
+const props = defineProps<{
+  oauthReturn?: OAuthReturn | null
+}>()
+
 const emit = defineEmits<{
   connected: []
   skip: []
+  beforeRedirect: []
 }>()
 
 const socialAccountsStore = useSocialAccountsStore()
 const isConnecting = ref<SocialPlatform | null>(null)
-const error = ref<string | null>(null)
+const error = ref<string | null>(props.oauthReturn?.error ?? null)
 
 // Platform configurations
 const platforms: { id: SocialPlatform; name: string; description: string }[] = [
   { id: 'instagram', name: 'Instagram', description: 'Share photos and reels' },
   { id: 'tiktok', name: 'TikTok', description: 'Upload short videos' },
   { id: 'youtube', name: 'YouTube', description: 'Upload videos and shorts' },
-  { id: 'facebook', name: 'Facebook', description: 'Post to your page' },
+  { id: 'facebook', name: 'Facebook', description: 'Post to your Pages' },
   // { id: 'x', name: 'X (Twitter)', description: 'Share tweets' }, // X not supported yet
   { id: 'linkedin', name: 'LinkedIn', description: 'Professional posts' },
   { id: 'pinterest', name: 'Pinterest', description: 'Create pins' },
   { id: 'threads', name: 'Threads', description: 'Share text posts' },
-  { id: 'bluesky', name: 'Bluesky', description: 'Decentralized social' },
+  // Bluesky connects with an app password, not a login redirect, so it is
+  // connected from Accounts after setup instead of here.
 ]
 
 const hasConnectedAccount = computed(() => socialAccountsStore.accounts.length > 0)
+
+const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`
+
+// What to say after returning from a platform login
+const connectedSummary = computed(() => {
+  const accounts = socialAccountsStore.accounts
+  const result = props.oauthReturn
+  const lines: string[] = []
+
+  if (result?.success && result.platform === 'facebook' && result.connected > 1) {
+    lines.push(`${plural(result.connected, 'Facebook Page')} connected. Each Page is its own account.`)
+  } else if (accounts.length === 1 && accounts[0]) {
+    lines.push(`You've connected ${accounts[0].displayName || accounts[0].username}.`)
+  } else {
+    lines.push(`You've connected ${plural(accounts.length, 'account')}.`)
+  }
+
+  if (result?.skipped) {
+    lines.push(`${plural(result.skipped, 'Page')} not added because your plan's account limit is reached.`)
+  }
+  if (result?.failed) {
+    lines.push(`${plural(result.failed, 'Page')} could not be connected. You can retry from Accounts.`)
+  }
+  return lines
+})
 
 // Poll for account changes (in case OAuth completes in another tab)
 let pollInterval: ReturnType<typeof setInterval> | null = null
@@ -35,6 +78,10 @@ onMounted(async () => {
   await socialAccountsStore.fetchAccounts()
 
   // Start polling while on this step
+  // After returning from a login the result is shown and the user continues
+  // manually; polling only covers logins finished in another tab.
+  if (props.oauthReturn) return
+
   pollInterval = setInterval(async () => {
     await socialAccountsStore.fetchAccounts()
     if (hasConnectedAccount.value) {
@@ -54,7 +101,12 @@ const handleConnect = async (platform: SocialPlatform) => {
   error.value = null
 
   try {
-    const response = await socialAccountsStore.initiateOAuth(platform)
+    emit('beforeRedirect')
+    // Come back to onboarding (not the backend's success page) after the login
+    const response = await socialAccountsStore.initiateOAuth(
+      platform,
+      `${window.location.origin}/app/onboarding`
+    )
     // Redirect to OAuth authorization URL
     window.location.href = response.authorizationUrl
   } catch (err) {
@@ -84,7 +136,7 @@ const handleContinue = () => {
         </svg>
       </div>
       <h2>Account connected!</h2>
-      <p>You've connected {{ socialAccountsStore.accounts[0]?.displayName || socialAccountsStore.accounts[0]?.username }}</p>
+      <p v-for="line in connectedSummary" :key="line">{{ line }}</p>
       <button class="btn-primary btn-continue" @click="handleContinue">
         Continue to dashboard
       </button>
@@ -117,6 +169,11 @@ const handleContinue = () => {
         </button>
       </div>
 
+      <p class="platform-notes">
+        <strong>Facebook:</strong> every Page you select during the Facebook login is added as its
+        own account. <strong>Bluesky</strong> can be connected from Accounts after setup.
+      </p>
+
       <button class="btn-skip" @click="emit('skip')">
         Skip for now
       </button>
@@ -127,6 +184,19 @@ const handleContinue = () => {
 <style scoped>
 .connect-account {
   width: 100%;
+}
+
+.platform-notes {
+  margin: 16px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--fg-2);
+  text-align: center;
+}
+
+.platform-notes strong {
+  color: var(--text);
+  font-weight: 500;
 }
 
 .step-header {

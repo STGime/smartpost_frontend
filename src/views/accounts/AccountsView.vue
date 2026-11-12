@@ -64,6 +64,10 @@ onMounted(() => {
 })
 
 // Sort accounts by platform to group same platforms together
+const hasFacebookAccount = computed(() =>
+  socialAccountsStore.accounts.some((account) => account.platform === 'facebook')
+)
+
 const sortedAccounts = computed(() => {
   return [...socialAccountsStore.accounts].sort((a, b) => {
     // First sort by platform name
@@ -181,6 +185,13 @@ const closeModal = () => {
           </button>
         </div>
       </div>
+    </div>
+
+    <div v-if="hasFacebookAccount" class="platform-hint">
+      <strong>How Facebook Pages work:</strong> every Page you select during the Facebook login is
+      its own account and counts toward your plan's account limit. To add a Page, connect Facebook
+      again and select it on Facebook's "Edit access" step. To remove a Page for good, disconnect it
+      here and deselect it in Facebook.
     </div>
 
     <!-- Disconnect Confirmation Modal -->
@@ -350,6 +361,23 @@ const closeModal = () => {
 }
 
 /* Accounts List: hairline rows inside one panel */
+.platform-hint {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--signal);
+  border-radius: var(--radius-sm);
+  background: var(--ink-1);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--fg-2);
+}
+
+.platform-hint strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
 .accounts-list {
   display: flex;
   flex-direction: column;

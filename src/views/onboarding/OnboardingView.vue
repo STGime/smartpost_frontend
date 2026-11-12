@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import PlanSelectionStep from './PlanSelectionStep.vue'
-import ConnectAccountStep from './ConnectAccountStep.vue'
+import ConnectAccountStep, { type OAuthReturn } from './ConnectAccountStep.vue'
 import { userService, paymentsService } from '@/services'
 import { resetOnboardingStatus } from '@/router'
 import type { BillingInterval } from '@/types'
@@ -20,6 +20,38 @@ const isRedirecting = ref(false)
 const error = ref<string | null>(null)
 
 const stepNumber = computed(() => (currentStep.value === 'plan' ? 1 : 2))
+
+// Result of a platform login that returned to onboarding (success or error)
+const oauthReturn = ref<OAuthReturn | null>(null)
+
+// The plan choice must survive the full-page redirect to a platform's login
+const PLAN_STORAGE_KEY = 'onboarding_plan'
+
+const rememberPlan = () => {
+  try {
+    sessionStorage.setItem(
+      PLAN_STORAGE_KEY,
+      JSON.stringify({ planType: selectedPlan.value, billingInterval: selectedBillingInterval.value })
+    )
+  } catch {
+    // Storage unavailable: onboarding falls back to the trial plan
+  }
+}
+
+const restorePlan = () => {
+  try {
+    const stored = sessionStorage.getItem(PLAN_STORAGE_KEY)
+    if (!stored) return
+    const { planType, billingInterval } = JSON.parse(stored) as {
+      planType: string | null
+      billingInterval: BillingInterval
+    }
+    selectedPlan.value = planType
+    selectedBillingInterval.value = billingInterval
+  } catch {
+    // Ignore unreadable storage
+  }
+}
 
 const handlePlanSelected = async (planType: string, billingInterval: BillingInterval) => {
   selectedPlan.value = planType
@@ -70,6 +102,11 @@ const completeOnboarding = async () => {
 
   try {
     await userService.completeOnboarding(selectedPlan.value || 'trial')
+    try {
+      sessionStorage.removeItem(PLAN_STORAGE_KEY)
+    } catch {
+      // Ignore unavailable storage
+    }
     // Mark onboarding as complete in router cache
     resetOnboardingStatus()
     router.push({ name: 'dashboard' })
@@ -105,6 +142,23 @@ onMounted(async () => {
       return
     }
     // Otherwise stay on onboarding - plans will still load
+  }
+
+  // Handle return from a platform login started on the connect step
+  const { platform, success, error: oauthError, connected, skipped, failed } = route.query
+  if (platform) {
+    restorePlan()
+    oauthReturn.value = {
+      platform: String(platform),
+      success: success === 'true',
+      error: oauthError ? String(oauthError) : null,
+      connected: Number(connected) || 0,
+      skipped: Number(skipped) || 0,
+      failed: Number(failed) || 0,
+    }
+    router.replace({ name: 'onboarding', query: {} })
+    currentStep.value = 'connect'
+    return
   }
 
   // Handle return from LemonSqueezy checkout
@@ -169,6 +223,8 @@ onMounted(async () => {
         />
         <ConnectAccountStep
           v-else-if="currentStep === 'connect'"
+          :oauth-return="oauthReturn"
+          @before-redirect="rememberPlan"
           @connected="handleAccountConnected"
           @skip="handleSkip"
         />

@@ -322,6 +322,9 @@ const router = createRouter({
 let onboardingStatus: { checked: boolean; completed: boolean } = { checked: false, completed: false }
 
 // Navigation guard for authentication and onboarding
+// Query parameters the backend appends when an OAuth connect finishes
+const OAUTH_RESULT_PARAMS = ['platform', 'success', 'error', 'connected', 'skipped', 'failed']
+
 router.beforeEach(async (to, _from, next) => {
   // GCS static hosting serves prerendered pages at "<path>/index.html" and
   // 301-redirects clean URLs there, so a deep link or hard reload lands on a
@@ -378,9 +381,13 @@ router.beforeEach(async (to, _from, next) => {
       }
     }
 
-    // Redirect to onboarding if not completed
+    // Redirect to onboarding if not completed. Keep an OAuth result (the
+    // backend redirects errors to /app/accounts) so onboarding can show it.
     if (!onboardingStatus.completed) {
-      next({ name: 'onboarding' })
+      const oauthResult = Object.fromEntries(
+        Object.entries(to.query).filter(([key]) => OAUTH_RESULT_PARAMS.includes(key))
+      )
+      next({ name: 'onboarding', query: oauthResult.platform ? oauthResult : {} })
       return
     }
   }
