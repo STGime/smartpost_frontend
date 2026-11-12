@@ -333,6 +333,8 @@ const loadedFromTemplate = ref(false)
 const templateMediaMissing = ref<string[]>([])
 
 onMounted(async () => {
+  // Don't show an error left over from another posts screen
+  postsStore.error = null
   // Fetch the first page of media (server-ordered; more pages load on demand)
   await loadMedia({ reset: true })
   await socialAccountsStore.fetchAccounts()
@@ -938,6 +940,11 @@ const closePreviewModal = () => {
         </div>
       </div>
 
+      <!-- Server-side rejection (e.g. platform rules the form couldn't check) -->
+      <div v-if="postsStore.error" class="alert-error submit-error" role="alert">
+        {{ postsStore.error }}
+      </div>
+
       <!-- Submit -->
       <div class="form-actions">
         <RouterLink :to="isEditMode ? `/app/posts/${id}` : '/app/posts'" class="btn-secondary">
@@ -1495,6 +1502,10 @@ const closePreviewModal = () => {
   font-size: 11px;
   color: var(--fg-3);
   text-transform: lowercase;
+}
+
+.submit-error {
+  margin-bottom: 16px;
 }
 
 .needs-media {
