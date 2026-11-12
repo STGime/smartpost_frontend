@@ -72,15 +72,15 @@
    The router sets this class on <html> for app routes (so dialogs teleported
    to <body> get it too); marketing pages keep the darker palette. */
 :root.theme-app {
-  --ink-0: #1a1d22;
-  --ink-1: #23272d;
-  --ink-2: #2d3239;
-  --ink-3: #373d45;
-  --line: #3a4049;
-  --line-strong: #5a626e;
-  --fg-2: #c3c8cf;
-  --fg-3: #9aa1ab;
-  --muted: #b0b6be;
+  --ink-0: #272b31;
+  --ink-1: #30353c;
+  --ink-2: #3a4048;
+  --ink-3: #454c55;
+  --line: #4a515b;
+  --line-strong: #6b7380;
+  --fg-2: #cdd1d7;
+  --fg-3: #a8aeb7;
+  --muted: #bcc1c8;
   --text: #f0f1f3;
   --foreground: #f0f1f3;
   --text-secondary: #e0e2e6;
