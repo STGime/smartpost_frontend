@@ -15,6 +15,8 @@ export interface PlatformMediaLimits {
   supportsImages: boolean
   supportsVideos: boolean
   canMixImagesAndVideo: boolean
+  /** Platform API rejects posts without at least one photo or video. */
+  requiresMedia: boolean
   notes: string[]
 }
 
@@ -25,6 +27,7 @@ export const PLATFORM_MEDIA_LIMITS: Record<SocialPlatform, PlatformMediaLimits> 
     supportsImages: true,
     supportsVideos: true,
     canMixImagesAndVideo: true,
+    requiresMedia: true,
     notes: ['Carousel posts support up to 10 items (mix of images and videos)'],
   },
   threads: {
@@ -33,6 +36,7 @@ export const PLATFORM_MEDIA_LIMITS: Record<SocialPlatform, PlatformMediaLimits> 
     supportsImages: true,
     supportsVideos: true,
     canMixImagesAndVideo: true,
+    requiresMedia: false,
     notes: ['Up to 10 items (mix of images and videos)'],
   },
   linkedin: {
@@ -41,6 +45,7 @@ export const PLATFORM_MEDIA_LIMITS: Record<SocialPlatform, PlatformMediaLimits> 
     supportsImages: true,
     supportsVideos: true,
     canMixImagesAndVideo: false,
+    requiresMedia: false,
     notes: ['Multi-image posts supported', 'Cannot mix images and video in same post'],
   },
   facebook: {
@@ -49,6 +54,7 @@ export const PLATFORM_MEDIA_LIMITS: Record<SocialPlatform, PlatformMediaLimits> 
     supportsImages: true,
     supportsVideos: true,
     canMixImagesAndVideo: true,
+    requiresMedia: false,
     notes: ['Carousel posts support mix of images and videos'],
   },
   pinterest: {
@@ -57,6 +63,7 @@ export const PLATFORM_MEDIA_LIMITS: Record<SocialPlatform, PlatformMediaLimits> 
     supportsImages: true,
     supportsVideos: true,
     canMixImagesAndVideo: false,
+    requiresMedia: true,
     notes: ['Carousel pins supported'],
   },
   twitter: {
@@ -65,6 +72,7 @@ export const PLATFORM_MEDIA_LIMITS: Record<SocialPlatform, PlatformMediaLimits> 
     supportsImages: true,
     supportsVideos: true,
     canMixImagesAndVideo: false,
+    requiresMedia: false,
     notes: ['Cannot mix images and video', 'GIFs count as video'],
   },
   x: {
@@ -73,6 +81,7 @@ export const PLATFORM_MEDIA_LIMITS: Record<SocialPlatform, PlatformMediaLimits> 
     supportsImages: true,
     supportsVideos: true,
     canMixImagesAndVideo: false,
+    requiresMedia: false,
     notes: ['Cannot mix images and video', 'GIFs count as video'],
   },
   bluesky: {
@@ -81,6 +90,7 @@ export const PLATFORM_MEDIA_LIMITS: Record<SocialPlatform, PlatformMediaLimits> 
     supportsImages: true,
     supportsVideos: false,
     canMixImagesAndVideo: false,
+    requiresMedia: false,
     notes: ['No video support yet'],
   },
   tiktok: {
@@ -89,6 +99,7 @@ export const PLATFORM_MEDIA_LIMITS: Record<SocialPlatform, PlatformMediaLimits> 
     supportsImages: true,
     supportsVideos: true,
     canMixImagesAndVideo: false,
+    requiresMedia: true,
     notes: ['Primarily video platform'],
   },
   youtube: {
@@ -97,6 +108,7 @@ export const PLATFORM_MEDIA_LIMITS: Record<SocialPlatform, PlatformMediaLimits> 
     supportsImages: false,
     supportsVideos: true,
     canMixImagesAndVideo: false,
+    requiresMedia: true,
     notes: ['Video only', 'Thumbnail is separate'],
   },
 }
@@ -104,6 +116,18 @@ export const PLATFORM_MEDIA_LIMITS: Record<SocialPlatform, PlatformMediaLimits> 
 export interface MediaCompatibilityResult {
   isCompatible: boolean
   reason: string | null
+}
+
+/**
+ * Message shown when a media-only platform is selected without media,
+ * or null when the platform accepts text-only posts.
+ */
+export function getMissingMediaMessage(platform: SocialPlatform): string | null {
+  if (!PLATFORM_MEDIA_LIMITS[platform]?.requiresMedia) return null
+  const name = getPlatformDisplayName(platform)
+  return PLATFORM_MEDIA_LIMITS[platform].supportsImages
+    ? `${name} needs at least one photo or video`
+    : `${name} needs a video`
 }
 
 /**

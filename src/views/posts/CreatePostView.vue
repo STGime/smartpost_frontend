@@ -6,7 +6,7 @@ import PlatformIcon from '@/components/PlatformIcon.vue'
 import PlatformConfigSection from '@/components/platform/PlatformConfigSection.vue'
 import HashtagInput from '@/components/HashtagInput.vue'
 import HashtagLimitWarnings from '@/components/HashtagLimitWarnings.vue'
-import { checkPlatformMediaCompatibility } from '@/config/platformLimits'
+import { checkPlatformMediaCompatibility, getMissingMediaMessage } from '@/config/platformLimits'
 import type { MediaListItem, PlatformConfigurations, SocialPlatform } from '@/types'
 
 // File size limits (must match backend)
@@ -121,6 +121,19 @@ const accountCompatibility = computed(() => {
   return compatibility
 })
 
+// Media-only platforms (TikTok, Instagram, Pinterest, YouTube) can't publish
+// text-only posts. Accounts stay selectable — media is picked further down the
+// form — but the tile is flagged and the submit is blocked until media is added.
+const missingMediaByAccount = computed(() => {
+  const missing: Record<string, string> = {}
+  if (selectedMediaIds.value.length > 0) return missing
+  for (const account of socialAccountsStore.accounts) {
+    const message = getMissingMediaMessage(account.platform as SocialPlatform)
+    if (message) missing[account.id] = message
+  }
+  return missing
+})
+
 // Use all accounts, not just active ones (the store might filter incorrectly)
 // Sort by platform to group same platforms together
 const availableAccounts = computed(() => {
@@ -214,6 +227,13 @@ const formValidation = computed(() => {
   if (selectedAccountIds.value.length === 0) {
     errors.push('Select at least one social account')
   }
+
+  const missingMediaMessages = new Set(
+    selectedAccountIds.value
+      .map(id => missingMediaByAccount.value[id])
+      .filter((message): message is string => !!message)
+  )
+  errors.push(...missingMediaMessages)
 
   if (!tiktokValidation.value.valid && tiktokValidation.value.message) {
     errors.push(tiktokValidation.value.message)
@@ -639,7 +659,13 @@ const closePreviewModal = () => {
             <PlatformIcon :platform="account.platform" size="md" />
             <div class="account-info">
               <p class="account-username">{{ account.username }}</p>
-              <p class="account-platform">{{ account.platform }}</p>
+              <p class="account-platform">
+                {{ account.platform }}<span
+                  v-if="missingMediaByAccount[account.id]"
+                  class="needs-media"
+                  :title="missingMediaByAccount[account.id]"
+                > · needs media</span>
+              </p>
             </div>
             <div v-if="accountCompatibility[account.id]?.compatible === false" class="incompatible-indicator" :title="accountCompatibility[account.id]?.reason || ''">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1469,6 +1495,11 @@ const closePreviewModal = () => {
   font-size: 11px;
   color: var(--fg-3);
   text-transform: lowercase;
+}
+
+.needs-media {
+  color: var(--signal);
+  white-space: nowrap;
 }
 
 .check-indicator {
