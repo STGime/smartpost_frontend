@@ -1,29 +1,17 @@
-<script lang="ts">
-/** Outcome of a platform login that returned to onboarding. */
-export interface OAuthReturn {
-  platform: string
-  success: boolean
-  error: string | null
-  connected: number
-  skipped: number
-  failed: number
-}
-</script>
-
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useSocialAccountsStore } from '@/stores'
 import PlatformIcon from '@/components/PlatformIcon.vue'
 import type { SocialPlatform } from '@/types'
+import { describeOAuthSuccess, type OAuthResult } from '@/utils/oauthResult'
 
 const props = defineProps<{
-  oauthReturn?: OAuthReturn | null
+  oauthReturn?: OAuthResult | null
 }>()
 
 const emit = defineEmits<{
   connected: []
   skip: []
-  beforeRedirect: []
 }>()
 
 const socialAccountsStore = useSocialAccountsStore()
@@ -46,51 +34,42 @@ const platforms: { id: SocialPlatform; name: string; description: string }[] = [
 
 const hasConnectedAccount = computed(() => socialAccountsStore.accounts.length > 0)
 
-const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`
-
-// What to say after returning from a platform login
+// What to say on the success screen: the login result when we just returned
+// from one, otherwise the accounts that are connected.
 const connectedSummary = computed(() => {
-  const accounts = socialAccountsStore.accounts
   const result = props.oauthReturn
-  const lines: string[] = []
+  if (result?.success) return describeOAuthSuccess(result)
 
-  if (result?.success && result.platform === 'facebook' && result.connected > 1) {
-    lines.push(`${plural(result.connected, 'Facebook Page')} connected. Each Page is its own account.`)
-  } else if (accounts.length === 1 && accounts[0]) {
-    lines.push(`You've connected ${accounts[0].displayName || accounts[0].username}.`)
-  } else {
-    lines.push(`You've connected ${plural(accounts.length, 'account')}.`)
-  }
-
-  if (result?.skipped) {
-    lines.push(`${plural(result.skipped, 'Page')} not added because your plan's account limit is reached.`)
-  }
-  if (result?.failed) {
-    lines.push(`${plural(result.failed, 'Page')} could not be connected. You can retry from Accounts.`)
-  }
-  return lines
+  const accounts = socialAccountsStore.accounts
+  const first = accounts[0]
+  if (accounts.length === 1 && first) return [`You've connected ${first.displayName || first.username}.`]
+  return [`You've connected ${accounts.length} accounts.`]
 })
+
+// A login result (success or error) stays on screen until the user continues
+const holdForResult = computed(() => !!props.oauthReturn)
 
 // Poll for account changes (in case OAuth completes in another tab)
 let pollInterval: ReturnType<typeof setInterval> | null = null
+let unmounted = false
 
 onMounted(async () => {
   await socialAccountsStore.fetchAccounts()
+  // The step may have closed while accounts were loading
+  if (unmounted) return
 
-  // Start polling while on this step
-  // After returning from a login the result is shown and the user continues
-  // manually; polling only covers logins finished in another tab.
-  if (props.oauthReturn) return
-
+  // Polling covers logins finished in another tab. When a login result is
+  // shown, accounts still refresh but the user continues manually.
   pollInterval = setInterval(async () => {
     await socialAccountsStore.fetchAccounts()
-    if (hasConnectedAccount.value) {
+    if (hasConnectedAccount.value && !holdForResult.value) {
       emit('connected')
     }
   }, 3000)
 })
 
 onUnmounted(() => {
+  unmounted = true
   if (pollInterval) {
     clearInterval(pollInterval)
   }
@@ -101,7 +80,6 @@ const handleConnect = async (platform: SocialPlatform) => {
   error.value = null
 
   try {
-    emit('beforeRedirect')
     // Come back to onboarding (not the backend's success page) after the login
     const response = await socialAccountsStore.initiateOAuth(
       platform,
@@ -128,6 +106,10 @@ const handleContinue = () => {
       <p>Connect at least one social account to start posting.</p>
     </div>
 
+    <div v-if="error" class="alert-error step-error">
+      {{ error }}
+    </div>
+
     <!-- Success state -->
     <div v-if="hasConnectedAccount" class="success-state">
       <div class="success-icon">
@@ -144,9 +126,6 @@ const handleContinue = () => {
 
     <!-- Platform grid -->
     <div v-else class="platforms-container">
-      <div v-if="error" class="alert-error">
-        {{ error }}
-      </div>
 
       <div class="platforms-grid">
         <button
@@ -184,6 +163,10 @@ const handleContinue = () => {
 <style scoped>
 .connect-account {
   width: 100%;
+}
+
+.step-error {
+  margin-bottom: 16px;
 }
 
 .platform-notes {

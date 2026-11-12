@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useSocialAccountsStore } from '@/stores'
 import PlatformIcon from '@/components/PlatformIcon.vue'
 import type { SocialAccount } from '@/types'
+import { OAUTH_RESULT_PARAMS, describeOAuthSuccess, parseOAuthResult, platformName } from '@/utils/oauthResult'
 
 const socialAccountsStore = useSocialAccountsStore()
 const route = useRoute()
@@ -15,46 +16,19 @@ const isDeleting = ref(false)
 
 const oauthBanner = ref<{ kind: 'success' | 'error'; platform: string; message: string } | null>(null)
 
-const prettyPlatform = (p: string) => p.charAt(0).toUpperCase() + p.slice(1)
+const prettyPlatform = platformName
 
 const consumeOAuthQueryParams = () => {
-  const { platform, error, success, connected, skipped, failed } = route.query
-  if (!platform) return
+  const result = parseOAuthResult(route.query)
+  if (!result) return
 
-  const platformStr = String(platform)
-  if (error) {
-    oauthBanner.value = {
-      kind: 'error',
-      platform: platformStr,
-      message: String(error),
-    }
-  } else if (success) {
-    const connectedCount = Number(connected) || 0
-    const skippedCount = Number(skipped) || 0
-    let message = `${prettyPlatform(platformStr)} connected successfully.`
-    if (platformStr === 'facebook' && connectedCount > 1) {
-      message = `${connectedCount} Facebook Pages connected. Each Page is its own account.`
-    }
-    const failedCount = Number(failed) || 0
-    if (skippedCount > 0) {
-      message += ` ${skippedCount} more Page${skippedCount === 1 ? ' was' : 's were'} not added because your plan's account limit is reached.`
-    }
-    if (failedCount > 0) {
-      message += ` ${failedCount} Page${failedCount === 1 ? '' : 's'} could not be connected. Please try again.`
-    }
-    oauthBanner.value = { kind: 'success', platform: platformStr, message }
-  }
+  oauthBanner.value = result.error
+    ? { kind: 'error', platform: result.platform, message: result.error }
+    : { kind: 'success', platform: result.platform, message: describeOAuthSuccess(result).join(' ') }
 
-  const {
-    platform: _p,
-    error: _e,
-    success: _s,
-    accountId: _a,
-    connected: _c,
-    skipped: _k,
-    failed: _f,
-    ...rest
-  } = route.query
+  const rest = Object.fromEntries(
+    Object.entries(route.query).filter(([key]) => !OAUTH_RESULT_PARAMS.includes(key))
+  )
   router.replace({ path: route.path, query: rest })
 }
 
