@@ -269,7 +269,7 @@ const result = await generateText({
 
     <CtaSection
       heading="Ship Posta in your next Vercel AI SDK app"
-      subtext="14-day free trial. MCP server, Claude Code skill, and n8n node are free and open source."
+      subtext="5-day free trial. MCP server, Claude Code skill, and n8n node are free and open source."
       :source="waitingListSource"
     />
   </SeoPageLayout>

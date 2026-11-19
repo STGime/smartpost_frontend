@@ -19,7 +19,7 @@ const hootsuiteFaq = [
   },
   {
     q: 'Does Posta have a free plan?',
-    a: 'Posta has a 14-day free trial, no credit card. Hootsuite removed its free tier years ago. Past the trial, Posta starts at a substantially lower entry price per active user than Hootsuite.',
+    a: 'Posta has a 5-day free trial, no credit card. Hootsuite removed its free tier years ago. Past the trial, Posta starts at a substantially lower entry price per active user than Hootsuite.',
   },
   {
     q: 'Can I use Posta for an agency with multiple clients?',
@@ -161,7 +161,7 @@ useHead({
             </tr>
             <tr>
               <th scope="row">Free tier</th>
-              <td>14-day trial, no card</td>
+              <td>5-day trial, no card</td>
               <td>No free tier (30-day trial)</td>
             </tr>
             <tr>
@@ -244,7 +244,7 @@ useHead({
         <li>Face-aware automatic cropping so you stop re-exporting media manually</li>
       </ul>
       <p>
-        Try the 14-day free trial — no credit card.
+        Try the 5-day free trial — no credit card.
       </p>
     </section>
 
@@ -262,7 +262,7 @@ useHead({
 
     <CtaSection
       heading="Try Posta as your Hootsuite alternative"
-      subtext="14-day free trial, no credit card. Publish to 8 networks from one workflow at a fraction of Hootsuite's per-seat pricing."
+      subtext="5-day free trial, no credit card. Publish to 8 networks from one workflow at a fraction of Hootsuite's per-seat pricing."
       :source="waitingListSource"
     />
   </SeoPageLayout>

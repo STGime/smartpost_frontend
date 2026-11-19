@@ -269,7 +269,7 @@ export const schedulePost = createTool({
 
     <CtaSection
       heading="Wire Posta into your next Mastra agent"
-      subtext="14-day free trial. MCP server, Claude Code skill, and n8n node are free and open source."
+      subtext="5-day free trial. MCP server, Claude Code skill, and n8n node are free and open source."
       :source="waitingListSource"
     />
   </SeoPageLayout>

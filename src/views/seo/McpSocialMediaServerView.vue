@@ -69,7 +69,7 @@ useHead({
             name: 'Is the MCP server free?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes. The posta-mcp package is open source and free on npm and GitHub. You only pay for the Posta plan that covers your usage volume, with a 14-day free trial to start.',
+              text: 'Yes. The posta-mcp package is open source and free on npm and GitHub. You only pay for the Posta plan that covers your usage volume, with a 5-day free trial to start.',
             },
           },
           {
@@ -268,7 +268,7 @@ useHead({
           <div class="faq-q">Is the MCP server free?</div>
           <div class="faq-a">
             Yes. The <code>posta-mcp</code> package is open source and free on npm and GitHub. You
-            only pay for the Posta plan that covers your usage volume, with a 14-day free trial to
+            only pay for the Posta plan that covers your usage volume, with a 5-day free trial to
             start.
           </div>
         </div>
@@ -288,7 +288,7 @@ useHead({
 
     <CtaSection
       heading="Wire Posta into your agent today"
-      subtext="MCP server, Claude Code skill, n8n node, REST API. 14-day free trial, no credit card."
+      subtext="MCP server, Claude Code skill, n8n node, REST API. 5-day free trial, no credit card."
       :source="waitingListSource"
     />
   </SeoPageLayout>

@@ -278,7 +278,7 @@ Credentials → Add → Posta
 
     <CtaSection
       heading="Make Posta a node in your n8n workflows"
-      subtext="Install the community node, fork a template, ship a workflow. 14-day free trial."
+      subtext="Install the community node, fork a template, ship a workflow. 5-day free trial."
       :source="waitingListSource"
     />
   </SeoPageLayout>

@@ -3,6 +3,11 @@ import { ref, computed, onMounted } from 'vue'
 import { paymentsService } from '@/services'
 import type { PricingPlan, BillingInterval } from '@/types'
 
+const props = withDefaults(defineProps<{
+  /** False when this browser already had a free trial: plans are paid from day one */
+  trialAvailable?: boolean
+}>(), { trialAvailable: true })
+
 const emit = defineEmits<{
   select: [planType: string, billingInterval: BillingInterval]
 }>()
@@ -63,7 +68,8 @@ const getFilteredFeatures = (plan: PricingPlan) => {
   <div class="plan-selection">
     <div class="step-header">
       <h1>Choose your plan</h1>
-      <p>Start with a 14-day free trial. No credit card required.</p>
+      <p v-if="props.trialAvailable">Start with a 5-day free trial. No credit card required.</p>
+      <p v-else>A free trial has already been used on this device. Pick a plan to get started.</p>
     </div>
 
     <!-- Billing Toggle -->
@@ -100,7 +106,7 @@ const getFilteredFeatures = (plan: PricingPlan) => {
     <div v-else class="plans-grid">
       <!-- Starter -->
       <div v-if="starterPlan" class="plan-card">
-        <div class="trial-badge">14 days free</div>
+        <div v-if="props.trialAvailable" class="trial-badge">5 days free</div>
 
         <div class="plan-header">
           <h2 class="plan-name">Starter</h2>
@@ -136,7 +142,7 @@ const getFilteredFeatures = (plan: PricingPlan) => {
         </ul>
 
         <button class="btn-select btn-secondary" @click="handleSelect('starter')">
-          Start free trial
+          {{ props.trialAvailable ? 'Start free trial' : 'Get started' }}
         </button>
       </div>
 

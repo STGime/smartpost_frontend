@@ -69,6 +69,8 @@ export interface Plan {
     is_in_grace_period: boolean
     grace_period_ends_at: string | null
     trial_ends_at: string | null
+    /** Set when the trial was ended early: device_used | ip_limit | social_account_reused */
+    trial_ended_reason?: string | null
     subscription_ends_at: string | null
     days_remaining: number | null
     hours_remaining: number | null

@@ -470,14 +470,14 @@ const comparisonTable = computed<ComparisonCategory[]>(() => {
           </p>
           <div class="hero-actions">
             <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary btn-lg">
-              Start your 14-day free trial
+              Start your 5-day free trial
             </RouterLink>
             <button v-else class="btn-primary btn-lg" @click="openWaitingList('hero')">
               Join waiting list
             </button>
             <a href="#connect" class="btn-ghost btn-lg">See how agents use it</a>
           </div>
-          <p class="small-note">No credit card required · 14-day free trial · Cancel anytime</p>
+          <p class="small-note">No credit card required · 5-day free trial · Cancel anytime</p>
           <div class="surface-strip" aria-label="Integrations">
             <span>MCP</span><span>Claude Code</span><span>n8n</span><span>REST + webhooks</span><span>OpenClaw</span>
           </div>
@@ -868,7 +868,7 @@ and Bluesky for tomorrow at 9am."</code></pre>
           <div v-if="starterPlan" class="plan">
             <div class="plan-head">
               <h3>Starter</h3>
-              <span class="tag">14 days free</span>
+              <span class="tag">5 days free</span>
             </div>
             <p class="plan-desc">For solo creators getting started with multi-platform publishing.</p>
             <div class="plan-price">
@@ -883,7 +883,7 @@ and Bluesky for tomorrow at 9am."</code></pre>
             <ul class="plan-features">
               <li v-for="feature in starterPlan.features" :key="feature">{{ feature }}</li>
             </ul>
-            <RouterLink v-if="signupEnabled" to="/signup" class="btn-secondary plan-cta">Start 14-day free trial</RouterLink>
+            <RouterLink v-if="signupEnabled" to="/signup" class="btn-secondary plan-cta">Start 5-day free trial</RouterLink>
             <button v-else class="btn-secondary plan-cta" @click="openWaitingList('pricing')">Join waiting list</button>
             <p class="plan-note">No credit card required</p>
           </div>
@@ -906,9 +906,9 @@ and Bluesky for tomorrow at 9am."</code></pre>
             <ul class="plan-features">
               <li v-for="feature in professionalPlan.features" :key="feature">{{ feature }}</li>
             </ul>
-            <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary plan-cta">Start 14-day free trial</RouterLink>
+            <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary plan-cta">Start 5-day free trial</RouterLink>
             <button v-else class="btn-primary plan-cta" @click="openWaitingList('pricing')">Join waiting list</button>
-            <p class="plan-note">No credit card required · 14 days free</p>
+            <p class="plan-note">No credit card required · 5 days free</p>
           </div>
         </div>
 
@@ -977,7 +977,7 @@ and Bluesky for tomorrow at 9am."</code></pre>
               <tr><th scope="row">Public REST API</th><td class="posta-col">Yes (OpenAPI)</td><td>Yes</td><td>Enterprise only</td><td>No</td><td>Partial</td></tr>
               <tr><th scope="row">Outbound webhooks</th><td class="posta-col">Yes (HMAC-signed)</td><td>No</td><td>Enterprise only</td><td>No</td><td>No</td></tr>
               <tr><th scope="row">CLI / IDE posting</th><td class="posta-col">Yes (Claude Code)</td><td>No</td><td>No</td><td>No</td><td>No</td></tr>
-              <tr><th scope="row">Free trial</th><td class="posta-col">14 days, no card</td><td>14 days</td><td>30 days</td><td>14 days</td><td>14 days</td></tr>
+              <tr><th scope="row">Free trial</th><td class="posta-col">5 days, no card</td><td>14 days</td><td>30 days</td><td>14 days</td><td>14 days</td></tr>
             </tbody>
           </table>
         </div>
@@ -1058,7 +1058,7 @@ and Bluesky for tomorrow at 9am."</code></pre>
         <div class="closing">
           <div>
             <h2>Give your agent a publish button.</h2>
-            <p class="section-sub">One token, eight networks, signed webhooks. 14 days free, no card.</p>
+            <p class="section-sub">One token, eight networks, signed webhooks. 5 days free, no card.</p>
           </div>
           <div class="closing-actions">
             <RouterLink v-if="signupEnabled" to="/signup" class="btn-primary btn-lg">Start free trial</RouterLink>

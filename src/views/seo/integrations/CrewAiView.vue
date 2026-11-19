@@ -69,7 +69,7 @@ useHead({
             name: 'Is the integration free?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'The Posta MCP server and CrewAI are both free and open source. You pay for the Posta plan that covers your post volume, with a 14-day free trial to start.',
+              text: 'The Posta MCP server and CrewAI are both free and open source. You pay for the Posta plan that covers your post volume, with a 5-day free trial to start.',
             },
           },
         ],
@@ -249,7 +249,7 @@ def schedule_post(
           <div class="faq-q">Is it free?</div>
           <div class="faq-a">
             The Posta MCP server and CrewAI are both free and open source. You pay for the Posta
-            plan that covers your post volume; 14-day free trial.
+            plan that covers your post volume; 5-day free trial.
           </div>
         </div>
       </div>
@@ -259,7 +259,7 @@ def schedule_post(
 
     <CtaSection
       heading="Wire Posta into your next CrewAI crew"
-      subtext="14-day free trial. MCP server, Claude Code skill, and n8n node are free and open source."
+      subtext="5-day free trial. MCP server, Claude Code skill, and n8n node are free and open source."
       :source="waitingListSource"
     />
   </SeoPageLayout>

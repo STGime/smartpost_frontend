@@ -151,7 +151,7 @@ useHead({
             </tr>
             <tr>
               <th scope="row">Free trial</th>
-              <td>14 days, no card</td>
+              <td>5 days, no card</td>
               <td>Free tier (limited) + 14-day paid trial</td>
             </tr>
             <tr>
@@ -234,7 +234,7 @@ useHead({
         <li>Face-aware automatic cropping so you stop re-exporting media manually</li>
       </ul>
       <p>
-        …Posta is the leaner, developer-friendlier tool. Try the 14-day free trial — no credit card required.
+        …Posta is the leaner, developer-friendlier tool. Try the 5-day free trial — no credit card required.
       </p>
     </section>
 
@@ -252,7 +252,7 @@ useHead({
 
     <CtaSection
       heading="Try Posta as your Buffer alternative"
-      subtext="14-day free trial, no credit card. Publish to 8 networks from one workflow."
+      subtext="5-day free trial, no credit card. Publish to 8 networks from one workflow."
       :source="waitingListSource"
     />
   </SeoPageLayout>

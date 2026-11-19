@@ -126,7 +126,7 @@ useHead({
 
     <CtaSection
       heading="Create once, post everywhere"
-      subtext="Schedule to eight networks from one workflow. 14-day free trial, no credit card."
+      subtext="Schedule to eight networks from one workflow. 5-day free trial, no credit card."
       :source="waitingListSource"
     />
   </SeoPageLayout>

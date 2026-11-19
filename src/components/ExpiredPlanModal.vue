@@ -1,10 +1,34 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useAuthStore } from '@/stores'
 import { useRouter } from 'vue-router'
 
-defineProps<{
+const props = defineProps<{
   show: boolean
+  /** Why a trial was ended early, if it was (from GET /users/plan) */
+  trialEndedReason?: string | null
 }>()
+
+const copy = computed(() => {
+  switch (props.trialEndedReason) {
+    case 'device_used':
+    case 'ip_limit':
+      return {
+        title: 'Free trial already used',
+        body: 'A free trial has already been used on this device, so this account starts without one. Choose a plan to start using Posta.',
+      }
+    case 'social_account_reused':
+      return {
+        title: 'Free trial already used',
+        body: 'The social account you connected has already had a free trial on another Posta account. Choose a plan to continue.',
+      }
+    default:
+      return {
+        title: 'Your plan has expired',
+        body: 'Choose a plan to continue using Posta and manage your social media content.',
+      }
+  }
+})
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -34,11 +58,11 @@ const signOut = () => {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h3>Your plan has expired</h3>
+            <h3>{{ copy.title }}</h3>
           </div>
 
           <div class="modal-body">
-            <p>Choose a plan to continue using Posta and manage your social media content.</p>
+            <p>{{ copy.body }}</p>
           </div>
 
           <div class="modal-footer">

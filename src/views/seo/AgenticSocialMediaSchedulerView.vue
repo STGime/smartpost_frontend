@@ -36,7 +36,7 @@ const agenticFaq = [
   },
   {
     q: 'Is there a social media scheduler with an API on the free tier?',
-    a: 'Posta\'s 14-day free trial includes the full REST API, MCP server access, and n8n node — no enterprise-only API gating. After the trial, the API is available on every paid tier (it isn\'t locked to a business plan the way Buffer\'s and Hootsuite\'s APIs are).',
+    a: 'Posta\'s 5-day free trial includes the full REST API, MCP server access, and n8n node — no enterprise-only API gating. After the trial, the API is available on every paid tier (it isn\'t locked to a business plan the way Buffer\'s and Hootsuite\'s APIs are).',
   },
   {
     q: 'How do I keep an agent on-brand?',
@@ -109,7 +109,7 @@ useHead({
         description:
           'Agentic social media scheduler: MCP server, n8n community node, REST API, HMAC webhooks, and auto-formatting for any AI agent.',
         offers: [
-          { '@type': 'Offer', price: '0', priceCurrency: 'USD', name: 'Free trial (14 days, no card)' },
+          { '@type': 'Offer', price: '0', priceCurrency: 'USD', name: 'Free trial (5 days, no card)' },
           { '@type': 'Offer', priceCurrency: 'USD', name: 'Starter plan' },
         ],
         featureList: [
@@ -434,7 +434,7 @@ Package: n8n-nodes-posta
 
     <CtaSection
       heading="Wire an agent into your social today"
-      subtext="14-day free trial. Full API, MCP, and n8n access — no credit card."
+      subtext="5-day free trial. Full API, MCP, and n8n access — no credit card."
       :source="waitingListSource"
     />
   </SeoPageLayout>

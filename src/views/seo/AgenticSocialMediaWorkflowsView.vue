@@ -291,7 +291,7 @@ Agent  → reads webhook → decides next action → loops</code></pre>
 
     <CtaSection
       heading="Build your first agentic workflow"
-      subtext="Pick a surface — MCP, n8n, Claude Code, or the API. 14-day free trial, no credit card."
+      subtext="Pick a surface — MCP, n8n, Claude Code, or the API. 5-day free trial, no credit card."
       :source="waitingListSource"
     />
   </SeoPageLayout>

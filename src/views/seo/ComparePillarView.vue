@@ -174,7 +174,7 @@ useHead({
             </tr>
             <tr>
               <th scope="row">Free tier</th>
-              <td>14-day trial, no card</td>
+              <td>5-day trial, no card</td>
               <td>Free tier (limited)</td>
               <td>30-day trial</td>
               <td>14-day trial</td>
@@ -392,7 +392,7 @@ useHead({
 
     <CtaSection
       heading="Try Posta — the developer-leaning scheduler"
-      subtext="14-day free trial, no credit card. Publish to 8 networks from one workflow, with a public API and outbound webhooks on every tier."
+      subtext="5-day free trial, no credit card. Publish to 8 networks from one workflow, with a public API and outbound webhooks on every tier."
       :source="waitingListSource"
     />
   </SeoPageLayout>

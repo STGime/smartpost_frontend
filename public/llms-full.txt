@@ -48,7 +48,7 @@ Posta supports eight networks today:
 
 Three tiers (subject to change — see https://getposta.app/#pricing for current numbers):
 
-- **Trial** — 14-day free trial, no credit card. Limited post count.
+- **Trial** — 5-day free trial, no credit card. Limited post count.
 - **Starter** — for solo creators. Higher post count, multiple connected accounts.
 - **Professional** — for teams and agencies. Unlimited posts (fair-use), more accounts, more webhook endpoints, longer delivery-log retention.
 
@@ -154,7 +154,7 @@ At https://api.getposta.app/docs/openapi.yaml and (when synced) https://getposta
 Google Cloud Platform.
 
 **Q: Is there a free Bluesky scheduler?**
-Posta's trial includes Bluesky scheduling for 14 days at no cost.
+Posta's trial includes Bluesky scheduling for 5 days at no cost.
 
 <!-- BLOG:START -->
 <!-- BLOG:END -->

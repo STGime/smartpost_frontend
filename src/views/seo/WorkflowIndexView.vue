@@ -118,7 +118,7 @@ useHead({
 
     <CtaSection
       heading="Automate your posting"
-      subtext="Connect Posta to n8n and let your content flow. 14-day free trial, no credit card."
+      subtext="Connect Posta to n8n and let your content flow. 5-day free trial, no credit card."
       :source="waitingListSource"
     />
   </SeoPageLayout>

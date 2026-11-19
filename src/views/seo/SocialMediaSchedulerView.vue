@@ -20,7 +20,7 @@ const schedulerFaq = [
   },
   {
     q: 'Is there a free social media scheduler?',
-    a: 'Posta offers a 14-day free trial with no credit card required, covering scheduling to all 8 supported networks. After the trial, plans start at the Starter tier. Buffer\'s free plan caps you at 3 channels; Hootsuite removed its free plan in 2025. For developers, the entire API surface is included on every paid tier.',
+    a: 'Posta offers a 5-day free trial with no credit card required, covering scheduling to all 8 supported networks. After the trial, plans start at the Starter tier. Buffer\'s free plan caps you at 3 channels; Hootsuite removed its free plan in 2025. For developers, the entire API surface is included on every paid tier.',
   },
   {
     q: 'How is Posta different from Buffer, Hootsuite, or Later?',
@@ -56,7 +56,7 @@ const schedulerFaq = [
   },
   {
     q: 'Is there a free trial?',
-    a: 'Yes — 14 days, no credit card required. The trial includes scheduling to all 8 supported networks plus full API and MCP access.',
+    a: 'Yes — 5 days, no credit card required. The trial includes scheduling to all 8 supported networks plus full API and MCP access.',
   },
 ]
 
@@ -117,7 +117,7 @@ useHead({
         description:
           'Social media scheduler with smart cropping, multi-platform publishing, a public REST API, MCP server, and n8n community node.',
         offers: [
-          { '@type': 'Offer', price: '0', priceCurrency: 'USD', name: 'Free trial (14 days, no card)' },
+          { '@type': 'Offer', price: '0', priceCurrency: 'USD', name: 'Free trial (5 days, no card)' },
           { '@type': 'Offer', priceCurrency: 'USD', name: 'Starter plan' },
         ],
         featureList: [
@@ -358,7 +358,7 @@ useHead({
             </tr>
             <tr>
               <td>Free trial</td>
-              <td>14 days, no card</td>
+              <td>5 days, no card</td>
               <td>Free plan (3 channels)</td>
               <td>30-day trial</td>
               <td>14-day trial</td>
@@ -421,7 +421,7 @@ useHead({
       <h2>Get started in 3 steps</h2>
       <ol class="step-list compact">
         <li>
-          <h3>1. Sign up for the 14-day trial</h3>
+          <h3>1. Sign up for the 5-day trial</h3>
           <p>No credit card. Full access to all 8 networks plus the API and MCP server.</p>
         </li>
         <li>

@@ -175,6 +175,11 @@ useHead({
       <li>Remember your preferences</li>
       <li>Ensure security and prevent fraud</li>
     </ul>
+    <p>
+      To prevent abuse of the free trial, we store a random identifier in your browser's local
+      storage. On our servers we keep only a salted hash of this identifier and of your IP address
+      (never the raw values), which we use solely to limit free trials to one per browser.
+    </p>
     <p>We do not use third-party advertising or tracking cookies.</p>
 
     <h2>8. International Data Transfers</h2>

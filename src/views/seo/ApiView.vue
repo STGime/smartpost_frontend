@@ -266,7 +266,7 @@ useHead({
 
     <CtaSection
       heading="Start building with the Posta API"
-      subtext="14-day free trial, no credit card. Bearer-token API, full OpenAPI spec, and HMAC-signed webhooks on every paid tier."
+      subtext="5-day free trial, no credit card. Bearer-token API, full OpenAPI spec, and HMAC-signed webhooks on every paid tier."
       :source="waitingListSource"
     />
   </SeoPageLayout>
