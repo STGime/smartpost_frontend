@@ -114,7 +114,7 @@ useHead({
 
     <CtaSection
       heading="Pick a framework, ship in an afternoon"
-      subtext="14-day free trial. MCP server, Claude Code skill, and n8n node are free and open source."
+      subtext="5-day free trial. MCP server, Claude Code skill, and n8n node are free and open source."
       :source="waitingListSource"
     />
   </SeoPageLayout>

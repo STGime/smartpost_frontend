@@ -138,7 +138,7 @@ useHead({
         </div>
         <div class="feature-card">
           <div class="feature-title">Posta account (the rails)</div>
-          <div class="feature-body">Connects to eight social networks via official APIs. 14-day free trial.</div>
+          <div class="feature-body">Connects to eight social networks via official APIs. 5-day free trial.</div>
         </div>
       </div>
     </section>
@@ -314,7 +314,7 @@ app.listen(3000)</code></pre>
 
     <CtaSection
       heading="Get a Posta token and start building"
-      subtext="14-day free trial. MCP server, Claude Code skill, and n8n node are free and open source."
+      subtext="5-day free trial. MCP server, Claude Code skill, and n8n node are free and open source."
       :source="waitingListSource"
     />
   </SeoPageLayout>

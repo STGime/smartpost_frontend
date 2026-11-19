@@ -120,7 +120,7 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     try {
       const caps = await analyticsService.getCapabilities()
 
-      // Trial is a 14-day free trial of Starter — treat it as starter tier
+      // Trial is a 5-day free trial of Starter — treat it as starter tier
       if (caps.tier === 'trial') {
         caps.tier = 'starter'
       }

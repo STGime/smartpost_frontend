@@ -39,7 +39,7 @@ const threadsFaq = [
   },
   {
     q: 'Is there a free Threads scheduler?',
-    a: 'Posta\'s 14-day trial includes Threads scheduling at no cost, no credit card required. The same trial covers LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, and Bluesky.',
+    a: 'Posta\'s 5-day trial includes Threads scheduling at no cost, no credit card required. The same trial covers LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, and Bluesky.',
   },
 ]
 

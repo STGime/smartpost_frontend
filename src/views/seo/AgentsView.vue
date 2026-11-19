@@ -68,7 +68,7 @@ useHead({
             name: 'Is there a free way to try agent posting?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes. Posta offers a 14-day free trial with no credit card required, and the MCP server, Claude Code skill, and n8n node are all free and open source.',
+              text: 'Yes. Posta offers a 5-day free trial with no credit card required, and the MCP server, Claude Code skill, and n8n node are all free and open source.',
             },
           },
         ],
@@ -232,7 +232,7 @@ useHead({
         <div class="faq-item">
           <div class="faq-q">Is there a free way to try agent posting?</div>
           <div class="faq-a">
-            Yes — a 14-day free trial, no credit card required. The MCP server, Claude Code skill, and n8n node are all free and open source.
+            Yes — a 5-day free trial, no credit card required. The MCP server, Claude Code skill, and n8n node are all free and open source.
           </div>
         </div>
       </div>
@@ -242,7 +242,7 @@ useHead({
 
     <CtaSection
       heading="Let your agents handle social"
-      subtext="Connect Posta to your agent via MCP, n8n, or the API. 14-day free trial, no credit card."
+      subtext="Connect Posta to your agent via MCP, n8n, or the API. 5-day free trial, no credit card."
       :source="waitingListSource"
     />
   </SeoPageLayout>

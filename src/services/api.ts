@@ -1,5 +1,6 @@
 import axios, { AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios'
 import type { ApiError } from '@/types'
+import { getDeviceId } from '@/utils/deviceId'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1'
 
@@ -150,6 +151,12 @@ api.interceptors.request.use(
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+    }
+
+    // One free trial per browser: the API only keeps a salted hash of this id
+    const deviceId = getDeviceId()
+    if (deviceId) {
+      config.headers['X-Device-Id'] = deviceId
     }
     return config
   },

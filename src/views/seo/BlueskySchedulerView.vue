@@ -39,7 +39,7 @@ const blueskyFaq = [
   },
   {
     q: 'Is there a free Bluesky scheduler?',
-    a: 'Posta\'s 14-day trial includes Bluesky scheduling at no cost, no credit card required. The same trial also covers LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, and Threads.',
+    a: 'Posta\'s 5-day trial includes Bluesky scheduling at no cost, no credit card required. The same trial also covers LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, and Threads.',
   },
 ]
 

@@ -196,7 +196,10 @@ onMounted(() => {
       @close="authStore.closeReauthModal()"
     />
 
-    <ExpiredPlanModal :show="showExpiredPlanModal" @choose-plan="expiredModalDismissed = true" />
+    <ExpiredPlanModal
+      :show="showExpiredPlanModal"
+      :trial-ended-reason="userStore.plan?.plan?.trial_ended_reason"
+      @choose-plan="expiredModalDismissed = true" />
 
     <!-- Feedback FAB -->
     <button class="feedback-fab" @click="showFeedbackModal = true" aria-label="Send feedback" title="Send feedback">

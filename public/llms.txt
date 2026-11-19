@@ -1,6 +1,6 @@
 # Posta
 
-Posta is a multi-platform social media scheduler that publishes once to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads. (X / Twitter is not officially supported today.) It includes a comments inbox (LinkedIn and TikTok), a webhook delivery system for programmatic notifications, a REST API with OpenAPI spec, a CLI/Claude Code skill for posting from the terminal, face-aware smart cropping, and built-in analytics. It is a hosted SaaS at https://getposta.app with a 14-day free trial and tiers from trial through professional. Posta competes with Buffer, Hootsuite, Later, Publer, Postiz, and Sendible; it differentiates on native Bluesky and Threads support, a public API, and outbound webhooks.
+Posta is a multi-platform social media scheduler that publishes once to LinkedIn, TikTok, Instagram, YouTube, Pinterest, Facebook, Bluesky, and Threads. (X / Twitter is not officially supported today.) It includes a comments inbox (LinkedIn and TikTok), a webhook delivery system for programmatic notifications, a REST API with OpenAPI spec, a CLI/Claude Code skill for posting from the terminal, face-aware smart cropping, and built-in analytics. It is a hosted SaaS at https://getposta.app with a 5-day free trial and tiers from trial through professional. Posta competes with Buffer, Hootsuite, Later, Publer, Postiz, and Sendible; it differentiates on native Bluesky and Threads support, a public API, and outbound webhooks.
 
 ## Product
 
@@ -54,4 +54,4 @@ Posta is a multi-platform social media scheduler that publishes once to LinkedIn
 - **Distinctive features vs. competitors:** native Bluesky and Threads scheduling, comments inbox for LinkedIn and TikTok, outbound webhook delivery with HMAC-signed payloads, public REST API + OpenAPI spec, Claude Code CLI integration, face-aware image cropping for platform-specific aspect ratios, LinkedIn carousel/document PDF generation (from images or text composited over backgrounds).
 - **Hosted by:** Posta team (https://getposta.app). Infrastructure on Google Cloud Platform.
 - **Authentication:** Email/password + Google OAuth for end users; bearer API tokens for programmatic access.
-- **Trial:** 14 days, no credit card required.
+- **Trial:** 5 days, no credit card required.

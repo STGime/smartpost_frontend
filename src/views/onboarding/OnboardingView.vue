@@ -19,6 +19,8 @@ const selectedBillingInterval = ref<BillingInterval>('year')
 const isCompleting = ref(false)
 const isRedirecting = ref(false)
 const error = ref<string | null>(null)
+// False when the backend ended this account's trial at signup (browser already had one)
+const trialAvailable = ref(true)
 
 const stepNumber = computed(() => (currentStep.value === 'plan' ? 1 : 2))
 
@@ -29,12 +31,12 @@ const handlePlanSelected = async (planType: string, billingInterval: BillingInte
   selectedPlan.value = planType
   selectedBillingInterval.value = billingInterval
 
-  if (planType === 'starter') {
+  if (planType === 'starter' && trialAvailable.value) {
     currentStep.value = 'connect'
     return
   }
 
-  // Professional plan: redirect to LemonSqueezy checkout
+  // Professional plan (or Starter without a trial): redirect to LemonSqueezy checkout
   isRedirecting.value = true
   error.value = null
 
@@ -45,7 +47,7 @@ const handlePlanSelected = async (planType: string, billingInterval: BillingInte
     const cancelUrl = `${window.location.origin}/app/onboarding?checkout=cancelled`
 
     const { url } = await paymentsService.createCheckout(
-      planType as 'professional',
+      planType as 'starter' | 'professional',
       billingInterval,
       successUrl,
       cancelUrl
@@ -100,6 +102,14 @@ onMounted(async () => {
     if (profile.onboarding_completed) {
       router.push({ name: 'dashboard' })
       return
+    }
+    // The profile call above is where the backend decides on the trial, so
+    // the plan is read only after it.
+    try {
+      const { plan } = await userService.getPlan()
+      trialAvailable.value = !plan.trial_ended_reason
+    } catch {
+      // Keep the default; the app shows the expired-plan notice if needed
     }
   } catch (err) {
     // If 401, user needs to login again
@@ -180,6 +190,7 @@ onMounted(async () => {
       <div v-else class="step-content">
         <PlanSelectionStep
           v-if="currentStep === 'plan'"
+          :trial-available="trialAvailable"
           @select="handlePlanSelected"
         />
         <ConnectAccountStep
